@@ -44,7 +44,7 @@ HRESULT RendererUtil::createComputeShader(const LPCSTR & fileName, ComPtr<ID3D11
 	return hr;
 }
 
-void RendererUtil::createConstantBuffer(ComPtr<ID3D11Buffer>& constantBuffer, const uint32 size, ComPtr<ID3D11Device>& device, const void* initPtr) {
+HRESULT RendererUtil::createConstantBuffer(ComPtr<ID3D11Buffer>& constantBuffer, const uint32 size, ComPtr<ID3D11Device>& device, const void* initPtr) {
 	
 	//コンスタントバッファ―作成
 	D3D11_BUFFER_DESC cb;
@@ -67,8 +67,10 @@ void RendererUtil::createConstantBuffer(ComPtr<ID3D11Buffer>& constantBuffer, co
 	}
 
 	if (FAILED(hr)) {
-		return;
+		return hr;
 	}
+
+	return S_OK;
 }
 
 HRESULT RendererUtil::createVertexBuffer(const void * vertices, uint32 size, ComPtr<ID3D11Buffer>& vertexBuffer, ComPtr<ID3D11Device>& pDevice, D3D11_CPU_ACCESS_FLAG cpuFlag) {
@@ -146,7 +148,7 @@ MeshConstantBuffer RendererUtil::getConstantBuffer(const Matrix4 & mtxWorld)
 	MeshConstantBuffer constantBuffer;
 
 	//射影変換行列をセット
-	constantBuffer.mtxProj = Matrix4::transpose(camera->mtxProj());
+	constantBuffer.mtxProj = camera->mtxProj().transpose();
 
 	//カメラビュー行列をセット
 	constantBuffer.mtxView = Matrix4::transpose(camera->cameraMatrix().inverse());

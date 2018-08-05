@@ -11,9 +11,12 @@
 #include "Mesh/DebugGeometry.h"
 #include "StaticInstancedMeshRenderer.h"
 #include <ThirdParty/ImGui/imgui.h>
+#include "TileBasedLightCulling.h"
 
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
+
+std::unique_ptr<TileBasedLightCulling> _tile;
 
 GameRenderer::GameRenderer() :_width{ 1280 }, _height{ 720 },
 _device{ nullptr },
@@ -29,6 +32,7 @@ _orthoScreen{ nullptr } {
 	_orthoScreen = std::make_unique<OrthoScreen>();
 	_debugGeometryRenderer = std::make_unique<DebugGeomtryRenderer>();
 	_staticInstancedMeshRenderer = std::make_unique<StaticInstancedMeshRenderer>();
+	_tile = std::make_unique<TileBasedLightCulling>();
 
 }
 
@@ -144,6 +148,8 @@ void GameRenderer::draw() {
 		l->draw(*drawSettings.get());
 	}
 
+	_tile->draw(*drawSettings);
+
 	//デバッグジオメトリを描画
 	const auto& lines = _sceneRendererManager->debugLines();
 	const auto& boxs = _sceneRendererManager->debugBoxs();
@@ -199,6 +205,7 @@ void GameRenderer::createRenderTargets() {
 
 	hr = _orthoScreen->initialize(_device, _deviceContext, _swapChain, _width, _height);
 	hr = _deferredBuffers->initialize(_device, _width, _height, 0.1f, 1000);
+	hr = _tile->initialize(_device, _width, _height);
 
 	drawSettings->mainShaderResourceView = _orthoScreen->getShaderResourceView();
 	drawSettings->deferredBuffers = _deferredBuffers.get();

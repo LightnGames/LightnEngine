@@ -1,25 +1,19 @@
-#define COMPUTE_SHADER_TILE_GROUP_DIM 16
-#define COMPUTE_SHADER_TILE_GROUP_SIZE (COMPUTE_SHADER_TILE_GROUP_DIM*COMPUTE_SHADER_TILE_GROUP_DIM)
-#define MSAA_SAMPLES 4
-#define MAX_LIGHTS 256
-#define DEFER_PER_SAMPLE 1
+#include "../ShaderDefines.h"
 
 struct GBuffer
 {
-    float4 normal_specular : SV_Target0;
-    float4 albedo : SV_Target1;
-    float2 positionZGrad : SV_Target2;
+    float4 albedo;
+    float4 normal;
+    float4 roughnessMetallic;
 };
 
 struct SurfaceData
 {
     float3 positionView; // View space position
-    float3 positionViewDX; // Screen space derivatives
-    float3 positionViewDY; // of view space position
     float3 normal; // View space normal
     float4 albedo;
-    float specularAmount; // Treated as a multiplier on albedo
-    float specularPower;
+    float roughness; // Treated as a multiplier on albedo
+    float metallic;
 };
 
 struct PointLight
@@ -40,9 +34,15 @@ cbuffer PerFrameConstants : register(b0)
     uint4 mFramebufferDimensions;
 };
 
-Texture2DMS<float4, MSAA_SAMPLES> gBufferTextures[4] : register(t0);
-StructuredBuffer<PointLight> pointLights : register(t1);
+Texture2DMS<float4> gBufferTextures[4] : register(t0);
+StructuredBuffer<PointLight> pointLights : register(t4);
+TextureCube cubeMap : register(t5);
 RWStructuredBuffer<uint2> framebuffer : register(u0);
+SamplerState samLinear : register(s0);
+
+#include "../Rendering.hlsl"
+#include "../PhysicallyBasedRendering.hlsl"
+#include "../DeferredLight.hlsl"
 
 groupshared uint sMinZ;
 groupshared uint sMaxZ;
@@ -80,13 +80,13 @@ float3 ComputePositionViewFromZ(float2 positionScreen, float viewSpaceZ)
     return positionView;
 }
 
-SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport, uint sampleIndex)
+SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
 {
     GBuffer rawData;
-    rawData.normal_specular = gBufferTextures[0].Load(positionViewport.xy, sampleIndex).xyzw;
-    rawData.albedo = gBufferTextures[1].Load(positionViewport.xy, sampleIndex).xyzw;
-    rawData.positionZGrad = gBufferTextures[2].Load(positionViewport.xy, sampleIndex).xy;
-    float zBuffer = gBufferTextures[3].Load(positionViewport.xy, sampleIndex).x;
+    float zBuffer = gBufferTextures[0].Load(positionViewport.xy, 0).x;
+    //rawData.albedo = gBufferTextures[1].SampleLevel(samLinear, positionViewport.xy, 0).xyzw;
+    //rawData.normal_specular = gBufferTextures[2].SampleLevel(samLinear, positionViewport.xy,0).xyzw;
+    //rawData.positionZGrad = gBufferTextures[3].SampleLevel(samLinear, positionViewport.xy,0).xy;
 
     float2 gBufferDim;
     uint dummy;
@@ -97,85 +97,26 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport, uint sam
     float2 positionScreenX = positionScreen + float2(screenPixelOffset.x, 0.0f);
     float2 positionScreenY = positionScreen + float2(0.0f, screenPixelOffset.y);
 
-    SurfaceData data;
+    SurfaceData data=(SurfaceData)0;
 
     //ビュー座標系のZ値
-    float viewSpaceZ = mCameraProj._43 / (zBuffer - mCameraProj._33);
+    //float viewSpaceZ = mCameraProj._43 / (zBuffer - mCameraProj._33);
+    //data.positionView = ComputePositionViewFromZ(positionScreen, zBuffer);
+    data.positionView = float3(positionScreen, zBuffer);
+    data.positionView.y *= -1;
 
-    data.positionView = ComputePositionViewFromZ(positionScreen, viewSpaceZ);
-    data.positionViewDX = ComputePositionViewFromZ(positionScreenX, viewSpaceZ + rawData.positionZGrad.x);
-    data.positionViewDY = ComputePositionViewFromZ(positionScreenY, viewSpaceZ + rawData.positionZGrad.y);
-
-    data.normal = DecodeSphereMap(rawData.normal_specular.xy);
-    data.albedo = rawData.albedo;
-    data.specularAmount = rawData.normal_specular.z;
-    data.specularPower = rawData.normal_specular.w;
+    float4 roughnessMetallic = gBufferTextures[3].Load(positionViewport.xy, 0).xyzw;
+    data.albedo = gBufferTextures[1].Load(positionViewport.xy, 0).xyzw;
+    data.normal = gBufferTextures[2].Load(positionViewport.xy, 0).xyz;
+    data.roughness = roughnessMetallic.r;
+    data.metallic = roughnessMetallic.g;
 
     return data;
 }
 
-void ComputeSurfaceDataFromGBufferAllSamples(uint2 positionViewport, out SurfaceData surface[MSAA_SAMPLES])
+void WriteSample(uint2 coords, float4 value)
 {
-    [unroll]
-    for (uint i = 0; i < MSAA_SAMPLES; ++i)
-    {
-        surface[i] = ComputeSurfaceDataFromGBufferSample(positionViewport, i);
-    }
-}
-
-// - RGBA 16-bit per component packed into a uint2 per texel
-float4 UnpackRGBA16(uint2 e)
-{
-    return float4(f16tof32(e), f16tof32(e >> 16));
-}
-uint2 PackRGBA16(float4 c)
-{
-    return f32tof16(c.rg) | (f32tof16(c.ba) << 16);
-}
-
-uint PackCoords(uint2 coords)
-{
-    return coords.y << 16 | coords.x;
-}
-uint2 UnpackCoords(uint coords)
-{
-    return uint2(coords & 0xFFFF, coords >> 16);
-}
-
-uint GetFramebufferSampleAddress(uint2 coords, uint sampleIndex)
-{
-    // Major ordering: Row (x), Col (y), MSAA sample
-    return (sampleIndex * mFramebufferDimensions.y + coords.y) * mFramebufferDimensions.x + coords.x;
-}
-
-void WriteSample(uint2 coords, uint sampleIndex, float4 value)
-{
-    framebuffer[GetFramebufferSampleAddress(coords, sampleIndex)] = PackRGBA16(value);
-}
-
-// Check if a given pixel can be shaded at pixel frequency (i.e. they all come from
-// the same surface) or if they require per-sample shading
-bool RequiresPerSampleShading(SurfaceData surface[MSAA_SAMPLES])
-{
-    bool perSample = false;
-
-    const float maxZDelta = abs(surface[0].positionViewDX.z) + abs(surface[0].positionViewDY.z);
-    const float minNormalDot = 0.99f; // Allow ~8 degree normal deviations
-
-    [unroll]
-    for (uint i = 1; i < MSAA_SAMPLES; ++i)
-    {
-        // Using the position derivatives of the triangle, check if all of the sample depths
-        // could possibly have come from the same triangle/surface
-        perSample = perSample ||
-            abs(surface[i].positionView.z - surface[0].positionView.z) > maxZDelta;
-
-        // Also flag places where the normal is different
-        perSample = perSample ||
-            dot(surface[i].normal, surface[0].normal) < minNormalDot;
-    }
-
-    return perSample;
+    framebuffer[GetFramebufferSampleAddress(coords,mFramebufferDimensions.xy)] = PackRGBA16(value);
 }
 
 [numthreads(COMPUTE_SHADER_TILE_GROUP_DIM, COMPUTE_SHADER_TILE_GROUP_DIM, 1)]
@@ -183,6 +124,13 @@ void CS(uint3 groupId : SV_GroupID,
         uint3 dispatchThreadId : SV_DispatchThreadID,
         uint3 groupThreadId : SV_GroupThreadID)
 {
+
+    //WriteSample(dispatchThreadId.xy, 0, float4(groupId.x % 16 / 16.0f, groupId.y % 16 / 16.0f, 0, 1.0f));
+    //WriteSample(dispatchThreadId.xy, 0, float4(mCameraNearFar.x/10000.0f, 0, 0, 1.0f));
+    //framebuffer[GetFramebufferSampleAddress(dispatchThreadId.xy, mFramebufferDimensions.xy, 0)] = uint2(1,1);
+
+    //return;
+
     uint groupIndex = groupThreadId.y * COMPUTE_SHADER_TILE_GROUP_DIM + groupThreadId.x;
 
     uint totalPointLights, dummy;
@@ -192,28 +140,24 @@ void CS(uint3 groupId : SV_GroupID,
 
     //GBufferからMSAAのサンプル数SurfaceDataに突っ込む
     //GbufferからnormalのデコードやらCoordsの展開など
-    SurfaceData surfaceSamples[MSAA_SAMPLES];
-    ComputeSurfaceDataFromGBufferAllSamples(globalCoords, surfaceSamples);
+    SurfaceData surfaceSample;
+    surfaceSample = ComputeSurfaceDataFromGBufferSample(globalCoords);
 
 	//タイルごとのZ値の最小・最大値を求める
     float minZSample = mCameraNearFar.y;
     float maxZSample = mCameraNearFar.x;
-	{
-		[unroll]
-        for (uint sample = 0; sample < MSAA_SAMPLES; ++sample)
-        {
-			// Avoid shading skybox/background or otherwise invalid pixels
-            float viewSpaceZ = surfaceSamples[sample].positionView.z;
-            bool validPixel =
-				viewSpaceZ >= mCameraNearFar.x &&
-				viewSpaceZ < mCameraNearFar.y;
-			[flatten]
-            if (validPixel)
-            {
-                minZSample = min(minZSample, viewSpaceZ);
-                maxZSample = max(maxZSample, viewSpaceZ);
-            }
-        }
+
+    // Avoid shading skybox/background or otherwise invalid pixels
+    float4 pposition = mul(float4(surfaceSample.positionView, 1.0f), mCameraWorldViewProj);
+   // pposition = float4(surfaceSample.positionView, 1.0f);
+    float3 position = pposition.xyz / pposition.w;
+    float viewSpaceZ = mCameraNearFar.y + position.z * mCameraNearFar.x;
+    bool validPixel = viewSpaceZ >= mCameraNearFar.x && viewSpaceZ < mCameraNearFar.y;
+    [flatten]
+    if (validPixel)
+    {
+        minZSample = min(minZSample, viewSpaceZ);
+        maxZSample = max(maxZSample, viewSpaceZ);
     }
 
 	//スレッドグループ共有メモリを初期化
@@ -227,12 +171,16 @@ void CS(uint3 groupId : SV_GroupID,
 
 	//ここまで全スレッドが完了するまで待機
     GroupMemoryBarrierWithGroupSync();
+    float pix = position.z;
 
-	//最大Zが最小Zより大きければ値をセット(そうでなければ初期化情報のまま)
-    if (maxZSample >= minZSample)
+    if (pix > sMaxZ)
     {
-        InterlockedMin(sMinZ, asuint(minZSample));
-        InterlockedMax(sMaxZ, asuint(maxZSample));
+        InterlockedMax(sMaxZ, asuint(pix));
+    }
+
+    if (pix < sMinZ)
+    {
+        InterlockedMin(sMinZ, asuint(pix));
     }
 
     GroupMemoryBarrierWithGroupSync();
@@ -241,8 +189,10 @@ void CS(uint3 groupId : SV_GroupID,
     float minTileZ = asfloat(sMinZ);
     float maxTileZ = asfloat(sMaxZ);
 
-    //謎のバイアス？
+    //Dispatch x=79,y=43
+    //TileScale x=39.5,y=41.5
     float2 tileScale = float2(mFramebufferDimensions.xy) * rcp(float(2 * COMPUTE_SHADER_TILE_GROUP_DIM));
+    //x=39.5 ~ -39.5, y= 41.5 ~ -41.5
     float2 tileBias = tileScale - float2(groupId.xy);
 
     //タイルごとの6つの平面を計算
@@ -254,9 +204,9 @@ void CS(uint3 groupId : SV_GroupID,
     float4 frustumPlanes[6];
     // Sides
     frustumPlanes[0] = c4 - c1;
-    frustumPlanes[1] = c4 + c1;
+    frustumPlanes[1] = c1;
     frustumPlanes[2] = c4 - c2;
-    frustumPlanes[3] = c4 + c2;
+    frustumPlanes[3] = c2;
     // Near/far
     frustumPlanes[4] = float4(0.0f, 0.0f, 1.0f, -minTileZ);
     frustumPlanes[5] = float4(0.0f, 0.0f, -1.0f, maxTileZ);
@@ -268,7 +218,7 @@ void CS(uint3 groupId : SV_GroupID,
         frustumPlanes[i] *= rcp(length(frustumPlanes[i].xyz));
     }
 
-    //求めた４つの平面とライトのカリングを行う
+    //6平面と交差しているライトを集める
     uint totalLights = totalPointLights;
     for (uint lightIndex = groupIndex; lightIndex < totalLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
     {
@@ -281,7 +231,7 @@ void CS(uint3 groupId : SV_GroupID,
         {
             //平面との距離がポイントライトの半径以下なら衝突
             float d = dot(frustumPlanes[i], float4(light.positionView, 1.0f));
-            inFrustum = inFrustum && (d >= -light.attenuationEnd);
+            inFrustum = inFrustum && (d + light.attenuationEnd > 0);
         }
 
         //衝突しているライトならリストに加える衝突ライトカウントもインクリメント
@@ -298,34 +248,60 @@ void CS(uint3 groupId : SV_GroupID,
     GroupMemoryBarrierWithGroupSync();
 
     uint numLights = sTileNumLights;
+    float4 lit = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     //タイルが解像度によってははみ出るのでチェック
     if (all(globalCoords < mFramebufferDimensions.xy))
     {
+
+        //lit += float4(numLights/2.0f,0, 0, 1.0f);
         if (numLights > 0)
         {
-            bool perSampleShading = RequiresPerSampleShading(surfaceSamples);
-            float3 lit = float3(0.0f, 0.0f, 0.0f);
             for (uint tileLightIndex = 0; tileLightIndex < numLights; ++tileLightIndex)
             {
-                //ポイントライトのライティング
                 PointLight light = pointLights[sTileLightIndices[tileLightIndex]];
-                    //AccumulateBRDF(surfaceSamples[0], light, lit);
-                lit += float3(asfloat(numLights) / 5, 0, 0);
+                float attenuationEnd = light.attenuationEnd;
 
+            //メタリックの値からテクスチャカラー
+                float roughness = surfaceSample.roughness;
+                float metallic = surfaceSample.metallic;
+                float3 albedo = surfaceSample.albedo.xyz;
+                float3 normal = surfaceSample.normal;
+                float3 diffuseColor = lerp(albedo, float3(0.04, 0.04, 0.04), metallic);
+                float3 specularColor = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
+
+                float3 viewPosition = position;
+                viewPosition.y *= -1;
+
+                float3 eyeDirection;
+                eyeDirection.xy = (viewPosition.xy * 2.0f) - 1.0f;
+                eyeDirection.z = viewPosition.z;
+                eyeDirection = normalize(eyeDirection);
+                eyeDirection = mul(float4(eyeDirection, 1), mCameraViewProj);
+
+                float lightDistance = length(light.positionView - viewPosition);
+                float3 L = normalize(light.positionView - viewPosition);
+
+                L = mul(float4(L, 1), mCameraViewProj);
+                L = normalize(L);
+
+                float dotNL = saturate(dot(normal, L));
+
+	        //減衰係数
+                float attenuation = PhysicalAttenuation(1, 2.0f, 0.01f, lightDistance);
+                float d = saturate(attenuationEnd - lightDistance);
+
+	        //輝度
+                float3 irradistance = dotNL * light.color * attenuation*d;
+
+	        //ライティング済みカラー＆スペキュラ
+                float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
+                float3 directSpecular = irradistance * SpecularBRDF(normal, -eyeDirection, L, specularColor, roughness);
+
+                lit += float4(directDiffuse + directSpecular, 1);
             }
+        }
+    }
 
-            //フレームバッファに書き込み
-            WriteSample(globalCoords, 0, float4(lit, 1.0f));
-        }
-    }
-    else
-    {
-      //はみ出たエリアは黒で塗りつぶしておく
-        [unroll]
-        for (uint sample = 0; sample < MSAA_SAMPLES; ++sample)
-        {
-            WriteSample(globalCoords, sample, float4(0.0f, 0.0f, 0.0f, 0.0f));
-        }
-    }
+    WriteSample(globalCoords, lit);
 }

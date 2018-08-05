@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <Util/Type.h>
 #include <Util/ComPtr.h>
+#include <LMath.h>
 
 const int BUFFER_COUNT = 3;
 
@@ -32,6 +33,8 @@ public:
 	ComPtr<ID3D11ShaderResourceView> getShaderResourceView(uint16 index) const;
 
 	ComPtr<ID3D11ShaderResourceView> getDepthStencilResource() const;
+
+	Vector2 getGBufferSize() const;
 
 private:
 

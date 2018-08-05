@@ -5,8 +5,8 @@ TextureCube cubeMap : register(t3);
 Texture2D depthTex : register(t4);
 SamplerState samLinear : register(s0);
 
-#include "PhysicallyBasedRendering.hlsl"
-#include "DeferredLight.hlsl"
+#include "../PhysicallyBasedRendering.hlsl"
+#include "../DeferredLight.hlsl"
 
 cbuffer PointLightInput : register(b0){
 	float4 lightPosition;
@@ -25,7 +25,6 @@ struct PS_INPUT
 float4 PS ( PS_INPUT input ) : SV_Target
 {
     float4 baseColor;
-	float4 rtMainColor;
     float4 normal;
 	float roughness;
 	float metallic;
@@ -41,9 +40,9 @@ float4 PS ( PS_INPUT input ) : SV_Target
     float3 specularColor = lerp(float3(0.04, 0.04, 0.04), baseColor.xyz, metallic);
 
 	float3 worldPosition = ReconstructWorldPositionFromDepth(depthTex, samLinear, input.Tex, inverseViewProjection);
-	float lightDistance = length(lightPosition-worldPosition);
-	float3 L = normalize((lightPosition - worldPosition)/lightDistance);
-	float dotNL = saturate(dot(normal, L));
+	float lightDistance = length(lightPosition.xyz-worldPosition);
+	float3 L = normalize((lightPosition.xyz - worldPosition)/lightDistance);
+	float dotNL = saturate(dot(normal.xyz, L));
 
 	//減衰係数
     float attenuation = PhysicalAttenuation(lightAttenuation.x, lightAttenuation.y, lightAttenuation.z, lightDistance);
@@ -53,7 +52,7 @@ float4 PS ( PS_INPUT input ) : SV_Target
 
 	//ライティング済みカラー＆スペキュラ
     float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
-    float3 directSpecular = irradistance * SpecularBRDF(normal, -input.Eye, L, specularColor, roughness);
+    float3 directSpecular = irradistance * SpecularBRDF(normal.xyz, -input.Eye, L, specularColor, roughness);
 
 	return float4(directDiffuse + directSpecular,1);
 }

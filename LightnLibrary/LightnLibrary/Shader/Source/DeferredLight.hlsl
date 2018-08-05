@@ -3,8 +3,7 @@
 //距離の2乗で減衰する係数
 float PhysicalAttenuation(float constantA,float linearA,float quadraticA,float lightDistance){
 
-return 1.0 / (constantA + linearA * lightDistance
-			+ quadraticA * lightDistance * lightDistance);
+    return 1.0 / (constantA + linearA * lightDistance+ quadraticA * lightDistance * lightDistance);
 }
 
 //スクリーンUVのデプス値を用いてワールド座標を復元

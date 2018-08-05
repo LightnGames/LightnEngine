@@ -82,7 +82,7 @@ void SceneRendererManager::debugDrawBox(const Vector3 & center, const Vector3 & 
 void SceneRendererManager::debugDrawSphere(const Vector3 & center, float radius, const Vector4 & color)
 {
 	DebugGeometoryInfo info;
-	info.mtxWorld = Matrix4::transpose(Matrix4::createWorldMatrix(center, Quaternion::identity, Vector3::one*radius));
+	info.mtxWorld = Matrix4::transpose(Matrix4::createWorldMatrix(center, Quaternion::identity, Vector3::one*radius * 2));
 	info.color = color;
 	instance()._debugSpheres.emplace_back(info);
 }

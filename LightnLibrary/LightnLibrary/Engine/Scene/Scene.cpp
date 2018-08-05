@@ -28,9 +28,9 @@ Scene::Scene() {
 
 	sky = makeChild<SkyboxActor>();
 	sk = makeChild<SkeletalMeshActor>();
-	dirLight = makeChild<DirectionalLightActor>();
-	pointLight = makeChild<PointLightActor>();
-	spotLight = makeChild<SpotLightActor>();
+	//dirLight = makeChild<DirectionalLightActor>();
+	//pointLight = makeChild<PointLightActor>();
+	//spotLight = makeChild<SpotLightActor>();
 
 	//マテリアルデータ
 	std::vector<std::string> skyMatFiles;

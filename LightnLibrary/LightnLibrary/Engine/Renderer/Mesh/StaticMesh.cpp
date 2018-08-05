@@ -77,8 +77,8 @@ void StaticMesh::drawMesh(ComPtr<ID3D11DeviceContext> deviceContext, const RefPt
 		const auto& material = _meshes.materialSlots[j];
 
 		//使用シェーダーをセット
-		deviceContext->VSSetShader(material->pVertexShader.Get(), NULL, 0);
-		deviceContext->PSSetShader(material->pPixelShader.Get(), NULL, 0);
+		deviceContext->VSSetShader(material->pVertexShader.Get(), 0, 0);
+		deviceContext->PSSetShader(material->pPixelShader.Get(), 0, 0);
 
 		//インデックスバッファをセット
 		deviceContext->IASetIndexBuffer(material->pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);

@@ -48,13 +48,26 @@ float3 GetPositivePoint(BoundingBox box, float3 planeNormal)
     return result;
 }
 
+groupshared uint drawListOffset;
+groupshared uint materialCount;
+groupshared uint instanceNum;
+
 [numthreads(THREAD_NUM, 1, 1)]
 void CS(uint3 dispatchId : SV_GroupID, uint3 groupId : SV_GroupThreadID)
 {
+    if (groupId.x == 0)
+    {
+        drawListOffset = BufferIn[0].extent.w;
+        instanceNum = BufferIn[1].extent.w;
+        materialCount = BufferIn[2].extent.w;
+    }
+
+    GroupMemoryBarrierWithGroupSync();
+
     uint meshId = dispatchId.x * THREAD_NUM + groupId.x;
     BoundingBox meshInfo = BufferIn[meshId];
 
-    if (meshId > BufferIn[1].extent.w)
+    if (meshId > instanceNum)
     {
         return;
     }
@@ -74,8 +87,6 @@ void CS(uint3 dispatchId : SV_GroupID, uint3 groupId : SV_GroupThreadID)
         }
     }
 
-    uint drawListOffset = BufferIn[0].extent.w;
-    uint materialCount = BufferIn[2].extent.w;
     uint originalValue;
     instanceMatrixBuffer.Append(meshInfo.mtxWorld);
 

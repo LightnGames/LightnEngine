@@ -64,14 +64,14 @@ void Light::draw(const DrawSettings & settings, RefPtr<LightComponent>& lightCom
 	constantBuffer.cameraPos = Vector4(camera->getWorldPosition());
 
 	//使用シェーダーをセット
-	deviceContext->VSSetShader(_vertexShader.Get(), NULL, 0);
-	deviceContext->PSSetShader(_pixelShader.Get(), NULL, 0);
+	deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
+	deviceContext->PSSetShader(_pixelShader.Get(), 0, 0);
 
 	//頂点インプットレイアウトをセット
 	deviceContext->IASetInputLayout(_layout.Get());
 
 	//コンスタントバッファー内容更新
-	deviceContext->UpdateSubresource(_matrixBuffer.Get(), 0, NULL, &constantBuffer, 0, 0);
+	deviceContext->UpdateSubresource(_matrixBuffer.Get(), 0, 0, &constantBuffer, 0, 0);
 
 	//コンスタントバッファーを使うシェーダーにセット
 	deviceContext->VSSetConstantBuffers(0, 1, _matrixBuffer.GetAddressOf());

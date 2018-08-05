@@ -18,7 +18,7 @@ public:
 	static HRESULT createComputeShader(const LPCSTR& fileName, ComPtr<ID3D11ComputeShader>& computeShader, ComPtr<ID3D11Device>& device);
 
 	//コンスタントバッファ作成
-	static void createConstantBuffer(ComPtr<ID3D11Buffer>& ppConstantBuffer, const uint32 size, ComPtr<ID3D11Device>& pDevice, const void* initPtr = nullptr);
+	static HRESULT createConstantBuffer(ComPtr<ID3D11Buffer>& ppConstantBuffer, const uint32 size, ComPtr<ID3D11Device>& pDevice, const void* initPtr = nullptr);
 
 	//頂点バッファ生成
 	static HRESULT createVertexBuffer(const void * vertices, uint32 size, ComPtr<ID3D11Buffer>& vertexBuffer, ComPtr<ID3D11Device>& pDevice, D3D11_CPU_ACCESS_FLAG cpuFlag = (D3D11_CPU_ACCESS_FLAG)0);

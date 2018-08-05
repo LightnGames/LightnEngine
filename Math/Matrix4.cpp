@@ -136,6 +136,10 @@ Matrix4 Matrix4::transpose(const Matrix4 & m){
 	return result;
 }
 
+Matrix4 Matrix4::transpose() const {
+	return Matrix4::transpose(*this);
+}
+
 Matrix4 Matrix4::inverse(const Matrix4 & m){
 
 	float a0 = m.m[0][0] * m.m[1][1] - m.m[0][1] * m.m[1][0];

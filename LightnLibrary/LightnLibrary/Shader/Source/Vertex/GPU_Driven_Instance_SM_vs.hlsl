@@ -44,7 +44,8 @@ PS_INPUT VS(VS_INPUT input)
     PS_INPUT output;
 
     //í∏ì_ç¿ïW
-    float4 worldPos = mul(float4(input.Pos, 1), instanceMatrices[input.InstanceId + meshDrawOffset]);
+    float4x4 instanceMtxWorld = instanceMatrices[input.InstanceId + meshDrawOffset];
+    float4 worldPos = mul(float4(input.Pos, 1), instanceMtxWorld);
     output.Pos = worldPos;
     output.Pos = mul(output.Pos, mtxView);
     output.Pos = mul(output.Pos, mtxProj);
@@ -56,9 +57,9 @@ PS_INPUT VS(VS_INPUT input)
     output.Tex = input.Tex;
 	
 	//ñ@ê¸
-    output.Normal = normalize(mul(input.Normal, (float3x3) mtxWorld));
-    output.Tangent = normalize(mul(input.Tangent, (float3x3) mtxWorld));
-    output.Binormal = normalize(mul(input.Binormal, (float3x3) mtxWorld));
+    output.Normal = normalize(mul(input.Normal, (float3x3) instanceMtxWorld));
+    output.Tangent = normalize(mul(input.Tangent, (float3x3) instanceMtxWorld));
+    output.Binormal = normalize(mul(input.Binormal, (float3x3) instanceMtxWorld));
 
     return output;
 }

@@ -169,6 +169,10 @@ ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getDepthStencilResource() cons
 	return _depthStencilResource;
 }
 
+Vector2 Deferredbuffers::getGBufferSize() const {
+	return Vector2(_width, _height);
+}
+
 HRESULT Deferredbuffers::createRenderTarget(uint16 index, DXGI_FORMAT format, ComPtr<ID3D11Device>& device) {
 	
 	HRESULT result;

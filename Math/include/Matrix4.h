@@ -48,6 +48,7 @@ union Matrix4{
 
 	//“]’us—ñ
 	static Matrix4 transpose(const Matrix4& m);
+	Matrix4 transpose() const;
 
 	//‹ts—ñ
 	static Matrix4 inverse(const Matrix4& m);

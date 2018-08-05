@@ -156,6 +156,12 @@
     <FxCompile Include="Shader\Source\Compute\CoputeDeferredTile.hlsl">
       <Filter>リソース ファイル\Compute</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\StructuredToRenderTarget.hlsl">
+      <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\Rendering.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Actor\Actor.cpp">
@@ -319,6 +325,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Actor\StaticInstanceMeshActor.cpp">
       <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\TileBasedLightCulling.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -526,12 +535,18 @@
     <ClInclude Include="Engine\Actor\StaticInstanceMeshActor.h">
       <Filter>ヘッダー ファイル\Actor</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Renderer\TileBasedLightCulling.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader\Source\ShaderDefines.h">
+      <Filter>リソース ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Source\Include\PhysicallyBasedRendering.hlsl">
+    <None Include="Shader\Source\DeferredLight.hlsl">
       <Filter>リソース ファイル</Filter>
     </None>
-    <None Include="Shader\Source\Include\DeferredLight.hlsl">
+    <None Include="Shader\Source\PhysicallyBasedRendering.hlsl">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>
