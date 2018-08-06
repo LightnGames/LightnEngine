@@ -78,7 +78,7 @@ HRESULT TileBasedLightCulling::initialize(ComPtr<ID3D11Device> device, uint32 wi
 	hr = device->CreateShaderResourceView(_frameBuffer.Get(), 0, _frameBufferSRV.ReleaseAndGetAddressOf());
 
 	hr = RendererUtil::createConstantBuffer(_perFrameConstantBuffer, sizeof(PerFrameConstants), device);
-	hr = RendererUtil::createComputeShader("CoputeDeferredTile.cso", _tileBasedLightCullingShader, device);
+	hr = RendererUtil::createComputeShader("ComputeDeferredTile.cso", _tileBasedLightCullingShader, device);
 	hr = RendererUtil::createPixelShader("StructuredToRenderTarget.cso", _structuredToRenderShader, device);
 
 	return S_OK;
