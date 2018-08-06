@@ -15,25 +15,15 @@ struct TileBasedPointLightType {
 };
 
 struct PerFrameConstants{
-	Matrix4 mCameraWorldViewProj;
-	Matrix4 mCameraWorldView;
-	Matrix4 mCameraViewProj;
-	Matrix4 mCameraProj;
-	Vector4 mCameraNearFar;
-	uint32 mFramebufferDimensionsX;
-	uint32 mFramebufferDimensionsY;
-	uint32 mFramebufferDimensionsZ;
-	uint32 mFramebufferDimensionsW;
+	Matrix4 cameraProjInverse;
+	Matrix4 cameraRotateView;
+	Matrix4 cameraProj;
+	Vector2 cameraNearFar;
+	uint32 framebufferDimensionsX;
+	uint32 framebufferDimensionsY;
 };
 
-struct PerTilePlane {
-	Vector4 right;
-	Vector4 left;
-	Vector4 up;
-	Vector4 down;
-};
-
-// Flat framebuffer RGBA16-encoded
+//16bit毎にRGBAを格納
 struct FramebufferFlatElement {
 	uint32 rb;
 	uint32 ga;
@@ -71,18 +61,6 @@ HRESULT TileBasedLightCulling::initialize(ComPtr<ID3D11Device> device, uint32 wi
 
 	uint32 dispatchWidth = (width + COMPUTE_SHADER_TILE_GROUP_DIM - 1) / COMPUTE_SHADER_TILE_GROUP_DIM;
 	uint32 dispatchHeight = (height + COMPUTE_SHADER_TILE_GROUP_DIM - 1) / COMPUTE_SHADER_TILE_GROUP_DIM;
-
-	//ライトフラスタム
-	D3D11_BUFFER_DESC cbP;
-	ZeroMemory(&cbP, sizeof(cbP));
-	cbP.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	cbP.ByteWidth = sizeof(PerTilePlane)*dispatchWidth*dispatchHeight;
-	cbP.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	cbP.StructureByteStride = sizeof(PerTilePlane);
-
-	hr = device->CreateBuffer(&cbP, 0, _perTilePlaneBuffer.ReleaseAndGetAddressOf());
-	hr = device->CreateShaderResourceView(_perTilePlaneBuffer.Get(), 0, _perTilePlaneSRV.ReleaseAndGetAddressOf());
-
 
 	//レンダーターゲット代わりのバッファ
 	D3D11_BUFFER_DESC desc;
@@ -124,8 +102,8 @@ void TileBasedLightCulling::draw(const DrawSettings& settings) {
 	std::vector<TileBasedPointLightType> pointLights;
 	pointLights.reserve(MAX_LIGHTS);
 
-	uint32 width = deferredBuffers->getGBufferSize().x;
-	uint32 height = deferredBuffers->getGBufferSize().y;
+	const uint32 width = deferredBuffers->getGBufferSize().x;
+	const uint32 height = deferredBuffers->getGBufferSize().y;
 	const uint32 dispatchWidth = (width + COMPUTE_SHADER_TILE_GROUP_DIM - 1) / COMPUTE_SHADER_TILE_GROUP_DIM;
 	const uint32 dispatchHeight = (height + COMPUTE_SHADER_TILE_GROUP_DIM - 1) / COMPUTE_SHADER_TILE_GROUP_DIM;
 
@@ -149,16 +127,12 @@ void TileBasedLightCulling::draw(const DrawSettings& settings) {
 	pointLights.emplace_back(p2);
 
 	PerFrameConstants perFrame;
-	perFrame.mCameraWorldView = camera->cameraMatrix().transpose();
-	perFrame.mCameraProj = camera->mtxProj().transpose();
-
-	perFrame.mCameraViewProj =Matrix4::matrixFromQuaternion(camera->getWorldRotation()).transpose();
-	perFrame.mCameraWorldViewProj = perFrame.mCameraProj.inverse();
-	perFrame.mCameraNearFar = Vector4(camera->farClip(), camera->nearClip(), 0.0f, 0.0f);
-	perFrame.mFramebufferDimensionsX = width;
-	perFrame.mFramebufferDimensionsY = height;
-	perFrame.mFramebufferDimensionsZ = 0;//ダミー
-	perFrame.mFramebufferDimensionsW = 0;//ダミー
+	perFrame.cameraProj = camera->mtxProj().transpose();
+	perFrame.cameraRotateView =Matrix4::matrixFromQuaternion(camera->getWorldRotation()).transpose();
+	perFrame.cameraProjInverse = perFrame.cameraProj.inverse();
+	perFrame.cameraNearFar = Vector2(camera->farClip(), camera->nearClip());
+	perFrame.framebufferDimensionsX = width;
+	perFrame.framebufferDimensionsY = height;
 
 	auto sampler = GraphicsResourceManager::instance().simpleSamplerState();
 	deviceContext->UpdateSubresource(_perFrameConstantBuffer.Get(), 0, 0, &perFrame, 0, 0);

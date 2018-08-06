@@ -26,12 +26,11 @@ struct PointLight
 
 cbuffer PerFrameConstants : register(b0)
 {
-    float4x4 mCameraWorldViewProj;
-    float4x4 mCameraWorldView;
-    float4x4 mCameraViewProj;
-    float4x4 mCameraProj;
-    float4 mCameraNearFar;
-    uint4 mFramebufferDimensions;
+    float4x4 cameraProjInverse;
+    float4x4 cameraRotateView;
+    float4x4 cameraProj;
+    float2 cameraNearFar;
+    uint2 framebufferDimensions;
 };
 
 Texture2DMS<float4> gBufferTextures[4] : register(t0);
@@ -56,30 +55,6 @@ groupshared uint sTileNumLights;
 groupshared uint sPerSamplePixels[COMPUTE_SHADER_TILE_GROUP_SIZE];
 groupshared uint sNumPerSamplePixels;
 
-float3 DecodeSphereMap(float2 e)
-{
-    float2 tmp = e - e * e;
-    float f = tmp.x + tmp.y;
-    float m = sqrt(4.0f * f - 1.0f);
-    
-    float3 n;
-    n.xy = m * (e * 4.0f - 2.0f);
-    n.z = 3.0f - 8.0f * f;
-    return n;
-}
-
-float3 ComputePositionViewFromZ(float2 positionScreen, float viewSpaceZ)
-{
-    float2 screenSpaceRay = float2(positionScreen.x / mCameraProj._11,
-                                positionScreen.y / mCameraProj._22);
-
-    float3 positionView;
-    positionView.z = viewSpaceZ;
-    positionView.xy = screenSpaceRay.xy * positionView.z;
-
-    return positionView;
-}
-
 SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
 {
     GBuffer rawData;
@@ -100,7 +75,7 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     SurfaceData data=(SurfaceData)0;
 
     //ビュー座標系のZ値
-    //float viewSpaceZ = mCameraProj._43 / (zBuffer - mCameraProj._33);
+    //float viewSpaceZ = cameraProj._43 / (zBuffer - cameraProj._33);
     //data.positionView = ComputePositionViewFromZ(positionScreen, zBuffer);
     data.positionView = float3(positionScreen, zBuffer);
     data.positionView.y *= -1;
@@ -116,7 +91,7 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
 
 void WriteSample(uint2 coords, float4 value)
 {
-    framebuffer[GetFramebufferSampleAddress(coords,mFramebufferDimensions.xy)] = PackRGBA16(value);
+    framebuffer[GetFramebufferSampleAddress(coords,framebufferDimensions.xy)] = PackRGBA16(value);
 }
 
 [numthreads(COMPUTE_SHADER_TILE_GROUP_DIM, COMPUTE_SHADER_TILE_GROUP_DIM, 1)]
@@ -126,8 +101,8 @@ void CS(uint3 groupId : SV_GroupID,
 {
 
     //WriteSample(dispatchThreadId.xy, 0, float4(groupId.x % 16 / 16.0f, groupId.y % 16 / 16.0f, 0, 1.0f));
-    //WriteSample(dispatchThreadId.xy, 0, float4(mCameraNearFar.x/10000.0f, 0, 0, 1.0f));
-    //framebuffer[GetFramebufferSampleAddress(dispatchThreadId.xy, mFramebufferDimensions.xy, 0)] = uint2(1,1);
+    //WriteSample(dispatchThreadId.xy, 0, float4(cameraNearFar.x/10000.0f, 0, 0, 1.0f));
+    //framebuffer[GetFramebufferSampleAddress(dispatchThreadId.xy, framebufferDimensions.xy, 0)] = uint2(1,1);
 
     //return;
 
@@ -144,15 +119,15 @@ void CS(uint3 groupId : SV_GroupID,
     surfaceSample = ComputeSurfaceDataFromGBufferSample(globalCoords);
 
 	//タイルごとのZ値の最小・最大値を求める
-    float minZSample = mCameraNearFar.y;
-    float maxZSample = mCameraNearFar.x;
+    float minZSample = cameraNearFar.y;
+    float maxZSample = cameraNearFar.x;
 
     // Avoid shading skybox/background or otherwise invalid pixels
-    float4 pposition = mul(float4(surfaceSample.positionView, 1.0f), mCameraWorldViewProj);
+    float4 pposition = mul(float4(surfaceSample.positionView, 1.0f), cameraProjInverse);
    // pposition = float4(surfaceSample.positionView, 1.0f);
     float3 position = pposition.xyz / pposition.w;
-    float viewSpaceZ = mCameraNearFar.y + position.z * mCameraNearFar.x;
-    bool validPixel = viewSpaceZ >= mCameraNearFar.x && viewSpaceZ < mCameraNearFar.y;
+    float viewSpaceZ = cameraNearFar.y + position.z * cameraNearFar.x;
+    bool validPixel = viewSpaceZ >= cameraNearFar.x && viewSpaceZ < cameraNearFar.y;
     [flatten]
     if (validPixel)
     {
@@ -191,13 +166,13 @@ void CS(uint3 groupId : SV_GroupID,
 
     //Dispatch x=79,y=43
     //TileScale x=39.5,y=41.5
-    float2 tileScale = float2(mFramebufferDimensions.xy) * rcp(float(2 * COMPUTE_SHADER_TILE_GROUP_DIM));
+    float2 tileScale = float2(framebufferDimensions.xy) * rcp(float(2 * COMPUTE_SHADER_TILE_GROUP_DIM));
     //x=39.5 ~ -39.5, y= 41.5 ~ -41.5
     float2 tileBias = tileScale - float2(groupId.xy);
 
     //タイルごとの6つの平面を計算
-    float4 c1 = float4(mCameraProj._11 * tileScale.x, 0.0f, tileBias.x, 0.0f);
-    float4 c2 = float4(0.0f, -mCameraProj._22 * tileScale.y, tileBias.y, 0.0f);
+    float4 c1 = float4(cameraProj._11 * tileScale.x, 0.0f, tileBias.x, 0.0f);
+    float4 c2 = float4(0.0f, -cameraProj._22 * tileScale.y, tileBias.y, 0.0f);
     float4 c4 = float4(0.0f, 0.0f, 1.0f, 0.0f);
 
     // Derive frustum planes
@@ -251,7 +226,7 @@ void CS(uint3 groupId : SV_GroupID,
     float4 lit = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     //タイルが解像度によってははみ出るのでチェック
-    if (all(globalCoords < mFramebufferDimensions.xy))
+    if (all(globalCoords < framebufferDimensions.xy))
     {
 
         //lit += float4(numLights/2.0f,0, 0, 1.0f);
@@ -273,19 +248,19 @@ void CS(uint3 groupId : SV_GroupID,
                 float3 viewPosition = position;
                 viewPosition.y *= -1;
 
+				//視点ベクトルを計算
                 float3 eyeDirection;
                 eyeDirection.xy = (viewPosition.xy * 2.0f) - 1.0f;
                 eyeDirection.z = viewPosition.z;
                 eyeDirection = normalize(eyeDirection);
-                eyeDirection = mul(float4(eyeDirection, 1), mCameraViewProj);
+                eyeDirection = mul(float4(eyeDirection, 1), cameraRotateView);
 
-                float lightDistance = length(light.positionView - viewPosition);
-                float3 L = normalize(light.positionView - viewPosition);
-
-                L = mul(float4(L, 1), mCameraViewProj);
+				//ライトベクトルを計算
+                float3 L = mul(float4(light.positionView - viewPosition, 1), cameraRotateView);
                 L = normalize(L);
 
                 float dotNL = saturate(dot(normal, L));
+				float lightDistance = length(light.positionView - viewPosition);
 
 	        //減衰係数
                 float attenuation = PhysicalAttenuation(1, 2.0f, 0.01f, lightDistance);
