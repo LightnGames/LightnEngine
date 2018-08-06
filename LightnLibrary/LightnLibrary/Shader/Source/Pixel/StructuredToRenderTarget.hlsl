@@ -3,17 +3,7 @@ SamplerState samLinear : register(s0);
 
 #define COMPUTE_SHADER_TILE_GROUP_DIM 16
 
-#include "../Rendering.hlsl"
-
-cbuffer PerFrameConstants : register(b0)
-{
-    float4x4 mCameraWorldViewProj;
-    float4x4 mCameraWorldView;
-    float4x4 mCameraViewProj;
-    float4x4 mCameraProj;
-    float4 mCameraNearFar;
-    uint4 mFramebufferDimensions;
-};
+#include "../TileBasedCullingInclude.hlsl"
 
 struct PS_INPUT
 {
@@ -25,14 +15,14 @@ struct PS_INPUT
 float4 PS(PS_INPUT input) : SV_Target
 {
     uint2 coords;
-    coords.x = input.Tex.x * mFramebufferDimensions.x;
-    coords.y = input.Tex.y * mFramebufferDimensions.y;
+    coords.x = input.Tex.x * framebufferDimensions.x;
+    coords.y = input.Tex.y * framebufferDimensions.y;
     uint2 dispatchCoords = coords.xy / COMPUTE_SHADER_TILE_GROUP_DIM;
     uint2 groupCoords = coords.xy % COMPUTE_SHADER_TILE_GROUP_DIM;
     uint2 structuredCoords = dispatchCoords * COMPUTE_SHADER_TILE_GROUP_DIM + groupCoords;
     
     float3 sampleLit;
-    sampleLit = UnpackRGBA16(gLitTextureFlat[GetFramebufferSampleAddress(structuredCoords, mFramebufferDimensions.xy)]).xyz;
+    sampleLit = UnpackRGBA16(gLitTextureFlat[GetFramebufferSampleAddress(structuredCoords, framebufferDimensions.xy)]).xyz;
 
     return float4(sampleLit, 1);
 }

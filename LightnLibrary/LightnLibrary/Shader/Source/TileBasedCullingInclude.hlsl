@@ -1,3 +1,12 @@
+cbuffer PerFrameConstants : register(b0)
+{
+    float4x4 camerProjInverse;
+    float4x4 cameraRotate;
+    float4x4 cameraProj;
+    float2 cameraNearFar;
+    uint2 framebufferDimensions;
+};
+
 // - RGBA 16-bit per component packed into a uint2 per texel
 float4 UnpackRGBA16(uint2 e)
 {
