@@ -18,7 +18,7 @@ public:
 
 	StaticMesh(const LocalMesh& meshes);
 
-	void setUp(const std::string& assetId);
+	void setUp(ComPtr<ID3D11Device> device);
 
 	//ƒƒbƒVƒ…‚ğ•`‰æ
 	virtual void draw(const DrawSettings& drawSettings, const Matrix4& worldMatrix);

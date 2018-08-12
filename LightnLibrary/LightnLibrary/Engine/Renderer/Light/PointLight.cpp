@@ -3,7 +3,6 @@
 #include <Renderer/DrawSettings.h>
 #include <ThirdParty/ImGui/imgui.h>
 #include <Components/LightComponent.h>
-#include <Components/CameraComponent.h>
 
 PointLight::PointLight() {
 }
@@ -42,8 +41,8 @@ void PointLight::draw(const DrawSettings & settings, RefPtr<LightComponent>& lig
 	ImGui::End();
 
 
-	Matrix4 mtxProj = CameraComponent::mainCamera->mtxProj();
-	Matrix4 mtxView = CameraComponent::mainCamera->cameraMatrix();
+	Matrix4 mtxProj = settings.camera->mtxProj;
+	Matrix4 mtxView = settings.camera->mtxView;
 	PointLightType lightBuffer;
 
 	lightBuffer.position = Vector3(X, Y, Z);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <LMath.h>
+
 struct DrawSettings;
 
 class LightEntity {

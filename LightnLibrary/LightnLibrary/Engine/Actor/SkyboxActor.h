@@ -14,12 +14,8 @@ public:
 	virtual void setUpTask() override;
 	virtual void update(float deltaTime) override;
 
-	//スカイボックスメッシュをセットアップ
-	void setUpStaticMesh(const std::string& filePath, const std::vector<std::string>& matFiles);
-
 protected:
 
-	RefPtr<StaticMeshComponent> _staticMeshComponent;
 	RefPtr<SkyLightComponent> _skyLightComponent;
 
 };

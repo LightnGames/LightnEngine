@@ -105,7 +105,7 @@ void DebugGeomtryRenderer::draw(const DebugDrawList & sphere, const DebugDrawLis
 	assert(line.size() < MAX_INSTANCE_NUM);
 
 	auto deviceContext = drawSettings.deviceContext;
-	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(Matrix4::identity);
+	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(Matrix4::identity, drawSettings.camera);
 	deviceContext->UpdateSubresource(_constantBuffer.Get(), 0, NULL, &constantBuffer, 0, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, _constantBuffer.GetAddressOf());
 

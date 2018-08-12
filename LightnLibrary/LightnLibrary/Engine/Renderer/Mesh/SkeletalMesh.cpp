@@ -1,5 +1,4 @@
 #include "SkeletalMesh.h"
-#include <Components/CameraComponent.h>
 #include <Renderer/RendererSettings.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererUtil.h>
@@ -11,10 +10,9 @@ SkeletalMesh::SkeletalMesh(const LocalMesh& meshes, std::unique_ptr<Skeleton> sk
 
 void SkeletalMesh::draw(const DrawSettings& drawSettings, const Matrix4& worldMatrix) {
 
-	const RefPtr<CameraComponent>& camera = CameraComponent::mainCamera;
 	const ComPtr<ID3D11DeviceContext>& deviceContext = drawSettings.deviceContext;
 
-	SkeletalMeshConstantBuffer constantBuffer(RendererUtil::getConstantBuffer(worldMatrix));
+	SkeletalMeshConstantBuffer constantBuffer(RendererUtil::getConstantBuffer(worldMatrix, drawSettings.camera));
 
 
 	//ボーン行列をセット
@@ -40,8 +38,8 @@ void SkeletalMesh::draw(const DrawSettings& drawSettings, const Matrix4& worldMa
 
 void SkeletalMesh::drawDepth(const DrawSettings & drawSettings, const Matrix4 & worldMatrix)
 {
-	ComPtr<ID3D11DeviceContext> deviceContext = drawSettings.deviceContext;
-	SkeletalMeshConstantBuffer constantBuffer(RendererUtil::getConstantBuffer(worldMatrix));
+	auto deviceContext = drawSettings.deviceContext;
+	SkeletalMeshConstantBuffer constantBuffer(RendererUtil::getConstantBuffer(worldMatrix, drawSettings.camera));
 
 	//ボーン行列をセット
 	for (UINT k = 0; k < _avator->getSize(); ++k) {

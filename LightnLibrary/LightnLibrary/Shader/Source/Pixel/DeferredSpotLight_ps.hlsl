@@ -5,8 +5,8 @@ TextureCube cubeMap : register(t3);
 Texture2D depthTex : register(t4);
 SamplerState samLinear : register(s0);
 
-#include "PhysicallyBasedRendering.hlsl"
-#include "DeferredLight.hlsl"
+#include "../PhysicallyBasedRendering.hlsl"
+#include "../DeferredLight.hlsl"
 
 cbuffer SpotLightInput : register(b0){
 	float4 lightPosition;

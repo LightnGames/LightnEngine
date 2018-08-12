@@ -120,9 +120,6 @@
     <FxCompile Include="Shader\Source\Vertex\Geometry_SM_vs.hlsl">
       <Filter>リソース ファイル\Vertex</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\Source\Vertex\Skybox_vs.hlsl">
-      <Filter>リソース ファイル\Vertex</Filter>
-    </FxCompile>
     <FxCompile Include="Shader\Source\Vertex\GPU_Driven_Instance_SM_vs.hlsl">
       <Filter>リソース ファイル\Vertex</Filter>
     </FxCompile>
@@ -144,9 +141,6 @@
     <FxCompile Include="Shader\Source\Pixel\DeferredSpotLight_ps.hlsl">
       <Filter>リソース ファイル\Pixel</Filter>
     </FxCompile>
-    <FxCompile Include="Shader\Source\Pixel\Depth_ps.hlsl">
-      <Filter>リソース ファイル\Pixel</Filter>
-    </FxCompile>
     <FxCompile Include="Shader\Source\Pixel\ShaderPBR_ps.hlsl">
       <Filter>リソース ファイル\Pixel</Filter>
     </FxCompile>
@@ -161,6 +155,12 @@
     </FxCompile>
     <FxCompile Include="Shader\Source\Compute\ComputeDeferredTile.hlsl">
       <Filter>リソース ファイル\Compute</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\Gbuffer.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\Vertex\SkyBox_vs.hlsl">
+      <Filter>リソース ファイル\Vertex</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -328,6 +328,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Renderer\TileBasedLightCulling.cpp">
       <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\Mesh\SkyBox.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -540,6 +543,15 @@
     </ClInclude>
     <ClInclude Include="Shader\Source\ShaderDefines.h">
       <Filter>リソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\Light\LightTypes.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\Mesh\SkyBox.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\Camera.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,6 @@
 #include <Renderer/GameRenderer.h>
 #include <Scene/SceneManager.h>
 #include <Animation/AnimationManager.h>
-#include <Renderer/GraphicsResourceManager.h>
 #include <Util/Input.h>
 #include <Renderer/ImguiWindow.h>
 
@@ -20,10 +19,8 @@ void GameEngine::initialize(const HINSTANCE & hInst) {
 	_gameRenderer = std::make_unique<GameRenderer>();
 	_sceneManager = std::make_unique<SceneManager>();
 	_animationManager = std::make_unique<AnimationManager>();
-	_graphicsResourceManager = std::make_unique<GraphicsResourceManager>();
 
 	_gameRenderer->createGameWindow(hInst, WndProc);
-	_graphicsResourceManager->initialize(_gameRenderer->device());
 
 	_sceneManager->initialize();
 }

@@ -15,6 +15,8 @@ class Deferredbuffers;
 class OrthoScreen;
 class DebugGeomtryRenderer;
 class StaticInstancedMeshRenderer;
+class TileBasedLightCulling;
+class GraphicsResourceManager;
 
 class GameRenderer :public Singleton<GameRenderer>{
 
@@ -46,6 +48,8 @@ public:
 	const ComPtr<ID3D11Device>& device() const;
 	const ComPtr<ID3D11DeviceContext>& deviceContext() const;
 
+	void setOrthoScreenVertex();
+
 private:
 
 	//メインレンダーターゲットを削除
@@ -70,4 +74,6 @@ private:
 	std::unique_ptr<OrthoScreen> _orthoScreen;
 	std::unique_ptr<DebugGeomtryRenderer> _debugGeometryRenderer;
 	std::unique_ptr<StaticInstancedMeshRenderer> _staticInstancedMeshRenderer;
+	std::unique_ptr<TileBasedLightCulling> _tileCulling;
+	std::unique_ptr<GraphicsResourceManager> _graphicsResourceManager;
 };

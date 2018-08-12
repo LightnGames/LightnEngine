@@ -7,6 +7,7 @@ SamplerState samLinear : register(s0);
 
 #include "../PhysicallyBasedRendering.hlsl"
 #include "../DeferredLight.hlsl"
+#include "../Gbuffer.hlsl"
 
 cbuffer PointLightInput : register(b0){
 	float4 lightPosition;
@@ -25,15 +26,16 @@ struct PS_INPUT
 float4 PS ( PS_INPUT input ) : SV_Target
 {
     float4 baseColor;
-    float4 normal;
+    float3 normal;
 	float roughness;
 	float metallic;
 
     baseColor = RT0.Sample(samLinear, input.Tex);
-    normal = RT1.Sample(samLinear, input.Tex);
+    normal = RT1.Sample(samLinear, input.Tex).xyz;
 	float4 RT2Value = RT2.Sample(samLinear, input.Tex);
 	roughness = RT2Value.r;
 	metallic = RT2Value.g;
+    normal = DecodeNormal(normal);
 
 	//メタリックの値からテクスチャカラー
     float3 diffuseColor = lerp(baseColor.xyz, float3(0.04, 0.04, 0.04), metallic);

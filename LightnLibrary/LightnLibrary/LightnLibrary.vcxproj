@@ -182,6 +182,9 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CS</EntryPointName>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Gbuffer.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shader\Source\Pixel\DebugGeometry_ps.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
@@ -335,26 +338,6 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
     </FxCompile>
-    <FxCompile Include="Shader\Source\Pixel\Depth_ps.hlsl">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PS</EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)LightnLibrary\Shader\%(Filename)</ObjectFileOutput>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)LightnLibrary\Shader\Source\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)LightnLibrary\Shader\%(Filename)</ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\%(Filename).cso</ObjectFileOutput>
-      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)LightnLibrary\Shader\%(Filename).cso</ObjectFileOutput>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)LightnLibrary\Shader\Source\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)LightnLibrary\Shader\Source\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">PS</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
-    </FxCompile>
     <FxCompile Include="Shader\Source\Vertex\Geometry_SK_vs.hlsl">
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)LightnLibrary\Shader\%(Filename)</ObjectFileOutput>
@@ -483,7 +466,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\Source;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)LightnLibrary\Shader\Source\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </FxCompile>
-    <FxCompile Include="Shader\Source\Vertex\Skybox_vs.hlsl">
+    <FxCompile Include="Shader\Source\Vertex\SkyBox_vs.hlsl">
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)LightnLibrary\Shader\%(Filename)</ObjectFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)LightnLibrary\Shader\%(Filename)</ObjectFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VS</EntryPointName>
@@ -566,6 +549,7 @@
     <ClCompile Include="Engine\Renderer\Light\SpotLight.cpp" />
     <ClCompile Include="Engine\Renderer\Mesh\DebugGeometry.cpp" />
     <ClCompile Include="Engine\Renderer\Mesh\SkeletalMesh.cpp" />
+    <ClCompile Include="Engine\Renderer\Mesh\SkyBox.cpp" />
     <ClCompile Include="Engine\Renderer\Mesh\StaticInstanceMesh.cpp" />
     <ClCompile Include="Engine\Renderer\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Engine\Renderer\OrthoScreen.cpp" />
@@ -613,6 +597,7 @@
     <ClInclude Include="Engine\GameEngine.h" />
     <ClInclude Include="Engine\Loader\BinaryLoader.h" />
     <ClInclude Include="Engine\Loader\MeshLoader.h" />
+    <ClInclude Include="Engine\Renderer\Camera.h" />
     <ClInclude Include="Engine\Renderer\Deferredbuffers.h" />
     <ClInclude Include="Engine\Renderer\DrawSettings.h" />
     <ClInclude Include="Engine\Renderer\GameRenderer.h" />
@@ -621,6 +606,7 @@
     <ClInclude Include="Engine\Renderer\LightEntity.h" />
     <ClInclude Include="Engine\Renderer\Light\DirectionalLight.h" />
     <ClInclude Include="Engine\Renderer\Light\Light.h" />
+    <ClInclude Include="Engine\Renderer\Light\LightTypes.h" />
     <ClInclude Include="Engine\Renderer\Light\PointLight.h" />
     <ClInclude Include="Engine\Renderer\Light\SkyLight.h" />
     <ClInclude Include="Engine\Renderer\Light\SpotLight.h" />
@@ -628,6 +614,7 @@
     <ClInclude Include="Engine\Renderer\Mesh\Mesh.h" />
     <ClInclude Include="Engine\Renderer\Mesh\SkeletalMesh.h" />
     <ClInclude Include="Engine\Renderer\Mesh\Skeleton.h" />
+    <ClInclude Include="Engine\Renderer\Mesh\SkyBox.h" />
     <ClInclude Include="Engine\Renderer\Mesh\StaticInstanceMesh.h" />
     <ClInclude Include="Engine\Renderer\Mesh\StaticMesh.h" />
     <ClInclude Include="Engine\Renderer\OrthoScreen.h" />

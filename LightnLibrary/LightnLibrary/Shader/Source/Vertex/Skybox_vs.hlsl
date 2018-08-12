@@ -19,7 +19,6 @@ struct VS_INPUT
     float3 Binormal : BINORMAL;
 };
 
-//ピクセルシェーダーのPosはfloat4ダヨ!!!!!!!!!!
 struct PS_INPUT
 {
     float4 PosH : SV_POSITION;

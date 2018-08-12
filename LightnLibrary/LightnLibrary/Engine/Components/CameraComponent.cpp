@@ -12,7 +12,7 @@ CameraComponent::~CameraComponent() {
 }
 
 void CameraComponent::setProjection(float fov, float aspect, float minZ, float maxZ){
-	_mtxProj = Matrix4::perspectiveFovLH(fov, aspect, minZ, maxZ);
+	_camera.mtxProj = Matrix4::perspectiveFovLH(fov, aspect, minZ, maxZ);
 	setNearClip(minZ);
 	setFarClip(maxZ);
 }
@@ -28,7 +28,7 @@ Matrix4 CameraComponent::cameraMatrix() const{
 }
 
 Matrix4 CameraComponent::mtxProj() const{
-	return _mtxProj;
+	return _camera.mtxProj;
 }
 
 void CameraComponent::setFov(float fov)
@@ -39,29 +39,33 @@ void CameraComponent::setFov(float fov)
 	float fovT = radianFromDegree(fov);
 	float aspect = screenSize.x / screenSize.y;
 	float minZ = 0.1f;
-	float maxZ = 5000.0f;
+	float maxZ = 1000.0f;
 	setProjection(fovT, aspect, minZ, maxZ);
 
-	_fov = fov;
+	_camera.fov = fov;
 }
 
 void CameraComponent::setNearClip(float value) {
-	_near = value;
+	_camera.nearClip = value;
 }
 
 void CameraComponent::setFarClip(float value) {
-	_far = value;
+	_camera.farClip = value;
 }
 
 float CameraComponent::nearClip() const {
-	return _near;
+	return _camera.nearClip;
 }
 
 float CameraComponent::farClip() const {
-	return _far;
+	return _camera.farClip;
 }
 
 float CameraComponent::fov() const
 {
-	return _fov;
+	return _camera.fov;
+}
+
+RefPtr<Camera> CameraComponent::camera() {
+	return &_camera;
 }

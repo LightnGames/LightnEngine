@@ -4,14 +4,13 @@
 #include <Renderer/RendererSettings.h>
 #include <ThirdParty/ImGui/imgui.h>
 
-void SkyLight::initialize(ComPtr<ID3D11Device>& device)
-{
+void SkyLight::initialize(ComPtr<ID3D11Device>& device) {
 	RendererUtil::createConstantBuffer(_lightBuffer, sizeof(SkyLightType), device);
 	initializeLight(device, "DeferredLight_vs.cso", "DeferredSkyLight_ps.cso");
 }
 
-void SkyLight::draw(const DrawSettings & settings, RefPtr<LightComponent>& lightComponent)
-{
+void SkyLight::draw(const DrawSettings & settings, RefPtr<LightComponent>& lightComponent) {
+
 	auto deviceContext = settings.deviceContext;
 
 	ImGui::Begin("SkyLight");
@@ -28,7 +27,7 @@ void SkyLight::draw(const DrawSettings & settings, RefPtr<LightComponent>& light
 	lightBuffer.color = lightColor;
 	lightBuffer.intensity = Vector4(diffuseIntensity, roughnessIntensity, 0, 0);
 
-	deviceContext->UpdateSubresource(_lightBuffer.Get(), 0, NULL, &lightBuffer, 0, 0);
+	deviceContext->UpdateSubresource(_lightBuffer.Get(), 0, 0, &lightBuffer, 0, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, _lightBuffer.GetAddressOf());
 
 

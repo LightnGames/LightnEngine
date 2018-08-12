@@ -5,6 +5,7 @@
 #include <Components/Component.h>
 
 class Light;
+struct ShadowResource;
 class LightComponent :public Component {
 
 public:
@@ -16,11 +17,23 @@ public:
 
 	void setIntensity(float intensity);
 
+	void setShadowSize(uint32 size);
+
 	float getIntensity() const;
+
+	uint32 getShadowSize() const;
+
+	bool isEnableShadow() const;
+
+	void enableShadow(bool enable);
+
+	RefPtr<ShadowResource> getShadowResource();
 
 protected:
 
 	RefPtr<Light> _light;
+	std::unique_ptr<ShadowResource> _shadow;
+	uint32 _shadowSize;
 
 private:
 

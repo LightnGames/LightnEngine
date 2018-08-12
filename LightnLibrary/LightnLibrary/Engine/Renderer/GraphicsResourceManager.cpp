@@ -123,12 +123,14 @@ RefPtr<RenderableObject> GraphicsResourceManager::loadRenderableObject(const std
 	
 	if (meshLoader.getType() == MeshType::Static) {
 
-		result = std::make_unique<StaticMesh>(mesh);
+		StaticMesh* ptr = new StaticMesh(std::move(mesh));
+		ptr->setUp(gameRenderer.device());
+		result = std::unique_ptr<StaticMesh>(ptr);
 
 	} else if (meshLoader.getType() == MeshType::Skeletal) {
 
 		auto skeleton = meshLoader.loadSkeleton();
-		result = std::make_unique<SkeletalMesh>(mesh, std::move(skeleton));
+		result = std::make_unique<SkeletalMesh>(std::move(mesh), std::move(skeleton));
 	}
 
 	RefPtr<RenderableObject> resultPtr = result.get();

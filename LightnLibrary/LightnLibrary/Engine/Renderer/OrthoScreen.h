@@ -20,6 +20,12 @@ public:
 	//レンダーターゲットをバックバッファに切り替え
 	void setBackBuffer();
 
+	//バックバッファとステンシルビューをセット
+	void setBackBufferAndDSV(ComPtr<ID3D11DepthStencilView> dsv);
+
+	//ライティング用ステンシルステートをセット
+	void setStencilStateLight();
+
 	//メインレンダーターゲットをクリア
 	void clearMainRenderTarget(const float color[4]);
 
@@ -40,6 +46,7 @@ private:
 	ComPtr<ID3D11Device> _device;
 	ComPtr<ID3D11DeviceContext> _deviceContext;
 
+	ComPtr<ID3D11DepthStencilState> _stencilState;
 	ComPtr<ID3D11Buffer> _screenVertexBuffer;
 	ComPtr<ID3D11BlendState> _blendState;
 	ComPtr<ID3D11RenderTargetView> _renderTargetView;

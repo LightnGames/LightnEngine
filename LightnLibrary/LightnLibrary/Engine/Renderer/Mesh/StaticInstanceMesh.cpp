@@ -67,16 +67,7 @@ void StaticInstanceMesh::setUp(
 		initData.pSysMem = boundingBoxes.data();
 
 		HRESULT hr = device->CreateBuffer(&cb, &initData, _boundingBoxListBuffer.ReleaseAndGetAddressOf());
-
-		//バウンディングボックスリストシェーダーリソースビュー
-		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-		ZeroMemory(&SRVDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-		SRVDesc.BufferEx.FirstElement = 0;
-		SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
-		SRVDesc.BufferEx.NumElements = _paddingedCount;
-
-		hr = device->CreateShaderResourceView(_boundingBoxListBuffer.Get(), &SRVDesc, _boundingBoxListSRV.ReleaseAndGetAddressOf());
+		hr = device->CreateShaderResourceView(_boundingBoxListBuffer.Get(), nullptr, _boundingBoxListSRV.ReleaseAndGetAddressOf());
 
 		const uint32 m[4] = { _matrixBufferOffset,0,0,0 };
 		RendererUtil::createConstantBuffer(_meshDrawOffsetConstantBuffer, sizeof(uint32) * 4, device, m); 
@@ -87,7 +78,7 @@ void StaticInstanceMesh::draw(const DrawSettings& drawSettings, RefPtr<StaticIns
 {
 	auto deviceContext = drawSettings.deviceContext;
 
-	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(Matrix4::identity);
+	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(Matrix4::identity, drawSettings.camera);
 
 	//頂点バッファをセット
 	const UINT stride = sizeof(MeshVertex);
@@ -172,7 +163,7 @@ void StaticInstanceMesh::drawDepth(const DrawSettings& drawSettings, RefPtr<Stat
 
 	//描画
 	{
-		MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(Matrix4::identity);
+		MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(Matrix4::identity, drawSettings.camera);
 
 		//頂点バッファをセット
 		const UINT stride = sizeof(MeshVertex);

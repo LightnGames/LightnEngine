@@ -7,6 +7,8 @@
 DirectionalLightComponent::DirectionalLightComponent() {
 	SceneRendererManager::instance().addLightEntity(this);
 	_light = GraphicsResourceManager::instance().getDirectionalLight().cast<Light>();
+	setShadowSize(2048);
+	enableShadow(true);
 }
 
 

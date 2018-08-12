@@ -11,8 +11,8 @@ float3 ReconstructWorldPositionFromDepth(Texture2D depthTex, SamplerState samLin
 {
 	float depth = depthTex.Sample(samLinear, textureCoord).r;
 	float4 projectedPosition = float4(textureCoord.xy * 2 - float2(1, 1), depth, 1.0);
+    projectedPosition.y *= -1;
 
 	float4 position = mul(projectedPosition, inverseViewProjection);
-	position.y*=-1;
 	return position.xyz / position.w;
 }

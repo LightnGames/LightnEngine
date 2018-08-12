@@ -60,6 +60,33 @@ HRESULT OrthoScreen::initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Devic
 	//シェーダーリソースビューの生成
 	hr = device->CreateShaderResourceView(pBack.Get(), NULL, _shaderResourceView.ReleaseAndGetAddressOf());
 
+	D3D11_DEPTH_STENCIL_DESC dsDesc;
+
+	// Depth test parameters
+	dsDesc.DepthEnable = false;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+
+	// Stencil test parameters
+	dsDesc.StencilEnable = true;
+	dsDesc.StencilReadMask = 0xFF;
+	dsDesc.StencilWriteMask = 0xFF;
+
+	// Stencil operations if pixel is front-facing
+	dsDesc.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.FrontFace.StencilFunc = D3D11_COMPARISON_NOT_EQUAL;
+
+	// Stencil operations if pixel is back-facing
+	dsDesc.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsDesc.BackFace.StencilFunc = D3D11_COMPARISON_NOT_EQUAL;
+
+	// Create depth stencil state
+	hr = device->CreateDepthStencilState(&dsDesc, _stencilState.ReleaseAndGetAddressOf());
+
 	//ウィンドウ用の頂点バッファを生成
 	const float screenBuffer[20] = {
 		-1,-1, 0, 0, 1,
@@ -76,11 +103,22 @@ HRESULT OrthoScreen::initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Devic
 
 void OrthoScreen::setBackBuffer() {
 	
-	_deviceContext->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), NULL);
+	_deviceContext->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), 0);
 	
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	_deviceContext->OMSetBlendState(_blendState.Get(), blendFactor, 0xffffffff);
-	_deviceContext->OMSetDepthStencilState(NULL, 0);
+	_deviceContext->OMSetDepthStencilState(nullptr, 0);
+}
+
+void OrthoScreen::setBackBufferAndDSV(ComPtr<ID3D11DepthStencilView> dsv) {
+	_deviceContext->OMSetRenderTargets(1, _renderTargetView.GetAddressOf(), dsv.Get());
+
+	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	_deviceContext->OMSetBlendState(_blendState.Get(), blendFactor, 0xffffffff);
+}
+
+void OrthoScreen::setStencilStateLight() {
+	_deviceContext->OMSetDepthStencilState(_stencilState.Get(), 1);
 }
 
 void OrthoScreen::clearMainRenderTarget(const float color[4]) {

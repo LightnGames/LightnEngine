@@ -5,6 +5,8 @@
 #include <LMath.h>
 #include "Mesh/Mesh.h"
 #include <Util/Type.h>
+#include <Util/RefPtr.h>
+#include "Camera.h"
 
 class BinaryLoader;
 
@@ -27,7 +29,7 @@ public:
 	static HRESULT createIndexBuffer(const void * indices, uint32 indexCount, ComPtr<ID3D11Buffer>& indexBuffer, ComPtr<ID3D11Device>& pDevice);
 
 	//頂点バッファ用定数バッファを取得
-	static MeshConstantBuffer getConstantBuffer(const Matrix4& mtxWorld);
+	static MeshConstantBuffer getConstantBuffer(const Matrix4 & mtxWorld, RefPtr<Camera> camera);
 
 	//シェーダーパスを取得
 	static BinaryLoader getShaderPath(const std::string& shaderName);

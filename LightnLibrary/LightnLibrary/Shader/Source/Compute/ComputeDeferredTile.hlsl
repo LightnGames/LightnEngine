@@ -1,16 +1,9 @@
-struct GBuffer
-{
-    float4 albedo;
-    float4 normal;
-    float4 roughnessMetallic;
-};
-
 struct SurfaceData
 {
-    float3 positionView; // View space position
-    float3 normal; // View space normal
+    float3 positionView;
+    float3 normal;
     float4 albedo;
-    float roughness; // Treated as a multiplier on albedo
+    float roughness;
     float metallic;
 };
 
@@ -22,9 +15,19 @@ struct PointLight
     float attenuationEnd;
 };
 
+struct SpotLight
+{
+    float3 positionView;
+    float attenuationBegin;
+    float3 color;
+    float attenuationEnd;
+    float4 direction;
+};
+
 Texture2DMS<float4> gBufferTextures[4] : register(t0);
 StructuredBuffer<PointLight> pointLights : register(t4);
-TextureCube cubeMap : register(t5);
+StructuredBuffer<SpotLight> spotLights : register(t5);
+TextureCube cubeMap : register(t6);
 RWStructuredBuffer<uint2> framebuffer : register(u0);
 SamplerState samLinear : register(s0);
 
@@ -32,13 +35,16 @@ SamplerState samLinear : register(s0);
 #include "../TileBasedCullingInclude.hlsl"
 #include "../PhysicallyBasedRendering.hlsl"
 #include "../DeferredLight.hlsl"
+#include "../Gbuffer.hlsl"
 
 groupshared uint sMinZ;
 groupshared uint sMaxZ;
 
 // Light list for the tile
-groupshared uint sTileLightIndices[MAX_LIGHTS];
-groupshared uint sTileNumLights;
+groupshared uint sTilePointLightIndices[MAX_LIGHTS];
+groupshared uint sTileSpotLightIndices[MAX_LIGHTS];
+groupshared uint sTileNumPointLights;
+groupshared uint sTileNumSpotLights;
 
 // List of pixels that require per-sample shading
 // We encode two 16-bit x/y coordinates in one uint to save shared memory space
@@ -48,7 +54,6 @@ groupshared uint sNumPerSamplePixels;
 
 SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
 {
-    GBuffer rawData;
     float zBuffer = gBufferTextures[0].Load(positionViewport.xy, 0).x;
     //rawData.albedo = gBufferTextures[1].SampleLevel(samLinear, positionViewport.xy, 0).xyzw;
     //rawData.normal_specular = gBufferTextures[2].SampleLevel(samLinear, positionViewport.xy,0).xyzw;
@@ -77,6 +82,11 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     data.roughness = roughnessMetallic.r;
     data.metallic = roughnessMetallic.g;
 
+    data.albedo = pow(data.albedo, 1 / 2.2f);
+    //data.roughness = pow(data.roughness, 1 / 2.2f);
+
+    data.normal = DecodeNormal(data.normal);
+
     return data;
 }
 
@@ -100,8 +110,9 @@ void CS(uint3 groupId : SV_GroupID,
 
     uint groupIndex = groupThreadId.y * COMPUTE_SHADER_TILE_GROUP_DIM + groupThreadId.x;
 
-    uint totalPointLights, dummy;
+    uint totalPointLights, totalSpotLights, dummy;
     pointLights.GetDimensions(totalPointLights, dummy);
+    spotLights.GetDimensions(totalSpotLights, dummy);
 
     uint2 globalCoords = dispatchThreadId.xy;
 
@@ -130,7 +141,8 @@ void CS(uint3 groupId : SV_GroupID,
 	//スレッドグループ共有メモリを初期化
     if (groupIndex == 0)
     {
-        sTileNumLights = 0;
+        sTileNumPointLights = 0;
+        sTileNumSpotLights = 0;
         sNumPerSamplePixels = 0;
         sMinZ = 0x7F7FFFFF; // Max float
         sMaxZ = 0;
@@ -185,9 +197,8 @@ void CS(uint3 groupId : SV_GroupID,
         frustumPlanes[i] *= rcp(length(frustumPlanes[i].xyz));
     }
 
-    //6平面と交差しているライトを集める
-    uint totalLights = totalPointLights;
-    for (uint lightIndex = groupIndex; lightIndex < totalLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
+    //6平面と交差しているポイントライトを集める
+    for (uint lightIndex = groupIndex; lightIndex < totalPointLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
     {
         PointLight light = pointLights[lightIndex];
                 
@@ -206,45 +217,100 @@ void CS(uint3 groupId : SV_GroupID,
         if (inFrustum)
         {
             uint listIndex;
-            InterlockedAdd(sTileNumLights, 1, listIndex);
-            sTileLightIndices[listIndex] = lightIndex;
+            InterlockedAdd(sTileNumPointLights, 1, listIndex);
+            sTilePointLightIndices[listIndex] = lightIndex;
+        }
+    }
+
+    //6平面と交差しているスポットライトを集める
+    for (uint lightIndex = groupIndex; lightIndex < totalSpotLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
+    {
+        SpotLight light = spotLights[lightIndex];
+                
+        // Cull: point light sphere vs tile frustum
+        bool inFrustum = true;
+        [unroll]
+        for (uint i = 0; i < 6; ++i)
+        {
+            //平面との距離がポイントライトの半径以下なら衝突
+            float d = dot(frustumPlanes[i], float4(light.positionView, 1.0f));
+            inFrustum = inFrustum && (d + light.attenuationEnd > 0);
+        }
+
+        //衝突しているライトならリストに加える衝突ライトカウントもインクリメント
+        [branch]
+        if (inFrustum)
+        {
+            uint listIndex;
+            InterlockedAdd(sTileNumSpotLights, 1, listIndex);
+            sTileSpotLightIndices[listIndex] = lightIndex;
         }
     }
 
     //すべてのスレッドのライトカリングを待機
     GroupMemoryBarrierWithGroupSync();
 
-    uint numLights = sTileNumLights;
+    uint numPointLights = sTileNumPointLights;
+    uint numSpotLights = sTileNumSpotLights;
     float4 lit = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     //タイルが解像度によってははみ出るのでチェック
     if (all(globalCoords < framebufferDimensions.xy))
     {
 
-        //lit += float4(numLights/2.0f,0, 0, 1.0f);
-        if (numLights > 0)
+        float roughness = surfaceSample.roughness;
+        float metallic = surfaceSample.metallic;
+        float3 albedo = surfaceSample.albedo.xyz;
+        float3 normal = surfaceSample.normal;
+        float3 diffuseColor = lerp(albedo, float3(0.04, 0.04, 0.04), metallic);
+        float3 specularColor = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
+
+        float3 viewPosition = position;
+        viewPosition.y *= -1;
+
+        float3 eyeDirection;
+        eyeDirection.xy = (viewPosition.xy * 2.0f) - 1.0f;
+        eyeDirection.z = viewPosition.z;
+        eyeDirection = normalize(eyeDirection);
+        eyeDirection = mul(float4(eyeDirection, 1), cameraRotate);
+
+        //lit += float4(numSpotLights, 0, 0, 1.0f);
+
+        //ポイントライト
+        if (numPointLights > 0)
         {
-            for (uint tileLightIndex = 0; tileLightIndex < numLights; ++tileLightIndex)
+            for (uint tileLightIndex = 0; tileLightIndex < numPointLights; ++tileLightIndex)
             {
-                PointLight light = pointLights[sTileLightIndices[tileLightIndex]];
-                float attenuationEnd = light.attenuationEnd;
+                PointLight light = pointLights[sTilePointLightIndices[tileLightIndex]];
+                float lightDistance = length(light.positionView - viewPosition);
+                float3 L = normalize(light.positionView - viewPosition);
 
-            //メタリックの値からテクスチャカラー
-                float roughness = surfaceSample.roughness;
-                float metallic = surfaceSample.metallic;
-                float3 albedo = surfaceSample.albedo.xyz;
-                float3 normal = surfaceSample.normal;
-                float3 diffuseColor = lerp(albedo, float3(0.04, 0.04, 0.04), metallic);
-                float3 specularColor = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
+                L = mul(float4(L, 1), cameraRotate);
+                L = normalize(L);
 
-                float3 viewPosition = position;
-                viewPosition.y *= -1;
+                float dotNL = saturate(dot(normal, L));
 
-                float3 eyeDirection;
-                eyeDirection.xy = (viewPosition.xy * 2.0f) - 1.0f;
-                eyeDirection.z = viewPosition.z;
-                eyeDirection = normalize(eyeDirection);
-                eyeDirection = mul(float4(eyeDirection, 1), cameraRotate);
+	        //減衰係数
+                float attenuation = PhysicalAttenuation(0.4f, 0.01f, 0.01f, lightDistance);
+                float d = saturate(light.attenuationEnd - lightDistance);
+
+	        //輝度
+                float3 irradistance = dotNL * light.color * attenuation*d;
+
+	        //ライティング済みカラー＆スペキュラ
+                float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
+                float3 directSpecular = irradistance * SpecularBRDF(normal, -eyeDirection, L, specularColor, roughness);
+
+                lit += float4(directDiffuse + directSpecular, 1);
+            }
+        }
+
+        //スポットライト
+        if (numSpotLights > 0)
+        {
+            for (uint tileLightIndex = 0; tileLightIndex < numSpotLights; ++tileLightIndex)
+            {
+                SpotLight light = spotLights[sTileSpotLightIndices[tileLightIndex]];
 
                 float lightDistance = length(light.positionView - viewPosition);
                 float3 L = normalize(light.positionView - viewPosition);
@@ -255,11 +321,15 @@ void CS(uint3 groupId : SV_GroupID,
                 float dotNL = saturate(dot(normal, L));
 
 	        //減衰係数
-                float attenuation = PhysicalAttenuation(1, 2.0f, 0.01f, lightDistance);
-                float d = saturate(attenuationEnd - lightDistance);
+                float attenuation = PhysicalAttenuation(0.4f, 0.01f, 0.01f, lightDistance);
+                float d = saturate(light.attenuationEnd - lightDistance);
+
+                float spotDot = dot(-L, light.direction.xyz);
+                float spotValue = smoothstep(0.5f, 0.6f, spotDot);
+                attenuation *= pow(max(spotValue, 0.0), 1);
 
 	        //輝度
-                float3 irradistance = dotNL * light.color * attenuation*d;
+                float3 irradistance = dotNL * light.color * attenuation * d;
 
 	        //ライティング済みカラー＆スペキュラ
                 float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);

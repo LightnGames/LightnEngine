@@ -26,6 +26,5 @@ private:
 	std::unique_ptr<GameRenderer> _gameRenderer;
 	std::unique_ptr<SceneManager> _sceneManager;
 	std::unique_ptr<AnimationManager> _animationManager;
-	std::unique_ptr<GraphicsResourceManager> _graphicsResourceManager;
 
 };

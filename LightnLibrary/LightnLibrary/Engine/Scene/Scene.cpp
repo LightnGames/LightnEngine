@@ -28,15 +28,14 @@ Scene::Scene() {
 
 	sky = makeChild<SkyboxActor>();
 	sk = makeChild<SkeletalMeshActor>();
-	//dirLight = makeChild<DirectionalLightActor>();
-	//pointLight = makeChild<PointLightActor>();
-	//spotLight = makeChild<SpotLightActor>();
+	dirLight = makeChild<DirectionalLightActor>();
+	pointLight = makeChild<PointLightActor>();
+	pointLight->setActorPosition({ 0,3,1 });
+	spotLight = makeChild<SpotLightActor>();
+	spotLight->setActorRotation(Quaternion::euler({ 0,90,0 }));
+	spotLight->setActorPosition({ 1,1,-2 });
 
 	//マテリアルデータ
-	std::vector<std::string> skyMatFiles;
-	skyMatFiles.push_back("SkyBoxMaterial.mat");
-	sky->setUpStaticMesh("SkyBox.mesh", skyMatFiles);
-
 	std::vector<std::string> lp287mat;
 	lp287mat.push_back("M_LP287_Hair.mat");
 	lp287mat.push_back("M_LP287_LegBelt.mat");

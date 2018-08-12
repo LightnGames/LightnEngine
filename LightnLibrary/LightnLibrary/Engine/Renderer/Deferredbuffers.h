@@ -34,6 +34,8 @@ public:
 
 	ComPtr<ID3D11ShaderResourceView> getDepthStencilResource() const;
 
+	ComPtr<ID3D11DepthStencilView> getDepthStencilView();
+
 	Vector2 getGBufferSize() const;
 
 private:
@@ -41,7 +43,7 @@ private:
 	//個々のレンダーターゲットをフォーマットとインデックスで生成
 	HRESULT createRenderTarget(uint16 index, DXGI_FORMAT format, ComPtr<ID3D11Device>& device);
 
-public:
+private:
 
 	uint16 _width;
 	uint16 _height;
@@ -50,10 +52,9 @@ public:
 	ComPtr<ID3D11RenderTargetView> _renderTargetViewArray[BUFFER_COUNT];
 	ComPtr<ID3D11ShaderResourceView> _shaderResourceViewArray[BUFFER_COUNT];
 	ComPtr<ID3D11Texture2D> _depthStencilBuffer;
-	ComPtr<ID3D11ShaderResourceView> _depthStencilResource;
+	ComPtr<ID3D11ShaderResourceView> _depthStencilSRV;
 	ComPtr<ID3D11DepthStencilView> _depthStencilView;
 	ComPtr<ID3D11DepthStencilState> _depthStencilState;
-	ComPtr<ID3D11PixelShader> _depthShader;
 	D3D11_VIEWPORT _viewport;
 
 };

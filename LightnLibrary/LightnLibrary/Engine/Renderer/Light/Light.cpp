@@ -2,10 +2,10 @@
 #include <Renderer/RendererUtil.h>
 #include <Renderer/Mesh/Mesh.h>
 #include <Renderer/GraphicsResourceManager.h>
+#include <Renderer/GameRenderer.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererSettings.h>
 #include <Components/LightComponent.h>
-#include <Components/CameraComponent.h>
 
 Light::Light() {
 }
@@ -47,21 +47,9 @@ void Light::draw(const DrawSettings & settings, RefPtr<LightComponent>& lightCom
 	auto deviceContext = settings.deviceContext;
 	auto deferredBuffers = settings.deferredBuffers.get();
 
-	MeshConstantBuffer constantBuffer;
+	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(lightComponent->getWorldMatrix(), settings.camera);
 
-	auto& camera = CameraComponent::mainCamera;
-
-	//射影変換行列をセット
-	constantBuffer.mtxProj = Matrix4::transpose(Matrix4::multiply(camera->mtxProj(),camera->cameraMatrix()));
-
-	//カメラビュー行列をセット
-	constantBuffer.mtxView = Matrix4::transpose(camera->cameraMatrix().inverse());
-
-	//world行列をセット
-	constantBuffer.mtxWorld = Matrix4::transpose(lightComponent->getWorldMatrix());
-
-	//カメラ座標をセット
-	constantBuffer.cameraPos = Vector4(camera->getWorldPosition());
+	auto& camera = settings.camera;
 
 	//使用シェーダーをセット
 	deviceContext->VSSetShader(_vertexShader.Get(), 0, 0);
@@ -93,4 +81,79 @@ void Light::draw(const DrawSettings & settings, RefPtr<LightComponent>& lightCom
 
 	//描画
 	deviceContext->Draw(4, 0);
+}
+
+ShadowResource Light::createShadow(uint32 size) {
+	ShadowResource shadow(size);
+	shadow.initialize(GameRenderer::instance().device());
+	return std::move(shadow);
+}
+
+HRESULT ShadowResource::initialize(ComPtr<ID3D11Device> device) {
+	HRESULT hr;
+	D3D11_TEXTURE2D_DESC depthDesc;
+	D3D11_DEPTH_STENCIL_VIEW_DESC stencilDesc;
+
+	//デプステクスチャの生成
+	ZeroMemory(&depthDesc, sizeof(depthDesc));
+	depthDesc.Width = shadowMapWidth;
+	depthDesc.Height = shadowMapHeight;
+	depthDesc.MipLevels = 1;
+	depthDesc.ArraySize = 1;
+	depthDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	depthDesc.SampleDesc.Count = 1;
+	depthDesc.SampleDesc.Quality = 0;
+	depthDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+	depthDesc.CPUAccessFlags = 0;
+	depthDesc.MiscFlags = 0;
+
+	hr = device->CreateTexture2D(&depthDesc, NULL, _depthStencilBuffer.ReleaseAndGetAddressOf());
+
+	//デプスステンシルビューの生成
+	ZeroMemory(&stencilDesc, sizeof(stencilDesc));
+	stencilDesc.Flags = 0;
+	stencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	stencilDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	stencilDesc.Texture2D.MipSlice = 0;
+
+	hr = device->CreateDepthStencilView(_depthStencilBuffer.Get(), &stencilDesc, _depthStencilView.ReleaseAndGetAddressOf());
+
+	//シェーダーリソースビューの生成
+	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
+	ZeroMemory(&shaderDesc, sizeof(shaderDesc));
+	shaderDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	shaderDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	shaderDesc.Texture2D.MostDetailedMip = 0;
+	shaderDesc.Texture2D.MipLevels = 1;
+
+	hr = device->CreateShaderResourceView(_depthStencilBuffer.Get(), &shaderDesc, _depthStencilSRV.ReleaseAndGetAddressOf());
+
+	shadowVp.Width = static_cast<float>(shadowMapWidth);
+	shadowVp.Height = static_cast<float>(shadowMapHeight);
+	shadowVp.MinDepth = 0.0f;
+	shadowVp.MaxDepth = 1.0f;
+	shadowVp.TopLeftX = 0.0f;
+	shadowVp.TopLeftY = 0.0f;
+
+	D3D11_SAMPLER_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+	desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+	desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+	desc.BorderColor[0] = 1.0f;
+	desc.BorderColor[1] = 1.0f;
+	desc.BorderColor[2] = 1.0f;
+	desc.BorderColor[3] = 1.0f;
+	desc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+	desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR;
+	desc.MaxAnisotropy = 1;
+	desc.MipLODBias = 0;
+	desc.MinLOD = -FLT_MAX;
+	desc.MaxLOD = +FLT_MAX;
+
+	// サンプラーステートを生成.
+	hr = device->CreateSamplerState(&desc, _shadowSampler.ReleaseAndGetAddressOf());
+
+	return S_OK;
 }

@@ -38,16 +38,7 @@ HRESULT StaticInstancedMeshRenderer::initialize(ComPtr<ID3D11Device> device, uin
 	UAVDescM.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 
 	hr = device->CreateUnorderedAccessView(_data->instanceMatrixBuffer.Get(), &UAVDescM, _data->instanceMatrixUAV.ReleaseAndGetAddressOf());
-
-	//インスタンスMatrixシェーダーリソースビュー
-	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDescM;
-	ZeroMemory(&SRVDescM, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-	SRVDescM.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
-	SRVDescM.BufferEx.FirstElement = 0;
-	SRVDescM.Format = DXGI_FORMAT_UNKNOWN;
-	SRVDescM.BufferEx.NumElements = maxDrawCount;
-
-	hr = device->CreateShaderResourceView(_data->instanceMatrixBuffer.Get(), &SRVDescM, _data->instanceMatrixSRV.ReleaseAndGetAddressOf());
+	hr = device->CreateShaderResourceView(_data->instanceMatrixBuffer.Get(), nullptr, _data->instanceMatrixSRV.ReleaseAndGetAddressOf());
 	
 	_meshTypeCount = indexList.size();
 

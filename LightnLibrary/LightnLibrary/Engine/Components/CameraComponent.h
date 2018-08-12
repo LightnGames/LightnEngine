@@ -3,6 +3,7 @@
 #include <LMath.h>
 #include <Util/RefPtr.h>
 #include <Components/Component.h>
+#include <Renderer/Camera.h>
 
 class CameraComponent :public Component{
 
@@ -36,10 +37,9 @@ public:
 
 	static RefPtr<CameraComponent> mainCamera;
 
+	RefPtr<Camera> camera();
+
 private:
 
-	Matrix4 _mtxProj;
-	float _near;
-	float _far;
-	float _fov;
+	Camera _camera;
 };

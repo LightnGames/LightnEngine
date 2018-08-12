@@ -5,6 +5,8 @@ Texture2D texRoughness : register(t3);
 Texture2D texMetallic : register(t4);
 SamplerState samLinear : register(s0);
 
+#include "../Gbuffer.hlsl"
+
 struct PS_INPUT
 {
 	float4 Pos : SV_POSITION;
@@ -39,7 +41,7 @@ PS_OUTPUT PS ( PS_INPUT input ) : SV_Target
     //normal = input.Normal;
 
 	output.albedo = baseColor;
-	output.normal = float4(normal,1);
+    output.normal = float4(EncodeNormal(normal), 1);
 	output.rme = float4(roughness,metallic,0,0);
 
 	return output;

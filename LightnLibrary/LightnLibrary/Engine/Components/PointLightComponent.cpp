@@ -7,15 +7,21 @@
 PointLightComponent::PointLightComponent()
 {
 	_light = GraphicsResourceManager::instance().getPointLight().cast<Light>();
-	SceneRendererManager::instance().addLightEntity(this);
+	//SceneRendererManager::instance().addLightEntity(this);
+	SceneRendererManager::instance().addPointLight(this);
+
+	light.attenuationBegin = 1;
+	light.attenuationEnd = 10;
+	light.color = Vector3(1, 1, 1)*3;
 }
 
 PointLightComponent::~PointLightComponent()
 {
-	SceneRendererManager::instance().removeLightEntity(this);
+	//SceneRendererManager::instance().removeLightEntity(this);
+	SceneRendererManager::instance().removePointLight(this);
 }
 
 void PointLightComponent::draw(const DrawSettings & drawSettings)
 {
-	_light->draw(drawSettings, RefPtr<LightComponent>(this));
+	//_light->draw(drawSettings, RefPtr<LightComponent>(this));
 }

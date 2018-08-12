@@ -56,6 +56,9 @@ union Matrix4{
 	//左手座標系射影変換行列を生成
 	static Matrix4 perspectiveFovLH(float FovAngleY, float AspectHByW, float NearZ, float FarZ);
 
+	//左手平衡投影射影返還行列を生成
+	static Matrix4 orthographicProjectionLH(float width, float height, float nearZ, float farZ, float farOffset = 0.0f);
+
 	//平行移動行列を取得
 	Vector3 translate() const;
 
@@ -80,6 +83,9 @@ union Matrix4{
 
 	//単位行列
 	static const Matrix4 identity;
+
+	//デバイス正規化座標系からTexCoordsに変換する行列
+	static const Matrix4 textureBias;
 
 	bool operator == (const Matrix4& m);
 

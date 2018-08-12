@@ -4,7 +4,8 @@ Texture2D RT2 : register(t2);
 TextureCube cubeMap : register(t3);
 SamplerState samLinear : register(s0);
 
-#include "PhysicallyBasedRendering.hlsl"
+#include "../PhysicallyBasedRendering.hlsl"
+#include "../Gbuffer.hlsl"
 
 cbuffer SkyLightInput : register(b0){
 	float4 lightColor;
@@ -22,15 +23,20 @@ float4 PS ( PS_INPUT input ) : SV_Target
 {
     float4 baseColor;
 	float4 rtMainColor;
-    float4 normal;
+    float3 normal;
 	float roughness;
 	float metallic;
 
     baseColor = RT0.Sample(samLinear, input.Tex);
-    normal = RT1.Sample(samLinear, input.Tex);
+    normal = RT1.Sample(samLinear, input.Tex).xyz;
 	float4 RT2Value = RT2.Sample(samLinear, input.Tex);
+
 	roughness = RT2Value.r;
 	metallic = RT2Value.g;
+    normal = DecodeNormal(normal);
+
+    baseColor.xyz = pow(baseColor.xyz, 1 / 2.2f);
+    //roughness = pow(roughness, 1 / 2.2f);
 
 	//メタリックの値からテクスチャカラー
     float3 diffuseColor = lerp(baseColor.xyz, float3(0.04, 0.04, 0.04), metallic);
@@ -45,9 +51,10 @@ float4 PS ( PS_INPUT input ) : SV_Target
     float3 cubeMapSpecular = ApproximateSpecularIBL(specularColor, roughness, normal, -input.Eye);
 	//return float4(cubeMapDiffuse,1);
 
-	float3 skyColor = diffuseColor*lightColor;
+	float3 skyColor = diffuseColor*lightColor.xyz;
 
-    float4 outputColor = float4(cubeMapDiffuse* lightIntensity.r + cubeMapSpecular*lightIntensity.g+skyColor, 1);
+    float4 outputColor = float4(cubeMapDiffuse * lightIntensity.r + cubeMapSpecular * lightIntensity.g + skyColor, 1);
 
+    outputColor.xyz = pow(outputColor.xyz, 2.2f);
     return outputColor;
 }

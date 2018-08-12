@@ -9,14 +9,16 @@
 #include "ImguiWindow.h"
 #include "LightEntity.h"
 #include "Mesh/DebugGeometry.h"
+#include "Mesh/SkyBox.h"
 #include "StaticInstancedMeshRenderer.h"
 #include <ThirdParty/ImGui/imgui.h>
 #include "TileBasedLightCulling.h"
+#include <Renderer/Light/LightTypes.h>
+#include <Renderer/GraphicsResourceManager.h>
+#include <Components/CameraComponent.h>
 
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
-
-std::unique_ptr<TileBasedLightCulling> _tile;
 
 GameRenderer::GameRenderer() :_width{ 1280 }, _height{ 720 },
 _device{ nullptr },
@@ -24,7 +26,9 @@ _deviceContext{ nullptr },
 _swapChain{ nullptr },
 _sceneRendererManager{ nullptr },
 _deferredBuffers{ nullptr },
-_orthoScreen{ nullptr } {
+_orthoScreen{ nullptr },
+_tileCulling{ nullptr },
+_graphicsResourceManager{ nullptr } {
 
 	_sceneRendererManager = std::make_unique<SceneRendererManager>();
 	drawSettings = std::make_unique<DrawSettings>();
@@ -32,8 +36,8 @@ _orthoScreen{ nullptr } {
 	_orthoScreen = std::make_unique<OrthoScreen>();
 	_debugGeometryRenderer = std::make_unique<DebugGeomtryRenderer>();
 	_staticInstancedMeshRenderer = std::make_unique<StaticInstancedMeshRenderer>();
-	_tile = std::make_unique<TileBasedLightCulling>();
-
+	_tileCulling = std::make_unique<TileBasedLightCulling>();
+	_graphicsResourceManager = std::make_unique<GraphicsResourceManager>();
 }
 
 GameRenderer::~GameRenderer() {
@@ -103,6 +107,9 @@ HRESULT GameRenderer::initDirect3D() {
 	ImguiWindow::setUpWindow(_hWnd, _device.Get(), _deviceContext.Get());
 
 	_debugGeometryRenderer->initialize(_device);
+	_graphicsResourceManager->initialize(_device);
+
+	_sceneRendererManager->setUp();
 
 	return S_OK;
 }
@@ -113,6 +120,12 @@ void GameRenderer::draw() {
 	//画面クリア
 	const float clearColor[4] = { 0.0f,0.0f,0.0f,1.0f };
 	_orthoScreen->clearMainRenderTarget(clearColor);
+
+	//カメラ情報をセットアップ
+	auto& mainCamera = CameraComponent::mainCamera;
+	drawSettings->camera = mainCamera->camera();
+	drawSettings->camera->mtxView = mainCamera->cameraMatrix().inverse();
+	drawSettings->camera->position = mainCamera->getWorldPosition();
 
 	//StaticInstanceMeshのカリング情報をクリア
 	_staticInstancedMeshRenderer->clearCullingBuffer(_deviceContext);
@@ -137,8 +150,17 @@ void GameRenderer::draw() {
 		sm->draw(*drawSettings.get());
 	}
 
-	//レンダーターゲット切り替え
-	_orthoScreen->setBackBuffer();
+	//SkyBoxステンシル描画
+	_sceneRendererManager->skyBox()->drawStencil(*drawSettings);
+
+	//レンダーターゲット切り替え・ライティング設定
+	_orthoScreen->setBackBufferAndDSV(_deferredBuffers->getDepthStencilView());
+
+	//Skybox描画
+	_sceneRendererManager->skyBox()->draw(*drawSettings);
+
+	//ライティング用ステンシルモード切替
+	_orthoScreen->setStencilStateLight();
 
 	//スクリーン描画用頂点バッファをセット
 	_orthoScreen->setOrthoScreenVertex();
@@ -148,7 +170,14 @@ void GameRenderer::draw() {
 		l->draw(*drawSettings.get());
 	}
 
-	_tile->draw(*drawSettings);
+	//TileBasedLightingはレンダーターゲットに直接書かないので一旦普通のバックバッファに戻す
+	_orthoScreen->setBackBuffer();
+
+	//TileBasedLighting
+	const Matrix4 mtxCamera = CameraComponent::mainCamera->cameraMatrix().inverse();
+	const TileBasedPointLightType* pointLights = _sceneRendererManager->pointLights(mtxCamera);
+	const TileBasedSpotLightType* spotLights = _sceneRendererManager->spotLights(mtxCamera);
+	_tileCulling->draw(*drawSettings, pointLights,spotLights);
 
 	//デバッグジオメトリを描画
 	const auto& lines = _sceneRendererManager->debugLines();
@@ -193,6 +222,10 @@ const ComPtr<ID3D11DeviceContext>& GameRenderer::deviceContext() const {
 	return _deviceContext;
 }
 
+void GameRenderer::setOrthoScreenVertex() {
+	_orthoScreen->setOrthoScreenVertex();
+}
+
 void GameRenderer::cleanUpRenderTargets() {
 
 	_orthoScreen->cleanUp();
@@ -205,7 +238,7 @@ void GameRenderer::createRenderTargets() {
 
 	hr = _orthoScreen->initialize(_device, _deviceContext, _swapChain, _width, _height);
 	hr = _deferredBuffers->initialize(_device, _width, _height, 0.1f, 1000);
-	hr = _tile->initialize(_device, _width, _height);
+	hr = _tileCulling->initialize(_device, _width, _height);
 
 	drawSettings->mainShaderResourceView = _orthoScreen->getShaderResourceView();
 	drawSettings->deferredBuffers = _deferredBuffers.get();

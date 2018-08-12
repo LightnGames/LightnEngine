@@ -29,7 +29,7 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 	createRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM, device);
 	
 	//ワールド法線
-	createRenderTarget(1, DXGI_FORMAT_R32G32B32A32_FLOAT, device);
+	createRenderTarget(1, DXGI_FORMAT_R10G10B10A2_UNORM, device);
 
 	//ラフネス・メタルネス・エミッシブ
 	createRenderTarget(2, DXGI_FORMAT_R8G8B8A8_UNORM, device);
@@ -40,7 +40,7 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 	depthDesc.Height = _height;
 	depthDesc.MipLevels = 1;
 	depthDesc.ArraySize = 1;
-	depthDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	depthDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
 	depthDesc.SampleDesc.Count = 1;
 	depthDesc.SampleDesc.Quality = 0;
 	depthDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -56,7 +56,7 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 	//デプスステンシルビューの生成
 	ZeroMemory(&stencilDesc, sizeof(stencilDesc));
 	stencilDesc.Flags = 0;
-	stencilDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	stencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	stencilDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	stencilDesc.Texture2D.MipSlice = 0;
 
@@ -68,12 +68,12 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 	//シェーダーリソースビューの生成
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
 	ZeroMemory(&shaderDesc, sizeof(shaderDesc));
-	shaderDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	shaderDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	shaderDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	shaderDesc.Texture2D.MostDetailedMip = 0;
 	shaderDesc.Texture2D.MipLevels = 1;
 
-	result = device->CreateShaderResourceView(_depthStencilBuffer.Get(), &shaderDesc, _depthStencilResource.ReleaseAndGetAddressOf());
+	result = device->CreateShaderResourceView(_depthStencilBuffer.Get(), &shaderDesc, _depthStencilSRV.ReleaseAndGetAddressOf());
 	if (FAILED(result)) {
 		return result;
 	}
@@ -90,9 +90,6 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 	if (FAILED(result)) {
 		return result;
 	}
-
-	//ZPrePass用シェーダー作成
-	RendererUtil::createPixelShader("Depth_ps.cso", _depthShader, device);
 
 	//ビューポートを設定
 	_viewport.Width = static_cast<float>(_width);
@@ -139,16 +136,16 @@ void Deferredbuffers::cleanUp() {
 void Deferredbuffers::setRenderTargets(ComPtr<ID3D11DeviceContext> context) {
 	context->OMSetRenderTargets(BUFFER_COUNT, _renderTargetViewArray[0].GetAddressOf(), _depthStencilView.Get());
 	context->RSSetViewports(1, &_viewport);
-	context->OMSetBlendState(NULL, NULL, 0xffffffff);
+	context->OMSetBlendState(0, 0, 0xffffffff);
 	context->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 }
 
 void Deferredbuffers::setRenderTargetEaryZ(ComPtr<ID3D11DeviceContext> context)
 {
-	context->OMSetRenderTargets(0, NULL, _depthStencilView.Get());
-	context->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-	context->OMSetDepthStencilState(NULL, 0);
-	context->PSSetShader(_depthShader.Get(), NULL, 0);
+	context->OMSetRenderTargets(0, 0, _depthStencilView.Get());
+	context->ClearDepthStencilView(_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	context->OMSetDepthStencilState(0, 0);
+	context->PSSetShader(0, 0, 0);
 }
 
 void Deferredbuffers::clearRenderTargets(ComPtr<ID3D11DeviceContext> context, float red, float green, float blue, float alpha) {
@@ -166,7 +163,11 @@ ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getShaderResourceView(uint16 i
 
 ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getDepthStencilResource() const
 {
-	return _depthStencilResource;
+	return _depthStencilSRV;
+}
+
+ComPtr<ID3D11DepthStencilView> Deferredbuffers::getDepthStencilView() {
+	return _depthStencilView;
 }
 
 Vector2 Deferredbuffers::getGBufferSize() const {

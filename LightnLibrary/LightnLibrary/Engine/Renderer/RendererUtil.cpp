@@ -141,23 +141,22 @@ HRESULT RendererUtil::createIndexBuffer(const void * indices, uint32 indexCount,
 	return S_OK;
 }
 
-MeshConstantBuffer RendererUtil::getConstantBuffer(const Matrix4 & mtxWorld)
+MeshConstantBuffer RendererUtil::getConstantBuffer(const Matrix4 & mtxWorld, RefPtr<Camera> camera)
 {
-	const RefPtr<CameraComponent>& camera = CameraComponent::mainCamera;
 
 	MeshConstantBuffer constantBuffer;
 
 	//射影変換行列をセット
-	constantBuffer.mtxProj = camera->mtxProj().transpose();
+	constantBuffer.mtxProj = camera->mtxProj.transpose();
 
 	//カメラビュー行列をセット
-	constantBuffer.mtxView = Matrix4::transpose(camera->cameraMatrix().inverse());
+	constantBuffer.mtxView = Matrix4::transpose(camera->mtxView);
 
 	//world行列をセット
 	constantBuffer.mtxWorld = Matrix4::transpose(mtxWorld);
 
 	//カメラ座標をセット
-	constantBuffer.cameraPos = Vector4(camera->getWorldPosition());
+	constantBuffer.cameraPos = Vector4(camera->position);
 
 	return std::move(constantBuffer);
 }

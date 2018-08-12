@@ -11,6 +11,13 @@ const Matrix4 Matrix4::identity{
 	0.0f, 0.0f, 1.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 1.0f };
 
+const Matrix4 Matrix4::textureBias{
+	0.5f, 0.0f, 0.0f, 0.0f,
+	0.0f, -0.5f, 0.0f, 0.0f,
+	0.0f, 0.0f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.0f, 1.0f
+};
+
 Matrix4 Matrix4::rotateX(float pitch){
 
 	const float rad = radianFromDegree(pitch);
@@ -213,6 +220,14 @@ Matrix4 Matrix4::perspectiveFovLH(float FovAngleY, float AspectHByW, float NearZ
 	M.m[3][2] = -fRange * NearZ;
 	M.m[3][3] = 0.0f;
 	return M;
+}
+
+Matrix4 Matrix4::orthographicProjectionLH(float width, float height, float nearZ, float farZ, float farOffset) {
+	return Matrix4(
+		2.0f / width, 0, 0, 0,
+		0, 2.0f / height, 0, 0,
+		0, 0, 1.0f / (farZ - nearZ), 0,
+		0, 0, nearZ / (nearZ - farZ) + farOffset, 1);
 }
 
 Vector3 Matrix4::positionFromWorld() const {
