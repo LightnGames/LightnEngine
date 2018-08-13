@@ -5,7 +5,7 @@
 #include <Util/ComPtr.h>
 #include <LMath.h>
 
-const int BUFFER_COUNT = 3;
+const int BUFFER_COUNT = 4;
 
 class Deferredbuffers {
 
@@ -22,6 +22,9 @@ public:
 
 	//GBufferのカラーバッファをメインレンダーターゲットに設定
 	void setRenderTargets(ComPtr<ID3D11DeviceContext> context);
+
+	//ライティング結果用のレンダーターゲットに切り替え
+	void setRenderTargetLighting(ComPtr<ID3D11DeviceContext> deviceContext);
 
 	//ZPrePass用のレンダーターゲットをセット
 	void setRenderTargetEaryZ(ComPtr<ID3D11DeviceContext> context);

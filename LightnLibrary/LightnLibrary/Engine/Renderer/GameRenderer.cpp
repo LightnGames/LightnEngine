@@ -172,6 +172,7 @@ void GameRenderer::draw() {
 
 	//TileBasedLightingはレンダーターゲットに直接書かないので一旦普通のバックバッファに戻す
 	_orthoScreen->setBackBuffer();
+	//_deferredBuffers->setRenderTargetLighting(_deviceContext);
 
 	//TileBasedLighting
 	const Matrix4 mtxCamera = CameraComponent::mainCamera->cameraMatrix().inverse();

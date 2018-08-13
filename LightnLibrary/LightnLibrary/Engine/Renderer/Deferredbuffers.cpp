@@ -25,14 +25,17 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 	_width = width;
 	_height = height;
 
-	//カラーバッファ
+	//アルベド
 	createRenderTarget(0, DXGI_FORMAT_R8G8B8A8_UNORM, device);
 	
 	//ワールド法線
 	createRenderTarget(1, DXGI_FORMAT_R10G10B10A2_UNORM, device);
 
-	//ラフネス・メタルネス・エミッシブ
+	//ラフネス・メタルネス
 	createRenderTarget(2, DXGI_FORMAT_R8G8B8A8_UNORM, device);
+
+	//エミッシブ・ライティング結果用 64bit-HDR
+	createRenderTarget(3, DXGI_FORMAT_R16G16B16A16_FLOAT, device);
 
 	//デプステクスチャの生成
 	ZeroMemory(&depthDesc, sizeof(depthDesc));
@@ -138,6 +141,10 @@ void Deferredbuffers::setRenderTargets(ComPtr<ID3D11DeviceContext> context) {
 	context->RSSetViewports(1, &_viewport);
 	context->OMSetBlendState(0, 0, 0xffffffff);
 	context->OMSetDepthStencilState(_depthStencilState.Get(), 1);
+}
+
+void Deferredbuffers::setRenderTargetLighting(ComPtr<ID3D11DeviceContext> deviceContext) {
+	deviceContext->OMSetRenderTargets(1, _renderTargetViewArray[3].GetAddressOf(), 0);
 }
 
 void Deferredbuffers::setRenderTargetEaryZ(ComPtr<ID3D11DeviceContext> context)
