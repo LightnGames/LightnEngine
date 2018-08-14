@@ -133,7 +133,6 @@ void TileBasedLightCulling::draw(const DrawSettings& settings,
 	deviceContext->PSSetShader(_structuredToRenderShader.Get(), 0, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, _perFrameConstantBuffer.GetAddressOf());
 	deviceContext->PSSetShaderResources(0, 1, _frameBufferSRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(1, 1, deferredBuffers->getDepthStencilResource().GetAddressOf());
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	deviceContext->Draw(4, 0);
 

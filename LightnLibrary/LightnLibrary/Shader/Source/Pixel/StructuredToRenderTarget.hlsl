@@ -1,8 +1,7 @@
 StructuredBuffer<uint2> gLitTextureFlat : register(t0);
 SamplerState samLinear : register(s0);
 
-#define COMPUTE_SHADER_TILE_GROUP_DIM 16
-
+#include "../ShaderDefines.h"
 #include "../TileBasedCullingInclude.hlsl"
 
 struct PS_INPUT

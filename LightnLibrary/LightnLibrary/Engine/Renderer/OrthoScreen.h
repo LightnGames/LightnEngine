@@ -38,7 +38,7 @@ public:
 	//メインレンダーターゲットのシェーダーリソースビューを取得
 	ComPtr<ID3D11ShaderResourceView> getShaderResourceView() const;
 
-private:
+public:
 
 	uint16 _width;
 	uint16 _height;

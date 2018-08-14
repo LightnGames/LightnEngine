@@ -46,7 +46,7 @@ private:
 	//個々のレンダーターゲットをフォーマットとインデックスで生成
 	HRESULT createRenderTarget(uint16 index, DXGI_FORMAT format, ComPtr<ID3D11Device>& device);
 
-private:
+public:
 
 	uint16 _width;
 	uint16 _height;

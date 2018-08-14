@@ -15,6 +15,7 @@
 #include "TileBasedLightCulling.h"
 #include <Renderer/Light/LightTypes.h>
 #include <Renderer/GraphicsResourceManager.h>
+#include <Renderer/RendererUtil.h>
 #include <Components/CameraComponent.h>
 
 std::unique_ptr<DrawSettings> drawSettings;
@@ -72,6 +73,7 @@ HRESULT GameRenderer::createGameWindow(const HINSTANCE & hInst, WNDPROC lpfnWndP
 	return S_OK;
 }
 
+ComPtr<ID3D11PixelShader> postProcessShader;
 HRESULT GameRenderer::initDirect3D() {
 
 	//スワップチェインの作成
@@ -93,7 +95,8 @@ HRESULT GameRenderer::initDirect3D() {
 	D3D_FEATURE_LEVEL featureLevels = D3D_FEATURE_LEVEL_11_0;
 
 	//スワップチェイン初期化
-	HRESULT hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevels
+	//D3D11_CREATE_DEVICE_DEBUG
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, D3D11_CREATE_DEVICE_DEBUG, &featureLevels
 		, 1, D3D11_SDK_VERSION, &sd, _swapChain.ReleaseAndGetAddressOf(), _device.ReleaseAndGetAddressOf(), nullptr, _deviceContext.ReleaseAndGetAddressOf());
 
 	if (FAILED(hr)) {
@@ -110,6 +113,8 @@ HRESULT GameRenderer::initDirect3D() {
 	_graphicsResourceManager->initialize(_device);
 
 	_sceneRendererManager->setUp();
+	RendererUtil::createPixelShader("PostProcess.cso", postProcessShader, _device);
+
 
 	return S_OK;
 }
@@ -154,7 +159,12 @@ void GameRenderer::draw() {
 	_sceneRendererManager->skyBox()->drawStencil(*drawSettings);
 
 	//レンダーターゲット切り替え・ライティング設定
-	_orthoScreen->setBackBufferAndDSV(_deferredBuffers->getDepthStencilView());
+	//_orthoScreen->setBackBufferAndDSV(_deferredBuffers->getDepthStencilView());
+	//_deferredBuffers->setRenderTargetLighting(_deviceContext);
+	const float cc[4] = { 0,0,0,0 };
+	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargetViewArray[3].GetAddressOf(), _deferredBuffers->getDepthStencilView().Get());
+	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	_deviceContext->OMSetBlendState(_orthoScreen->_blendState.Get(), blendFactor, 0xffffffff);
 
 	//Skybox描画
 	_sceneRendererManager->skyBox()->draw(*drawSettings);
@@ -171,14 +181,23 @@ void GameRenderer::draw() {
 	}
 
 	//TileBasedLightingはレンダーターゲットに直接書かないので一旦普通のバックバッファに戻す
-	_orthoScreen->setBackBuffer();
+	//_orthoScreen->setBackBuffer();
 	//_deferredBuffers->setRenderTargetLighting(_deviceContext);
+	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargetViewArray[3].GetAddressOf(), 0);
+	_deviceContext->OMSetDepthStencilState(0, 0);
 
 	//TileBasedLighting
 	const Matrix4 mtxCamera = CameraComponent::mainCamera->cameraMatrix().inverse();
 	const TileBasedPointLightType* pointLights = _sceneRendererManager->pointLights(mtxCamera);
 	const TileBasedSpotLightType* spotLights = _sceneRendererManager->spotLights(mtxCamera);
 	_tileCulling->draw(*drawSettings, pointLights,spotLights);
+
+	//ポストプロセス
+	_orthoScreen->setBackBuffer();
+	_deviceContext->PSSetShader(postProcessShader.Get(), 0, 0);
+	_deviceContext->PSSetShaderResources(0, 1, _deferredBuffers->_shaderResourceViewArray[3].GetAddressOf());
+	_orthoScreen->setOrthoScreenVertex();
+	_deviceContext->Draw(4, 0);
 
 	//デバッグジオメトリを描画
 	const auto& lines = _sceneRendererManager->debugLines();

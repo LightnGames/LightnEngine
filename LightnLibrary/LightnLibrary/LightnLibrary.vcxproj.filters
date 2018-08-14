@@ -162,6 +162,9 @@
     <FxCompile Include="Shader\Source\Vertex\SkyBox_vs.hlsl">
       <Filter>リソース ファイル\Vertex</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\PostProcess.hlsl">
+      <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Actor\Actor.cpp">
