@@ -8,9 +8,9 @@ void PostProcess::initialize(ComPtr<ID3D11Device> device) {
 
 	HRESULT hr;
 
-	RendererUtil::createPixelShader("PostProcess.cso", postProcessShader, device);
-	RendererUtil::createPixelShader("GaussianBlur_ps.cso", gaussianBlurShader, device);
-	RendererUtil::createConstantBuffer(gaussianConstantBuffer, sizeof(GaussBlurParam), device);
+	RendererUtil::createPixelShader("PostProcess.cso", _postProcessShader, device);
+	RendererUtil::createPixelShader("GaussianBlur_ps.cso", _gaussianBlurShader, device);
+	RendererUtil::createConstantBuffer(_gaussianConstantBuffer, sizeof(GaussBlurParam), device);
 
 	//ブルーム用アルファブレンドステートを生成
 	D3D11_BLEND_DESC BlendDesc;
@@ -69,8 +69,8 @@ HRESULT PostProcess::setupRenderResource(ComPtr<ID3D11Device> device, uint16 wid
 
 		uint32 idxA = i;
 		uint32 idxB = i + BLOOM_DOWN_SAMPLE;
-		createRenderTargets(bloomDownSampleTex[idxA], bloomDownSampleRTV[idxA], bloomDownSampleSRV[idxA], donwSampleWidth, donwSampleHeight, device);
-		createRenderTargets(bloomDownSampleTex[idxB], bloomDownSampleRTV[idxB], bloomDownSampleSRV[idxB], donwSampleWidth, donwSampleHeight, device);
+		createRenderTargets(_bloomDownSampleTex[idxA], _bloomDownSampleRTV[idxA], _bloomDownSampleSRV[idxA], donwSampleWidth, donwSampleHeight, device);
+		createRenderTargets(_bloomDownSampleTex[idxB], _bloomDownSampleRTV[idxB], _bloomDownSampleSRV[idxB], donwSampleWidth, donwSampleHeight, device);
 		donwSampleWidth >>= 1;
 		donwSampleHeight >>= 1;
 	}
@@ -100,8 +100,8 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 
 		//RTクリア
 		for (int i = 0; i < BLOOM_DOWN_SAMPLE; ++i) {
-			deviceContext->ClearRenderTargetView(bloomDownSampleRTV[i].Get(), clearColor);
-			deviceContext->ClearRenderTargetView(bloomDownSampleRTV[i + BLOOM_DOWN_SAMPLE].Get(), clearColor);
+			deviceContext->ClearRenderTargetView(_bloomDownSampleRTV[i].Get(), clearColor);
+			deviceContext->ClearRenderTargetView(_bloomDownSampleRTV[i + BLOOM_DOWN_SAMPLE].Get(), clearColor);
 		}
 
 		//縮小バッファを切り替えながらブラー設定
@@ -113,7 +113,7 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 				srv = deferredBuffers->_shaderResourceViewArray[3].Get();
 			}
 			else {
-				srv = bloomDownSampleSRV[i - 1].Get();
+				srv = _bloomDownSampleSRV[i - 1].Get();
 			}
 
 			D3D11_VIEWPORT viewport;
@@ -126,20 +126,20 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 
 			GaussBlurParam src = CalcBlurParam(donwSampleWidth, donwSampleHeight, Vector2(1, 0), deviation, multiply);
 
-			deviceContext->OMSetRenderTargets(1, bloomDownSampleRTV[i].GetAddressOf(), 0);
-			deviceContext->UpdateSubresource(gaussianConstantBuffer.Get(), 0, 0, &src, 0, 0);
-			deviceContext->PSSetConstantBuffers(0, 1, gaussianConstantBuffer.GetAddressOf());
+			deviceContext->OMSetRenderTargets(1, _bloomDownSampleRTV[i].GetAddressOf(), 0);
+			deviceContext->UpdateSubresource(_gaussianConstantBuffer.Get(), 0, 0, &src, 0, 0);
+			deviceContext->PSSetConstantBuffers(0, 1, _gaussianConstantBuffer.GetAddressOf());
 			deviceContext->RSSetViewports(1, &viewport);
-			deviceContext->PSSetShader(gaussianBlurShader.Get(), 0, 0);
+			deviceContext->PSSetShader(_gaussianBlurShader.Get(), 0, 0);
 			deviceContext->PSSetShaderResources(0, 1, &srv);
 			deviceContext->Draw(4, 0);
 
-			srv = bloomDownSampleSRV[i].Get();
+			srv = _bloomDownSampleSRV[i].Get();
 			src = CalcBlurParam(donwSampleWidth, donwSampleHeight, Vector2(0, 1), deviation, multiply);
 
-			deviceContext->OMSetRenderTargets(1, bloomDownSampleRTV[i + BLOOM_DOWN_SAMPLE].GetAddressOf(), 0);
+			deviceContext->OMSetRenderTargets(1, _bloomDownSampleRTV[i + BLOOM_DOWN_SAMPLE].GetAddressOf(), 0);
 			deviceContext->PSSetShaderResources(0, 1, &srv);
-			deviceContext->UpdateSubresource(gaussianConstantBuffer.Get(), 0, 0, &src, 0, 0);
+			deviceContext->UpdateSubresource(_gaussianConstantBuffer.Get(), 0, 0, &src, 0, 0);
 			deviceContext->Draw(4, 0);
 
 			donwSampleWidth >>= 1;
@@ -150,9 +150,9 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 	}
 
 	ID3D11ShaderResourceView* downSampleBlurs[3] = {
-		bloomDownSampleSRV[0 + BLOOM_DOWN_SAMPLE].Get(),
-		bloomDownSampleSRV[1 + BLOOM_DOWN_SAMPLE].Get(),
-		bloomDownSampleSRV[2 + BLOOM_DOWN_SAMPLE].Get(),
+		_bloomDownSampleSRV[0 + BLOOM_DOWN_SAMPLE].Get(),
+		_bloomDownSampleSRV[1 + BLOOM_DOWN_SAMPLE].Get(),
+		_bloomDownSampleSRV[2 + BLOOM_DOWN_SAMPLE].Get(),
 	};
 
 	deviceContext->PSSetSamplers(0, 1, _linerSampler.GetAddressOf());
@@ -161,7 +161,7 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 
 	//最終パスポストプロセス
 	orthoScreen->setBackBuffer();
-	deviceContext->PSSetShader(postProcessShader.Get(), 0, 0);
+	deviceContext->PSSetShader(_postProcessShader.Get(), 0, 0);
 	deviceContext->PSSetShaderResources(0, 1, deferredBuffers->_shaderResourceViewArray[3].GetAddressOf());
 	deviceContext->PSSetShaderResources(1, 3, downSampleBlurs);
 	orthoScreen->setOrthoScreenVertex();

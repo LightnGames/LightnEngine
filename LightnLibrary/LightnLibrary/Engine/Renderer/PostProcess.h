@@ -25,6 +25,7 @@ public:
 
 	void initialize(ComPtr<ID3D11Device> device);
 
+	//サイズを指定してテクスチャを作成
 	HRESULT setupRenderResource(ComPtr<ID3D11Device> device, uint16 width, uint16 height);
 
 	void draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferredbuffers> deferredBuffers, RefPtr<OrthoScreen> orthoScreen);
@@ -42,13 +43,13 @@ private:
 	uint16 _width;
 	uint16 _height;
 
-	ComPtr<ID3D11PixelShader> postProcessShader;
-	ComPtr<ID3D11PixelShader> gaussianBlurShader;
-	ComPtr<ID3D11Buffer> gaussianConstantBuffer;
+	ComPtr<ID3D11PixelShader> _postProcessShader;
+	ComPtr<ID3D11PixelShader> _gaussianBlurShader;
+	ComPtr<ID3D11Buffer> _gaussianConstantBuffer;
 	ComPtr<ID3D11BlendState> _blendState;
 	ComPtr<ID3D11SamplerState> _linerSampler;
 	ComPtr<ID3D11SamplerState> _pointSampler;
-	ComPtr<ID3D11RenderTargetView> bloomDownSampleRTV[BLOOM_DOWN_SAMPLE * 2];
-	ComPtr<ID3D11Texture2D> bloomDownSampleTex[BLOOM_DOWN_SAMPLE * 2];
-	ComPtr<ID3D11ShaderResourceView> bloomDownSampleSRV[BLOOM_DOWN_SAMPLE * 2];
+	ComPtr<ID3D11RenderTargetView> _bloomDownSampleRTV[BLOOM_DOWN_SAMPLE * 2];
+	ComPtr<ID3D11Texture2D> _bloomDownSampleTex[BLOOM_DOWN_SAMPLE * 2];
+	ComPtr<ID3D11ShaderResourceView> _bloomDownSampleSRV[BLOOM_DOWN_SAMPLE * 2];
 };

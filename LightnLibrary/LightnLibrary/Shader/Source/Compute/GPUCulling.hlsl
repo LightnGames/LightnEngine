@@ -32,18 +32,9 @@ float3 GetPositivePoint(BoundingBox box, float3 planeNormal)
 
     float3 result = PositionFromMatrix(box.mtxWorld) - box.extent.xyz / 2;
 
-    if (planeNormal.x > 0)
-    {
-        result.x += box.extent.x;
-    }
-    if (planeNormal.y > 0)
-    {
-        result.y += box.extent.y;
-    }
-    if (planeNormal.z > 0)
-    {
-        result.z += box.extent.z;
-    }
+    result.x += lerp(box.extent.x, 0, (float) (planeNormal.x > 0 ? 0 : 1));
+    result.y += lerp(box.extent.y, 0, (float) (planeNormal.y > 0 ? 0 : 1));
+    result.z += lerp(box.extent.z, 0, (float) (planeNormal.z > 0 ? 0 : 1));
 
     return result;
 }
