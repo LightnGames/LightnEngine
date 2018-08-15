@@ -82,8 +82,8 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     data.roughness = roughnessMetallic.r;
     data.metallic = roughnessMetallic.g;
 
-    data.albedo = pow(data.albedo, 1 / 2.2f);
-    //data.roughness = pow(data.roughness, 1 / 2.2f);
+    data.albedo = pow(data.albedo, 2.2f);
+    data.roughness = pow(data.roughness, 2.2f);
 
     data.normal = DecodeNormal(data.normal);
 
@@ -291,17 +291,18 @@ void CS(uint3 groupId : SV_GroupID,
                 float dotNL = saturate(dot(normal, L));
 
 	        //減衰係数
-                float attenuation = PhysicalAttenuation(0.4f, 0.01f, 0.01f, lightDistance);
-                float d = saturate(light.attenuationEnd - lightDistance);
+                float attenuation = PhysicalAttenuation(0.00f, 0.00f, 0.05f, lightDistance);
 
 	        //輝度
-                float3 irradistance = dotNL * light.color * attenuation*d;
+                float lMax = max(0.0f, light.attenuationEnd - lightDistance) / light.attenuationEnd;
+                float3 irradistance = dotNL * light.color * attenuation*lMax;
+                //float3 irradistance = dotNL * light.color * lMax;
 
 	        //ライティング済みカラー＆スペキュラ
                 float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
                 float3 directSpecular = irradistance * SpecularBRDF(normal, -eyeDirection, L, specularColor, roughness);
 
-                lit += float4(directDiffuse + directSpecular, 1);
+                lit += float4(directDiffuse + directSpecular, 0);
             }
         }
 
@@ -321,24 +322,25 @@ void CS(uint3 groupId : SV_GroupID,
                 float dotNL = saturate(dot(normal, L));
 
 	        //減衰係数
-                float attenuation = PhysicalAttenuation(0.4f, 0.01f, 0.01f, lightDistance);
-                float d = saturate(light.attenuationEnd - lightDistance);
+                float attenuation = PhysicalAttenuation(0.0f, 0.05f, 0.05f, lightDistance);
+                float lMax = max(0.0f, light.attenuationEnd - lightDistance) / light.attenuationEnd;
 
                 float spotDot = dot(-L, light.direction.xyz);
                 float spotValue = smoothstep(0.5f, 0.6f, spotDot);
                 attenuation *= pow(max(spotValue, 0.0), 1);
 
 	        //輝度
-                float3 irradistance = dotNL * light.color * attenuation * d;
+                float3 irradistance = dotNL * light.color * attenuation * lMax;
 
 	        //ライティング済みカラー＆スペキュラ
                 float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
                 float3 directSpecular = irradistance * SpecularBRDF(normal, -eyeDirection, L, specularColor, roughness);
 
-                lit += float4(directDiffuse + directSpecular, 1);
+                lit += float4(directDiffuse + directSpecular, 0);
             }
         }
     }
 
+    lit = max(0.0f, lit);
     WriteSample(globalCoords, lit);
 }

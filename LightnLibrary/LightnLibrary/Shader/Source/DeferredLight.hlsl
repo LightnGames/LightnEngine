@@ -3,7 +3,12 @@
 //距離の2乗で減衰する係数
 float PhysicalAttenuation(float constantA,float linearA,float quadraticA,float lightDistance){
 
-    return 1.0 / (constantA + linearA * lightDistance+ quadraticA * lightDistance * lightDistance);
+    return 1.0 / (constantA + linearA * lightDistance + quadraticA * lightDistance * lightDistance);
+}
+
+float PowAttenuation(float distance)
+{
+    return distance * distance;
 }
 
 //スクリーンUVのデプス値を用いてワールド座標を復元
@@ -15,4 +20,12 @@ float3 ReconstructWorldPositionFromDepth(Texture2D depthTex, SamplerState samLin
 
 	float4 position = mul(projectedPosition, inverseViewProjection);
 	return position.xyz / position.w;
+}
+
+float GetSquareFalloffAttenuation(float3 posToLight, float lightInvRadius)
+{
+    float distanceSquare = dot(posToLight, posToLight);
+    float factor = distanceSquare * lightInvRadius * lightInvRadius;
+    float smoothFactor = max(1.0 - factor * factor, 0.0);
+    return (smoothFactor * smoothFactor) / max(distanceSquare, 1e-4);
 }

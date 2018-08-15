@@ -132,6 +132,7 @@ float3 PrefilterEnvMap(float Roughness, float3 R) {
 		}
 	}
 
+    PrefilteredColor = pow(PrefilteredColor, 2.2f);
 	return PrefilteredColor / TotalWeight;
 }
 
@@ -152,6 +153,7 @@ float3 CubemapDiffuse(float3 N) {
 		PrefilteredColor += cubeMap.SampleLevel(samLinear, Xi, 0).rgb;
 	}
 
+    PrefilteredColor = pow(PrefilteredColor, 2.2f);
 	return PrefilteredColor / NumSamples;
 
 }

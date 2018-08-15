@@ -42,8 +42,8 @@ float4 PS(PS_INPUT input) : SV_Target
 	metallic = RT2Value.g;
     normal = DecodeNormal(normal);
 
-    baseColor.xyz = pow(baseColor.xyz, 1 / 2.2f);
-    //roughness = pow(roughness, 1 / 2.2f);
+    baseColor.xyz = pow(baseColor.xyz, 2.2f);
+    roughness = pow(roughness, 2.2f);
 
 	//clip(length(normal)-0.1);
 
@@ -66,21 +66,19 @@ float4 PS(PS_INPUT input) : SV_Target
 
 	float4 outputColor = float4(directSpecular + directDiffuse, 1);
 
-    outputColor.xyz = pow(outputColor.xyz, 2.2f);
-
     float3 worldPosition = ReconstructWorldPositionFromDepth(depthTex, samLinear, input.Tex, inverseViewProjection);
     float4 shadowCoord = mul(float4(worldPosition, 1), mtxShadow);
     float maxDepthSlope = max(abs(ddx(shadowCoord.z)), abs(ddy(shadowCoord.z)));
 
     float shadowThreshold = 1.0f; // シャドウにするかどうかの閾値です.
-    float bias = 0.0001f; // 固定バイアスです.
-    float slopeScaledBias = 0.1f; // 深度傾斜.
+    float bias = 0.0003f; // 固定バイアスです.
+    float slopeScaledBias = 0.5f; // 深度傾斜.
     float depthBiasClamp = 0.1f; // バイアスクランプ値.
 
     float shadowBias = bias + slopeScaledBias * maxDepthSlope;
     shadowBias = min(shadowBias, depthBiasClamp);
 
-    float3 shadowColor = float3(0, 0, 0);
+    float3 shadowColor = float3(0.25f, 0.25f, 0.25f);
     shadowThreshold = ShadowMap.SampleCmpLevelZero(ShadowSmp, shadowCoord.xy, shadowCoord.z - shadowBias);
     shadowColor = lerp(shadowColor, float3(1.0f, 1.0f, 1.0f), shadowThreshold);
 

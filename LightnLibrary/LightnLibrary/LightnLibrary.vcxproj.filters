@@ -165,6 +165,9 @@
     <FxCompile Include="Shader\Source\Pixel\PostProcess.hlsl">
       <Filter>リソース ファイル\Pixel</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\GaussianBlur_ps.hlsl">
+      <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Actor\Actor.cpp">
@@ -334,6 +337,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Renderer\Mesh\SkyBox.cpp">
       <Filter>ソース ファイル\Renderer\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\PostProcess.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -554,6 +560,9 @@
       <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Renderer\Camera.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\PostProcess.h">
       <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
   </ItemGroup>

@@ -164,6 +164,10 @@ void Deferredbuffers::clearRenderTargets(ComPtr<ID3D11DeviceContext> context, fl
 	}
 }
 
+void Deferredbuffers::setViewPort(ComPtr<ID3D11DeviceContext> deviceContext) {
+	deviceContext->RSSetViewports(1, &_viewport);
+}
+
 ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getShaderResourceView(uint16 index) const{
 	return _shaderResourceViewArray[index];
 }

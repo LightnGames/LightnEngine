@@ -35,8 +35,8 @@ float4 PS ( PS_INPUT input ) : SV_Target
 	metallic = RT2Value.g;
     normal = DecodeNormal(normal);
 
-    baseColor.xyz = pow(baseColor.xyz, 1 / 2.2f);
-    //roughness = pow(roughness, 1 / 2.2f);
+    baseColor.xyz = pow(baseColor.xyz, 2.2f);
+    roughness = pow(roughness, 2.2f);
 
 	//メタリックの値からテクスチャカラー
     float3 diffuseColor = lerp(baseColor.xyz, float3(0.04, 0.04, 0.04), metallic);
@@ -51,10 +51,9 @@ float4 PS ( PS_INPUT input ) : SV_Target
     float3 cubeMapSpecular = ApproximateSpecularIBL(specularColor, roughness, normal, -input.Eye);
 	//return float4(cubeMapDiffuse,1);
 
-	float3 skyColor = diffuseColor*lightColor.xyz;
+    float3 skyColor = diffuseColor * lightColor.xyz;
 
     float4 outputColor = float4(cubeMapDiffuse * lightIntensity.r + cubeMapSpecular * lightIntensity.g + skyColor, 1);
 
-    outputColor.xyz = pow(outputColor.xyz, 2.2f);
     return outputColor;
 }

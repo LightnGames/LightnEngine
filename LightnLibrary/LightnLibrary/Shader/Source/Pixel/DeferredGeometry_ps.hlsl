@@ -24,6 +24,7 @@ struct PS_OUTPUT
 	float4 rme:SV_TARGET2;
 };
 
+
 PS_OUTPUT PS ( PS_INPUT input ) : SV_Target
 {
 	PS_OUTPUT output;
@@ -40,6 +41,7 @@ PS_OUTPUT PS ( PS_INPUT input ) : SV_Target
     normal = normalize(normal);
     //normal = input.Normal;
 
+    //roughness = 1;
 	output.albedo = baseColor;
     output.normal = float4(EncodeNormal(normal), 1);
 	output.rme = float4(roughness,metallic,0,0);

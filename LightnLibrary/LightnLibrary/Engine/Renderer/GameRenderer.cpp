@@ -17,6 +17,7 @@
 #include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/RendererUtil.h>
 #include <Components/CameraComponent.h>
+#include "PostProcess.h"
 
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
@@ -29,7 +30,8 @@ _sceneRendererManager{ nullptr },
 _deferredBuffers{ nullptr },
 _orthoScreen{ nullptr },
 _tileCulling{ nullptr },
-_graphicsResourceManager{ nullptr } {
+_graphicsResourceManager{ nullptr },
+_postProcess{ nullptr } {
 
 	_sceneRendererManager = std::make_unique<SceneRendererManager>();
 	drawSettings = std::make_unique<DrawSettings>();
@@ -39,6 +41,7 @@ _graphicsResourceManager{ nullptr } {
 	_staticInstancedMeshRenderer = std::make_unique<StaticInstancedMeshRenderer>();
 	_tileCulling = std::make_unique<TileBasedLightCulling>();
 	_graphicsResourceManager = std::make_unique<GraphicsResourceManager>();
+	_postProcess = std::make_unique<PostProcess>();
 }
 
 GameRenderer::~GameRenderer() {
@@ -73,7 +76,6 @@ HRESULT GameRenderer::createGameWindow(const HINSTANCE & hInst, WNDPROC lpfnWndP
 	return S_OK;
 }
 
-ComPtr<ID3D11PixelShader> postProcessShader;
 HRESULT GameRenderer::initDirect3D() {
 
 	//スワップチェインの作成
@@ -96,7 +98,7 @@ HRESULT GameRenderer::initDirect3D() {
 
 	//スワップチェイン初期化
 	//D3D11_CREATE_DEVICE_DEBUG
-	HRESULT hr = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, D3D11_CREATE_DEVICE_DEBUG, &featureLevels
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, 0, &featureLevels
 		, 1, D3D11_SDK_VERSION, &sd, _swapChain.ReleaseAndGetAddressOf(), _device.ReleaseAndGetAddressOf(), nullptr, _deviceContext.ReleaseAndGetAddressOf());
 
 	if (FAILED(hr)) {
@@ -111,10 +113,9 @@ HRESULT GameRenderer::initDirect3D() {
 
 	_debugGeometryRenderer->initialize(_device);
 	_graphicsResourceManager->initialize(_device);
+	_postProcess->initialize(_device);
 
 	_sceneRendererManager->setUp();
-	RendererUtil::createPixelShader("PostProcess.cso", postProcessShader, _device);
-
 
 	return S_OK;
 }
@@ -123,7 +124,7 @@ HRESULT GameRenderer::initDirect3D() {
 void GameRenderer::draw() {
 
 	//画面クリア
-	const float clearColor[4] = { 0.0f,0.0f,0.0f,1.0f };
+	const float clearColor[4] = { 0.0f,0.0f,0.0f,0.0f };
 	_orthoScreen->clearMainRenderTarget(clearColor);
 
 	//カメラ情報をセットアップ
@@ -159,12 +160,9 @@ void GameRenderer::draw() {
 	_sceneRendererManager->skyBox()->drawStencil(*drawSettings);
 
 	//レンダーターゲット切り替え・ライティング設定
-	//_orthoScreen->setBackBufferAndDSV(_deferredBuffers->getDepthStencilView());
-	//_deferredBuffers->setRenderTargetLighting(_deviceContext);
-	const float cc[4] = { 0,0,0,0 };
 	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargetViewArray[3].GetAddressOf(), _deferredBuffers->getDepthStencilView().Get());
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	_deviceContext->OMSetBlendState(_orthoScreen->_blendState.Get(), blendFactor, 0xffffffff);
+	_deviceContext->OMSetBlendState(_orthoScreen->_blendState.Get(), blendFactor, D3D11_DEFAULT_SAMPLE_MASK);
 
 	//Skybox描画
 	_sceneRendererManager->skyBox()->draw(*drawSettings);
@@ -190,14 +188,10 @@ void GameRenderer::draw() {
 	const Matrix4 mtxCamera = CameraComponent::mainCamera->cameraMatrix().inverse();
 	const TileBasedPointLightType* pointLights = _sceneRendererManager->pointLights(mtxCamera);
 	const TileBasedSpotLightType* spotLights = _sceneRendererManager->spotLights(mtxCamera);
-	_tileCulling->draw(*drawSettings, pointLights,spotLights);
+	_tileCulling->draw(*drawSettings, pointLights, spotLights);
 
 	//ポストプロセス
-	_orthoScreen->setBackBuffer();
-	_deviceContext->PSSetShader(postProcessShader.Get(), 0, 0);
-	_deviceContext->PSSetShaderResources(0, 1, _deferredBuffers->_shaderResourceViewArray[3].GetAddressOf());
-	_orthoScreen->setOrthoScreenVertex();
-	_deviceContext->Draw(4, 0);
+	_postProcess->draw(_deviceContext, _deferredBuffers.get(), _orthoScreen.get());
 
 	//デバッグジオメトリを描画
 	const auto& lines = _sceneRendererManager->debugLines();
@@ -259,8 +253,8 @@ void GameRenderer::createRenderTargets() {
 	hr = _orthoScreen->initialize(_device, _deviceContext, _swapChain, _width, _height);
 	hr = _deferredBuffers->initialize(_device, _width, _height, 0.1f, 1000);
 	hr = _tileCulling->initialize(_device, _width, _height);
+	hr = _postProcess->setupRenderResource(_device, _width, _height);
 
 	drawSettings->mainShaderResourceView = _orthoScreen->getShaderResourceView();
 	drawSettings->deferredBuffers = _deferredBuffers.get();
-
 }

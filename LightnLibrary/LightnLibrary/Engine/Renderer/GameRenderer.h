@@ -17,6 +17,7 @@ class DebugGeomtryRenderer;
 class StaticInstancedMeshRenderer;
 class TileBasedLightCulling;
 class GraphicsResourceManager;
+class PostProcess;
 
 class GameRenderer :public Singleton<GameRenderer>{
 
@@ -76,4 +77,5 @@ private:
 	std::unique_ptr<StaticInstancedMeshRenderer> _staticInstancedMeshRenderer;
 	std::unique_ptr<TileBasedLightCulling> _tileCulling;
 	std::unique_ptr<GraphicsResourceManager> _graphicsResourceManager;
+	std::unique_ptr<PostProcess> _postProcess;
 };

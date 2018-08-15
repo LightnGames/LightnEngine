@@ -12,7 +12,7 @@ SpotLightComponent::SpotLightComponent()
 
 	light.attenuationBegin = 1;
 	light.attenuationEnd = 5;
-	light.color = Vector3(1, 1, 1)*2;
+	light.color = Vector3(1, 1, 1)*50;
 }
 
 SpotLightComponent::~SpotLightComponent()

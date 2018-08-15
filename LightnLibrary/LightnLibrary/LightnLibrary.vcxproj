@@ -205,6 +205,12 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">PS</EntryPointName>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\GaussianBlur_ps.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Shader\Source\Pixel\PostProcess.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -559,6 +565,7 @@
     <ClCompile Include="Engine\Renderer\Mesh\StaticInstanceMesh.cpp" />
     <ClCompile Include="Engine\Renderer\Mesh\StaticMesh.cpp" />
     <ClCompile Include="Engine\Renderer\OrthoScreen.cpp" />
+    <ClCompile Include="Engine\Renderer\PostProcess.cpp" />
     <ClCompile Include="Engine\Renderer\RendererSettings.cpp" />
     <ClCompile Include="Engine\Renderer\RendererUtil.cpp" />
     <ClCompile Include="Engine\Renderer\SceneRendererManager.cpp" />
@@ -624,6 +631,7 @@
     <ClInclude Include="Engine\Renderer\Mesh\StaticInstanceMesh.h" />
     <ClInclude Include="Engine\Renderer\Mesh\StaticMesh.h" />
     <ClInclude Include="Engine\Renderer\OrthoScreen.h" />
+    <ClInclude Include="Engine\Renderer\PostProcess.h" />
     <ClInclude Include="Engine\Renderer\RenderableEntity.h" />
     <ClInclude Include="Engine\Renderer\RenderableObject.h" />
     <ClInclude Include="Engine\Renderer\RendererSettings.h" />

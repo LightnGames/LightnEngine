@@ -1,4 +1,3 @@
-
 StructuredBuffer<matrix> instanceMatrices : register(t0);
 
 cbuffer ConstBuff : register(b0)

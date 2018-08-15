@@ -34,7 +34,6 @@ void GraphicsResourceManager::initialize(ComPtr<ID3D11Device> device) {
 	sampDesc.MaxAnisotropy = 16;//ミップマップの遠近レベル
 	sampDesc.MinLOD = 0;
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
 	_device->CreateSamplerState(&sampDesc, _simpleSampler.ReleaseAndGetAddressOf());
 	
 	_directionalLight = std::make_unique<DirectionalLight>();

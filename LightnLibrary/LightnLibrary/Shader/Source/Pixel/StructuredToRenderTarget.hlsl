@@ -22,7 +22,5 @@ float4 PS(PS_INPUT input) : SV_Target
     
     float3 sampleLit;
     sampleLit = UnpackRGBA16(gLitTextureFlat[GetFramebufferSampleAddress(structuredCoords, framebufferDimensions.xy)]).xyz;
-
-    sampleLit.xyz = pow(sampleLit.xyz, 2.2f);
     return float4(sampleLit, 1);
 }

@@ -40,7 +40,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 	ImGui::ColorEdit3("Color", &lightColor.x);
 	ImGui::SliderFloat("Pitch", &pitchDir, 0.0f, 360.0f);
 	ImGui::SliderFloat("Yaw", &yawDir, 0.0f, 360.0f);
-	ImGui::SliderFloat("Intensity", &lightIntensity, 0.0f, 30.0f);
+	ImGui::SliderFloat("Intensity", &lightIntensity, 0.0f, 100.0f);
 	ImGui::End();
 
 	DirectionalLightType lightBuffer;

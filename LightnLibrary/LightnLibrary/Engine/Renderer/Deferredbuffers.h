@@ -32,6 +32,8 @@ public:
 	//GBufferを指定カラーでクリア
 	void clearRenderTargets(ComPtr<ID3D11DeviceContext> context, float red, float green, float blue, float alpha);
 
+	void setViewPort(ComPtr<ID3D11DeviceContext> deviceContext);
+
 	//Gbufferのシェーダーリソースビューをインデックスで取得
 	ComPtr<ID3D11ShaderResourceView> getShaderResourceView(uint16 index) const;
 
