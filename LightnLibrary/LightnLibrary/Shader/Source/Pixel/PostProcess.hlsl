@@ -20,6 +20,9 @@ struct PS_INPUT
 #define F 0.30
 #define W 11.2
 
+#define VIGNETTE_POWER 1.5f
+#define VIGNETTE_SLOPE 2.0f
+
 float3 Uncharted2Tonemap(float3 x)
 {
     return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
@@ -44,14 +47,19 @@ float4 PS(PS_INPUT input) : SV_Target
     texColor += FetchColor(GaussianDownSamples[3], input.Tex);
     texColor.a = 1.0f;
 
+    //Tonemap
     float ExposureBias = 2.0f;
     float3 curr = Uncharted2Tonemap(ExposureBias * texColor.xyz);
 
     float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
     float3 color = curr * whiteScale;
     //color = texColor.xyz;
-      
     float3 retColor = pow(color, 1 / 2.2);
+
+    //Vignette
+    float2 tc = input.Tex - float2(0.5f, 0.5f);
+    float v = dot(tc, tc);
+    retColor.rgb *= (1.0 - pow(v, VIGNETTE_SLOPE * 0.5f) * VIGNETTE_POWER);
 
     return float4(retColor.xyz, 1);
 }
