@@ -83,9 +83,9 @@ void TileBasedLightCulling::draw(const DrawSettings& settings,
 
 	ID3D11ShaderResourceView* resource[4] = {
 	deferredBuffers->getDepthStencilResource().Get(),
-	deferredBuffers->getShaderResourceView(0).Get(),
-	deferredBuffers->getShaderResourceView(1).Get(),
-	deferredBuffers->getShaderResourceView(2).Get(),
+	deferredBuffers->getShaderResourceView(0),
+	deferredBuffers->getShaderResourceView(1),
+	deferredBuffers->getShaderResourceView(2),
 	};
 
 	const uint32 width = deferredBuffers->getGBufferSize().x;
@@ -95,7 +95,7 @@ void TileBasedLightCulling::draw(const DrawSettings& settings,
 
 	PerFrameConstants perFrame;
 	perFrame.cameraProj = camera->mtxProj().transpose();
-	perFrame.cameraRotate =Matrix4::matrixFromQuaternion(camera->getWorldRotation()).transpose();
+	perFrame.cameraRotate = Matrix4::matrixFromQuaternion(camera->getWorldRotation()).transpose();
 	perFrame.camerProjInverse = perFrame.cameraProj.inverse();
 	perFrame.cameraNearFar = Vector2(camera->farClip(), camera->nearClip());
 	perFrame.framebufferDimensionsX = width;

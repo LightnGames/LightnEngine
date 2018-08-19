@@ -19,20 +19,30 @@ float4 PS(PS_INPUT input) : SV_Target
 {
     float threadHold = 1.0f;
     float softThreadHold = 0.5f;
-    float bloomPower = 3.0f;
+    float bloomPower = 1.5f;
     float4 result = 0;
-    for (int i = 0; i < SampleCount.x; ++i)
+
+    float pixScale = Offset[15].x;
+    float horizontal = Offset[15].y;
+    float vertical = Offset[15].z;
+
+    uint sampleCount = SampleCount.x;
+
+    for (int i = 0; i < sampleCount; ++i)
     {
-        float4 color = ColorTexture.Sample(samLinear, input.Tex + Offset[i].xy);
+        int offsetIndex = i - (sampleCount - 1) / 2;
+        float offsetScale = offsetIndex * pixScale;
+        float2 offset = float2(offsetScale * horizontal, offsetScale * vertical);
+        float4 color = ColorTexture.Sample(samLinear, input.Tex + offset) * Offset[abs(offsetIndex)].x;
         float knee = softThreadHold * threadHold;
         float soft = pow(min(knee * 2.0f, max(0, color - threadHold + knee)), 2.0f) / (4 * knee * 0.00001f);
-        float4 bloomSource = max(color - threadHold, 0) / max(color, 0.0001f);
 
-        color = bloomSource * bloomPower;
-        color.a = 1.0f;
-        result += Offset[i].z * color;
+        result += color;
     }
 
+    float4 bloomSource = max(result - threadHold, 0) / max(result, 0.0001f) * bloomPower;
+    result = lerp(result, bloomSource, Offset[15].w);
+    result = saturate(result);
     result.a = 1.0f;
 
     return result;

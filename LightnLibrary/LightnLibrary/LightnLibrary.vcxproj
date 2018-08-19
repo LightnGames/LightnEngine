@@ -217,6 +217,12 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\SSAO_ps.hlsl">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
     <FxCompile Include="Shader\Source\Pixel\StructuredToRenderTarget.hlsl">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)LightnLibrary\Shader\Source</AdditionalIncludeDirectories>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PS</EntryPointName>
@@ -552,6 +558,7 @@
     <ClCompile Include="Engine\Loader\MeshLoader.cpp" />
     <ClCompile Include="Engine\Renderer\Deferredbuffers.cpp" />
     <ClCompile Include="Engine\Renderer\GameRenderer.cpp" />
+    <ClCompile Include="Engine\Renderer\GraphicsBuffers.cpp" />
     <ClCompile Include="Engine\Renderer\GraphicsResourceManager.cpp" />
     <ClCompile Include="Engine\Renderer\ImguiWindow.cpp" />
     <ClCompile Include="Engine\Renderer\Light\DirectionalLight.cpp" />
@@ -614,6 +621,7 @@
     <ClInclude Include="Engine\Renderer\Deferredbuffers.h" />
     <ClInclude Include="Engine\Renderer\DrawSettings.h" />
     <ClInclude Include="Engine\Renderer\GameRenderer.h" />
+    <ClInclude Include="Engine\Renderer\GraphicsBuffers.h" />
     <ClInclude Include="Engine\Renderer\GraphicsResourceManager.h" />
     <ClInclude Include="Engine\Renderer\ImguiWindow.h" />
     <ClInclude Include="Engine\Renderer\LightEntity.h" />

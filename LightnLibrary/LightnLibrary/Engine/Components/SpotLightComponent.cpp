@@ -11,8 +11,8 @@ SpotLightComponent::SpotLightComponent()
 	SceneRendererManager::instance().addSpotLight(this);
 
 	light.attenuationBegin = 1;
-	light.attenuationEnd = 5;
-	light.color = Vector3(1, 1, 1)*50;
+	light.attenuationEnd = 10;
+	light.color = Vector3(1, 1, 1)*10;
 }
 
 SpotLightComponent::~SpotLightComponent()

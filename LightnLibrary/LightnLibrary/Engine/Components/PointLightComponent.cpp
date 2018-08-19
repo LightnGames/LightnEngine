@@ -11,8 +11,8 @@ PointLightComponent::PointLightComponent()
 	SceneRendererManager::instance().addPointLight(this);
 
 	light.attenuationBegin = 1;
-	light.attenuationEnd = 5;
-	light.color = Vector3(1, 1, 1)*100;
+	light.attenuationEnd = 10;
+	light.color = Vector3(1, 1, 1)*10;
 }
 
 PointLightComponent::~PointLightComponent()

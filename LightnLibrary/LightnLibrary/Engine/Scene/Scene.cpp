@@ -16,6 +16,7 @@
 #include <assert.h>
 
 #include <unordered_map>
+#include <ThirdParty/ImGui/imgui.h>
 
 RefPtr<SkyboxActor> sky;
 std::vector<RefPtr<StaticMeshActor>> smTests;
@@ -33,7 +34,7 @@ Scene::Scene() {
 	pointLight->setActorPosition({ 0,3,1 });
 	spotLight = makeChild<SpotLightActor>();
 	spotLight->setActorRotation(Quaternion::euler({ 0,90,0 }));
-	spotLight->setActorPosition({ 1,1,-2 });
+	spotLight->setActorPosition({ 1,1,-4 });
 
 	//マテリアルデータ
 	std::vector<std::string> lp287mat;
@@ -209,6 +210,13 @@ void Scene::update(float deltaTime)
 		walkAnim = true;
 	}
 
+	static float y = 1.0f;
+	ImGui::Begin("height");
+	ImGui::SliderFloat("Yaw", &y, -10.0f, 10.0f);
+	ImGui::End();
+
+
+	pointLight->setActorPosition({ 0,y,1 });
 	velocity = Quaternion::rotVector(sk->getActorRotation(), velocity);
 
 	sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0, 90, 0}));

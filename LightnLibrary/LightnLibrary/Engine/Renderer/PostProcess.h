@@ -8,8 +8,10 @@
 
 #define BLOOM_DOWN_SAMPLE 4
 
+class RenderTarget;
 class Deferredbuffers;
 class OrthoScreen;
+struct Camera;
 
 struct GaussBlurParam {
 	uint32 sampleCount;
@@ -28,15 +30,11 @@ public:
 	//サイズを指定してテクスチャを作成
 	HRESULT setupRenderResource(ComPtr<ID3D11Device> device, uint16 width, uint16 height);
 
-	void draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferredbuffers> deferredBuffers, RefPtr<OrthoScreen> orthoScreen);
+	void draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferredbuffers> deferredBuffers, RefPtr<OrthoScreen> orthoScreen, RefPtr<Camera> camera);
 
 private:
 
 	inline GaussBlurParam CalcBlurParam(uint32 width, uint32 height, Vector2 dir, float deviation, float multiply);
-
-	inline float GaussianDistribution(const Vector2& pos, float rho);
-
-	void createRenderTargets(ComPtr<ID3D11Texture2D>& tex, ComPtr<ID3D11RenderTargetView>& rtv, ComPtr<ID3D11ShaderResourceView>& srv, uint32 width, uint32 height, ComPtr<ID3D11Device> device);
 
 private:
 
@@ -48,8 +46,5 @@ private:
 	ComPtr<ID3D11Buffer> _gaussianConstantBuffer;
 	ComPtr<ID3D11BlendState> _blendState;
 	ComPtr<ID3D11SamplerState> _linerSampler;
-	ComPtr<ID3D11SamplerState> _pointSampler;
-	ComPtr<ID3D11RenderTargetView> _bloomDownSampleRTV[BLOOM_DOWN_SAMPLE * 2];
-	ComPtr<ID3D11Texture2D> _bloomDownSampleTex[BLOOM_DOWN_SAMPLE * 2];
-	ComPtr<ID3D11ShaderResourceView> _bloomDownSampleSRV[BLOOM_DOWN_SAMPLE * 2];
+	std::unique_ptr<RenderTarget> _bloomDownSamples[BLOOM_DOWN_SAMPLE * 2];
 };

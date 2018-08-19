@@ -3,7 +3,15 @@
 #include <Renderer/RendererUtil.h>
 #include <Renderer/Deferredbuffers.h>
 #include <Renderer/OrthoScreen.h>
+#include <Renderer/Camera.h>
+#include <Renderer/GraphicsBuffers.h>
 
+struct PostProcessConstant {
+	Matrix4 mtxViewProjInverse;
+	Matrix4 mtxViewProj;
+};
+
+ComPtr<ID3D11Buffer> _postProcessConstant;
 void PostProcess::initialize(ComPtr<ID3D11Device> device) {
 
 	HRESULT hr;
@@ -39,23 +47,7 @@ void PostProcess::initialize(ComPtr<ID3D11Device> device) {
 	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&sampDesc, _linerSampler.ReleaseAndGetAddressOf());
 
-	D3D11_SAMPLER_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-	desc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-	desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-	desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-	desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-	desc.MipLODBias = 0;
-	desc.MaxAnisotropy = 1;
-	desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	desc.BorderColor[0] = 0.0f;
-	desc.BorderColor[1] = 0.0f;
-	desc.BorderColor[2] = 0.0f;
-	desc.BorderColor[3] = 0.0f;
-	desc.MinLOD = 0; // -FLT_MAX
-	desc.MaxLOD = D3D11_FLOAT32_MAX; // FLT_MAX
-
-	hr = device->CreateSamplerState(&desc, _pointSampler.GetAddressOf());
+	RendererUtil::createConstantBuffer(_postProcessConstant, sizeof(PostProcessConstant), device);
 }
 
 HRESULT PostProcess::setupRenderResource(ComPtr<ID3D11Device> device, uint16 width, uint16 height) {
@@ -67,10 +59,9 @@ HRESULT PostProcess::setupRenderResource(ComPtr<ID3D11Device> device, uint16 wid
 	uint32 donwSampleHeight = _height / 2;
 	for (int i = 0; i < BLOOM_DOWN_SAMPLE; ++i) {
 
-		uint32 idxA = i;
-		uint32 idxB = i + BLOOM_DOWN_SAMPLE;
-		createRenderTargets(_bloomDownSampleTex[idxA], _bloomDownSampleRTV[idxA], _bloomDownSampleSRV[idxA], donwSampleWidth, donwSampleHeight, device);
-		createRenderTargets(_bloomDownSampleTex[idxB], _bloomDownSampleRTV[idxB], _bloomDownSampleSRV[idxB], donwSampleWidth, donwSampleHeight, device);
+		_bloomDownSamples[i] = std::make_unique<RenderTarget>(device.Get(), DXGI_FORMAT_R16G16B16A16_FLOAT, donwSampleWidth, donwSampleHeight);
+		_bloomDownSamples[i + BLOOM_DOWN_SAMPLE] = std::make_unique<RenderTarget>(device.Get(), DXGI_FORMAT_R16G16B16A16_FLOAT, donwSampleWidth, donwSampleHeight);
+
 		donwSampleWidth >>= 1;
 		donwSampleHeight >>= 1;
 	}
@@ -78,7 +69,7 @@ HRESULT PostProcess::setupRenderResource(ComPtr<ID3D11Device> device, uint16 wid
 	return S_OK;
 }
 
-void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferredbuffers> deferredBuffers, RefPtr<OrthoScreen> orthoScreen) {
+void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferredbuffers> deferredBuffers, RefPtr<OrthoScreen> orthoScreen, RefPtr<Camera> camera) {
 	
 	const float clearColor[4] = { 0.0f,0.0f,0.0f,0.0f };
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -89,19 +80,19 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 
 	const float blendFactorOne[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	deviceContext->OMSetBlendState(_blendState.Get(), blendFactorOne, D3D11_DEFAULT_SAMPLE_MASK);
-	deviceContext->PSSetSamplers(0, 1, _pointSampler.GetAddressOf());
+	deviceContext->PSSetSamplers(0, 1, _linerSampler.GetAddressOf());
 
 	//Bloom用の縮小バッファ描画とガウシアンブラーをかける
 	{
 		uint32 donwSampleWidth = _width / 2;
 		uint32 donwSampleHeight = _height / 2;
-		float deviation = 2.5f;
+		float deviation = 3.0f;
 		float multiply = 1.0f;
 
 		//RTクリア
 		for (int i = 0; i < BLOOM_DOWN_SAMPLE; ++i) {
-			deviceContext->ClearRenderTargetView(_bloomDownSampleRTV[i].Get(), clearColor);
-			deviceContext->ClearRenderTargetView(_bloomDownSampleRTV[i + BLOOM_DOWN_SAMPLE].Get(), clearColor);
+			deviceContext->ClearRenderTargetView(_bloomDownSamples[i]->rtv(), clearColor);
+			deviceContext->ClearRenderTargetView(_bloomDownSamples[i + BLOOM_DOWN_SAMPLE]->rtv(), clearColor);
 		}
 
 		//縮小バッファを切り替えながらブラー設定
@@ -110,10 +101,10 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 			ID3D11ShaderResourceView* srv = 0;
 
 			if (i == 0) {
-				srv = deferredBuffers->_shaderResourceViewArray[3].Get();
+				srv = deferredBuffers->_renderTargets[3]->srv();
 			}
 			else {
-				srv = _bloomDownSampleSRV[i - 1].Get();
+				srv = _bloomDownSamples[i - 1]->srv();
 			}
 
 			D3D11_VIEWPORT viewport;
@@ -126,7 +117,11 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 
 			GaussBlurParam src = CalcBlurParam(donwSampleWidth, donwSampleHeight, Vector2(1, 0), deviation, multiply);
 
-			deviceContext->OMSetRenderTargets(1, _bloomDownSampleRTV[i].GetAddressOf(), 0);
+			if (i == 0) {
+				src.offset[15].w = 1.0f;
+			}
+
+			deviceContext->OMSetRenderTargets(1, _bloomDownSamples[i]->ppRtv(), 0);
 			deviceContext->UpdateSubresource(_gaussianConstantBuffer.Get(), 0, 0, &src, 0, 0);
 			deviceContext->PSSetConstantBuffers(0, 1, _gaussianConstantBuffer.GetAddressOf());
 			deviceContext->RSSetViewports(1, &viewport);
@@ -134,10 +129,10 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 			deviceContext->PSSetShaderResources(0, 1, &srv);
 			deviceContext->Draw(4, 0);
 
-			srv = _bloomDownSampleSRV[i].Get();
+			srv = _bloomDownSamples[i]->srv();
 			src = CalcBlurParam(donwSampleWidth, donwSampleHeight, Vector2(0, 1), deviation, multiply);
 
-			deviceContext->OMSetRenderTargets(1, _bloomDownSampleRTV[i + BLOOM_DOWN_SAMPLE].GetAddressOf(), 0);
+			deviceContext->OMSetRenderTargets(1, _bloomDownSamples[i + BLOOM_DOWN_SAMPLE]->ppRtv(), 0);
 			deviceContext->PSSetShaderResources(0, 1, &srv);
 			deviceContext->UpdateSubresource(_gaussianConstantBuffer.Get(), 0, 0, &src, 0, 0);
 			deviceContext->Draw(4, 0);
@@ -149,21 +144,30 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 		}
 	}
 
-	ID3D11ShaderResourceView* downSampleBlurs[3] = {
-		_bloomDownSampleSRV[0 + BLOOM_DOWN_SAMPLE].Get(),
-		_bloomDownSampleSRV[1 + BLOOM_DOWN_SAMPLE].Get(),
-		_bloomDownSampleSRV[2 + BLOOM_DOWN_SAMPLE].Get(),
+	ID3D11ShaderResourceView* const downSampleBlurs[4] = {
+		_bloomDownSamples[0 + BLOOM_DOWN_SAMPLE]->srv(),
+		_bloomDownSamples[1 + BLOOM_DOWN_SAMPLE]->srv(),
+		_bloomDownSamples[2 + BLOOM_DOWN_SAMPLE]->srv(),
+		_bloomDownSamples[3 + BLOOM_DOWN_SAMPLE]->srv(),
 	};
 
 	deviceContext->PSSetSamplers(0, 1, _linerSampler.GetAddressOf());
 	deviceContext->OMSetBlendState(0, blendFactor, D3D11_DEFAULT_SAMPLE_MASK);
 	deferredBuffers->setViewPort(deviceContext);
 
+	PostProcessConstant constant;
+	constant.mtxViewProjInverse = camera->mtxProj.inverse().multiply(camera->mtxView.inverse()).transpose();
+	constant.mtxViewProj = camera->mtxProj.transpose();
+	deviceContext->UpdateSubresource(_postProcessConstant.Get(), 0, 0, &constant, 0, 0);
+
 	//最終パスポストプロセス
 	orthoScreen->setBackBuffer();
 	deviceContext->PSSetShader(_postProcessShader.Get(), 0, 0);
-	deviceContext->PSSetShaderResources(0, 1, deferredBuffers->_shaderResourceViewArray[3].GetAddressOf());
-	deviceContext->PSSetShaderResources(1, 3, downSampleBlurs);
+	deviceContext->PSSetShaderResources(0, 1, deferredBuffers->_renderTargets[3]->ppSrv());
+	deviceContext->PSSetShaderResources(1, 4, downSampleBlurs);
+	deviceContext->PSSetShaderResources(5, 1, deferredBuffers->_depthStencilSRV.GetAddressOf());
+	deviceContext->PSSetShaderResources(6, 1, deferredBuffers->_renderTargets[1]->ppSrv());
+	deviceContext->PSSetConstantBuffers(0, 1, _postProcessConstant.GetAddressOf());
 	orthoScreen->setOrthoScreenVertex();
 	deviceContext->Draw(4, 0);
 
@@ -171,79 +175,35 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 }
 
 inline GaussBlurParam PostProcess::CalcBlurParam(uint32 width, uint32 height, Vector2 dir, float deviation, float multiply) {
-	
-	GaussBlurParam result;
-	result.sampleCount = 15;
-	auto tu = 1.0f / float(width);
-	auto tv = 1.0f / float(height);
 
-	result.offset[0].z = GaussianDistribution(Vector2(0.0f, 0.0f), deviation)*multiply;
-	auto total_weight = result.offset[0].z;
+	GaussBlurParam param;
 
-	result.offset[0].x = 0.0f;
-	result.offset[0].y = 0.0f;
-
-	for (auto i = 1; i < 8; ++i) {
-		result.offset[i].x = dir.x * i * tu;
-		result.offset[i].y = dir.y * i * tv;
-		result.offset[i].z = GaussianDistribution(Vector2(dir.x*i, dir.y * i), deviation)*multiply;
-		total_weight += result.offset[i].z * 2.0f;
+	float range = 35.0f;
+	float t = 0.0f;
+	float d = range * range / 100.0f;
+	for(int i = 0; i < 10; ++i) {
+		float r = 1.0f + 2.0f* i;
+		float e = -0.5f * (r * r) / d;
+		float w = exp(e);
+		param.offset[i].x = w;
+		if (i > 0) { w *= 2.0f; }
+		t += w;
 	}
 
-	for (auto i = 0; i < 8; ++i) {
-		result.offset[i].z /= total_weight;
-	}
-	for (auto i = 8; i < 15; ++i) {
-		result.offset[i].x = -result.offset[i - 7].x;
-		result.offset[i].y = -result.offset[i - 7].y;
-		result.offset[i].z = result.offset[i - 7].z;
+	for (int i = 0; i < 10; ++i) {
+		param.offset[i].x /= t;
 	}
 
-	return result;
-}
+	param.sampleCount = 19;
+	if (dir.x == 1) {
+		param.offset[15].x = 1.0f / (float)width;
+	}
+	else {
+		param.offset[15].x = 1.0f / (float)height;
+	}
 
-inline float PostProcess::GaussianDistribution(const Vector2 & pos, float rho) {
-	return exp(-(pos.x * pos.x + pos.y * pos.y) / (2.0f * rho * rho));
-}
+	param.offset[15].y = dir.x;
+	param.offset[15].z = dir.y;
 
-void PostProcess::createRenderTargets(ComPtr<ID3D11Texture2D>& tex, ComPtr<ID3D11RenderTargetView>& rtv, ComPtr<ID3D11ShaderResourceView>& srv, uint32 width, uint32 height, ComPtr<ID3D11Device> device) {
-
-	HRESULT result;
-	const DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-
-	//レンダーターゲットを生成
-	D3D11_TEXTURE2D_DESC textureDesc;
-	ZeroMemory(&textureDesc, sizeof(textureDesc));
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = format;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
-
-	result = device->CreateTexture2D(&textureDesc, 0, tex.ReleaseAndGetAddressOf());
-
-	//レンダーターゲットビューの生成
-	D3D11_RENDER_TARGET_VIEW_DESC renderDesc;
-	ZeroMemory(&renderDesc, sizeof(renderDesc));
-	renderDesc.Format = format;
-	renderDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	renderDesc.Texture2D.MipSlice = 0;
-
-	result = device->CreateRenderTargetView(tex.Get(), &renderDesc, rtv.ReleaseAndGetAddressOf());
-
-	//シェーダーリソースビューの生成
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
-	ZeroMemory(&shaderDesc, sizeof(shaderDesc));
-	shaderDesc.Format = format;
-	shaderDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderDesc.Texture2D.MostDetailedMip = 0;
-	shaderDesc.Texture2D.MipLevels = 1;
-
-	result = device->CreateShaderResourceView(tex.Get(), &shaderDesc, srv.ReleaseAndGetAddressOf());
-
+	return param;
 }

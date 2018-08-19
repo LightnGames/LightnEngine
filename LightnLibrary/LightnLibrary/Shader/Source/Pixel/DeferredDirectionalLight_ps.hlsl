@@ -83,6 +83,7 @@ float4 PS(PS_INPUT input) : SV_Target
     shadowColor = lerp(shadowColor, float3(1.0f, 1.0f, 1.0f), shadowThreshold);
 
     outputColor.xyz *= shadowColor;
+    //outputColor.xyz = normal;
     //outputColor = float4(0, 0, 0, 1);
     //outputColor.y = worldPosition.y;
     //outputColor.xyz = ShadowMap.Sample(samLinear, shadowCoord.xy);

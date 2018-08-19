@@ -3,7 +3,13 @@
 
 Texture2D HDRSource : register(t0);
 texture2D GaussianDownSamples[4] : register(t1);
+Texture2D DepthTex : register(t5);
+Texture2D Normal : register(t6);
+Texture2D SSAO : register(t7);
 SamplerState samLinear : register(s0);
+
+#include "../DeferredLight.hlsl"
+#include "../GBuffer.hlsl"
 
 struct PS_INPUT
 {
@@ -12,27 +18,29 @@ struct PS_INPUT
     float3 Eye : POSITION0;
 };
 
-#define A 0.15
-#define B 0.50
-#define C 0.10
-#define D 0.20
-#define E 0.02
-#define F 0.30
-#define W 11.2
+cbuffer PostProcess : register(b0)
+{
+    float4x4 mtxViewProjInverse;
+    float4x4 mtxViewProj;
+}
 
 #define VIGNETTE_POWER 1.5f
 #define VIGNETTE_SLOPE 2.0f
 
+#define A2 2.51f
+#define B2 0.03f
+#define C2 2.43f
+#define D2 0.59f
+#define E2 0.14f
+
 float3 Uncharted2Tonemap(float3 x)
 {
-    return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+    return (x * x * A2 + x * B2) / ((x * x * C2 + x * D2) + E2);
 }
 
 float4 FetchColor(Texture2D map, float2 uv)
 {
-    float4 output = 0;
-    output += map.SampleLevel(samLinear, uv, 0);
-    return output;
+    return map.SampleLevel(samLinear, uv, 0);
 }
 
 float4 PS(PS_INPUT input) : SV_Target
@@ -40,21 +48,25 @@ float4 PS(PS_INPUT input) : SV_Target
     float4 texColor = HDRSource.Sample(samLinear, input.Tex);
 
     //ブルーム適用
-    //texColor = 0;
-    texColor += FetchColor(GaussianDownSamples[0], input.Tex);
-    texColor += FetchColor(GaussianDownSamples[1], input.Tex);
-    texColor += FetchColor(GaussianDownSamples[2], input.Tex);
-    texColor += FetchColor(GaussianDownSamples[3], input.Tex);
-    texColor.a = 1.0f;
+    float4 bloom = 0;
+    bloom += FetchColor(GaussianDownSamples[0], input.Tex);
+    bloom += FetchColor(GaussianDownSamples[1], input.Tex);
+    bloom += FetchColor(GaussianDownSamples[2], input.Tex);
+    bloom += FetchColor(GaussianDownSamples[3], input.Tex);
+    bloom /= 4.0f;
+
+    bloom.a = 1.0f;
+    texColor += bloom;
+
 
     //Tonemap
     float ExposureBias = 2.0f;
-    float3 curr = Uncharted2Tonemap(ExposureBias * texColor.xyz);
-
-    float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
-    float3 color = curr * whiteScale;
+    float3 color = Uncharted2Tonemap(ExposureBias * texColor.xyz);
     //color = texColor.xyz;
     float3 retColor = pow(color, 1 / 2.2);
+
+    float ssao = SSAO.Sample(samLinear, input.Tex).r;
+    retColor.xyz = lerp(retColor.xyz, float3(0, 0, 0), ssao);
 
     //Vignette
     float2 tc = input.Tex - float2(0.5f, 0.5f);

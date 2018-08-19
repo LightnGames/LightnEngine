@@ -63,17 +63,13 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     uint dummy;
     gBufferTextures[0].GetDimensions(gBufferDim.x, gBufferDim.y, dummy);
 
-    float2 screenPixelOffset = float2(2.0f, -2.0f) / gBufferDim;
-    float2 positionScreen = (float2(positionViewport.xy) + 0.5f) * screenPixelOffset.xy + float2(-1.0f, 1.0);
-    float2 positionScreenX = positionScreen + float2(screenPixelOffset.x, 0.0f);
-    float2 positionScreenY = positionScreen + float2(0.0f, screenPixelOffset.y);
-
     SurfaceData data=(SurfaceData)0;
 
     //ÉrÉÖÅ[ç¿ïWånÇÃZíl
     //float viewSpaceZ = cameraProj._43 / (zBuffer - cameraProj._33);
     //data.positionView = ComputePositionViewFromZ(positionScreen, zBuffer);
-    data.positionView = float3(positionScreen, zBuffer);
+    float2 texCoords = positionViewport / (float2) framebufferDimensions.xy;
+    data.positionView = float3(texCoords * 2 - float2(1, 1), zBuffer);
     data.positionView.y *= -1;
 
     float4 roughnessMetallic = gBufferTextures[3].Load(positionViewport.xy, 0).xyzw;
@@ -85,7 +81,7 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     data.albedo = pow(data.albedo, 2.2f);
     data.roughness = pow(data.roughness, 2.2f);
 
-    data.normal = DecodeNormal(data.normal);
+    data.normal = DecodeNormal(data.normal);;
 
     return data;
 }
@@ -102,7 +98,7 @@ void CS(uint3 groupId : SV_GroupID,
 {
 
     //WriteSample(dispatchThreadId.xy, float4(groupId.x % 16 / 16.0f, groupId.y % 16 / 16.0f, 0, 1.0f));
-    //WriteSample(dispatchThreadId.xy, float4(dispatchThreadId.xy/1280.0f, 0, 1));
+    //WriteSample(dispatchThreadId.xy, float4(dispatchThreadId.xy / (float2)framebufferDimensions.xy, 0, 1));
     //WriteSample(dispatchThreadId.xy, 0, float4(cameraNearFar.x/10000.0f, 0, 0, 1.0f));
     //framebuffer[GetFramebufferSampleAddress(dispatchThreadId.xy, framebufferDimensions.xy, 0)] = uint2(1,1);
 
@@ -266,7 +262,6 @@ void CS(uint3 groupId : SV_GroupID,
         float3 specularColor = lerp(float3(0.04, 0.04, 0.04), albedo, metallic);
 
         float3 viewPosition = position;
-        viewPosition.y *= -1;
 
         float3 eyeDirection;
         eyeDirection.xy = (viewPosition.xy * 2.0f) - 1.0f;
@@ -291,7 +286,7 @@ void CS(uint3 groupId : SV_GroupID,
                 float dotNL = saturate(dot(normal, L));
 
 	        //å∏êäåWêî
-                float attenuation = PhysicalAttenuation(0.00f, 0.00f, 0.05f, lightDistance);
+                float attenuation = PhysicalAttenuation(0.00f, 0.03f, 0.03f, lightDistance);
 
 	        //ãPìx
                 float lMax = max(0.0f, light.attenuationEnd - lightDistance) / light.attenuationEnd;
@@ -302,6 +297,10 @@ void CS(uint3 groupId : SV_GroupID,
                 float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
                 float3 directSpecular = irradistance * SpecularBRDF(normal, -eyeDirection, L, specularColor, roughness);
 
+                //lit += float4(saturate((normal * 2.0f)-1.0f), 0);
+                //lit += float4(saturate(normal), 0);
+                //lit += float4(dotNL,0,0, 0);
+                //lit += float4(saturate(L), 0);
                 lit += float4(directDiffuse + directSpecular, 0);
             }
         }
@@ -322,7 +321,7 @@ void CS(uint3 groupId : SV_GroupID,
                 float dotNL = saturate(dot(normal, L));
 
 	        //å∏êäåWêî
-                float attenuation = PhysicalAttenuation(0.0f, 0.05f, 0.05f, lightDistance);
+                float attenuation = PhysicalAttenuation(0.0f, 0.03f, 0.03f, lightDistance);
                 float lMax = max(0.0f, light.attenuationEnd - lightDistance) / light.attenuationEnd;
 
                 float spotDot = dot(-L, light.direction.xyz);
@@ -341,6 +340,5 @@ void CS(uint3 groupId : SV_GroupID,
         }
     }
 
-    lit = max(0.0f, lit);
     WriteSample(globalCoords, lit);
 }

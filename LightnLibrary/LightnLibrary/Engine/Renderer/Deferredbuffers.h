@@ -4,7 +4,9 @@
 #include <Util/Type.h>
 #include <Util/ComPtr.h>
 #include <LMath.h>
+#include <memory>
 
+class RenderTarget;
 const int BUFFER_COUNT = 4;
 
 class Deferredbuffers {
@@ -34,8 +36,7 @@ public:
 
 	void setViewPort(ComPtr<ID3D11DeviceContext> deviceContext);
 
-	//Gbufferのシェーダーリソースビューをインデックスで取得
-	ComPtr<ID3D11ShaderResourceView> getShaderResourceView(uint16 index) const;
+	ID3D11ShaderResourceView* getShaderResourceView(uint16 index) const;
 
 	ComPtr<ID3D11ShaderResourceView> getDepthStencilResource() const;
 
@@ -53,13 +54,12 @@ public:
 	uint16 _width;
 	uint16 _height;
 
-	ComPtr<ID3D11Texture2D> _renderTargetTextureArray[BUFFER_COUNT];
-	ComPtr<ID3D11RenderTargetView> _renderTargetViewArray[BUFFER_COUNT];
-	ComPtr<ID3D11ShaderResourceView> _shaderResourceViewArray[BUFFER_COUNT];
 	ComPtr<ID3D11Texture2D> _depthStencilBuffer;
 	ComPtr<ID3D11ShaderResourceView> _depthStencilSRV;
 	ComPtr<ID3D11DepthStencilView> _depthStencilView;
+	ComPtr<ID3D11DepthStencilView> _depthStencilViewReadOnly;
 	ComPtr<ID3D11DepthStencilState> _depthStencilState;
+	std::unique_ptr<RenderTarget> _renderTargets[BUFFER_COUNT];
 	D3D11_VIEWPORT _viewport;
 
 };

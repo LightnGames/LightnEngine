@@ -168,6 +168,9 @@
     <FxCompile Include="Shader\Source\Pixel\GaussianBlur_ps.hlsl">
       <Filter>リソース ファイル\Pixel</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\SSAO_ps.hlsl">
+      <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Actor\Actor.cpp">
@@ -339,6 +342,9 @@
       <Filter>ソース ファイル\Renderer\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Renderer\PostProcess.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\GraphicsBuffers.cpp">
       <Filter>ソース ファイル\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
@@ -563,6 +569,9 @@
       <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Renderer\PostProcess.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\GraphicsBuffers.h">
       <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
   </ItemGroup>

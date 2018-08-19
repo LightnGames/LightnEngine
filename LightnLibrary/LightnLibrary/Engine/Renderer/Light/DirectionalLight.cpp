@@ -98,11 +98,11 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 
 		//シャドウデプスの描画が終わったので設定を元に戻す
 		GameRenderer::instance().setOrthoScreenVertex();
-		deviceContext->OMSetRenderTargets(1, &beforeViews, 0);
+		deviceContext->OMSetRenderTargets(1, &beforeViews, beforeDepthStencilView);
 		deviceContext->OMSetDepthStencilState(beforeDepthState, 1);
 		
 		const float factor[4] = { 0,0,0,0 };
-		deviceContext->OMSetBlendState(beforeBlendState, factor, 0xffffffff);
+		deviceContext->OMSetBlendState(beforeBlendState, factor, D3D11_DEFAULT_SAMPLE_MASK);
 		deviceContext->RSSetViewports(1, &beforeVp);
 
 		//シャドウで使用する行列をセット

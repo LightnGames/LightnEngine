@@ -18,6 +18,7 @@
 #include <Renderer/RendererUtil.h>
 #include <Components/CameraComponent.h>
 #include "PostProcess.h"
+#include "GraphicsBuffers.h"
 
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
@@ -75,7 +76,14 @@ HRESULT GameRenderer::createGameWindow(const HINSTANCE & hInst, WNDPROC lpfnWndP
 
 	return S_OK;
 }
+struct PostProcessConstant {
+	Matrix4 mtxViewProjInverse;
+	Matrix4 mtxViewProj;
+};
 
+ComPtr<ID3D11Buffer> _postProcessConstantPP;
+std::unique_ptr<RenderTarget> _ssaoRt;
+ComPtr<ID3D11PixelShader> _ssaoShader;
 HRESULT GameRenderer::initDirect3D() {
 
 	//スワップチェインの作成
@@ -116,6 +124,9 @@ HRESULT GameRenderer::initDirect3D() {
 	_postProcess->initialize(_device);
 
 	_sceneRendererManager->setUp();
+
+	RendererUtil::createPixelShader("SSAO_ps.cso", _ssaoShader, _device);
+	RendererUtil::createConstantBuffer(_postProcessConstantPP, sizeof(PostProcessConstant), _device);
 
 	return S_OK;
 }
@@ -159,8 +170,8 @@ void GameRenderer::draw() {
 	//SkyBoxステンシル描画
 	_sceneRendererManager->skyBox()->drawStencil(*drawSettings);
 
-	//レンダーターゲット切り替え・ライティング設定
-	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargetViewArray[3].GetAddressOf(), _deferredBuffers->getDepthStencilView().Get());
+	//レンダーターゲット切り替え・ライティング設定 ここから読み取り専用デプスステンシル
+	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargets[3]->ppRtv(), _deferredBuffers->_depthStencilViewReadOnly.Get());
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	_deviceContext->OMSetBlendState(_orthoScreen->_blendState.Get(), blendFactor, D3D11_DEFAULT_SAMPLE_MASK);
 
@@ -178,20 +189,46 @@ void GameRenderer::draw() {
 		l->draw(*drawSettings.get());
 	}
 
-	//TileBasedLightingはレンダーターゲットに直接書かないので一旦普通のバックバッファに戻す
-	//_orthoScreen->setBackBuffer();
-	//_deferredBuffers->setRenderTargetLighting(_deviceContext);
-	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargetViewArray[3].GetAddressOf(), 0);
-	_deviceContext->OMSetDepthStencilState(0, 0);
+	D3D11_VIEWPORT oldVp;
+	uint32 vpNum = 1;
+	_deviceContext->RSGetViewports(&vpNum, &oldVp);
+
+	D3D11_VIEWPORT ssaoVp;
+	ssaoVp.Width = static_cast<float>(_width / 2.0f);
+	ssaoVp.Height = static_cast<float>(_height / 2.0f);
+	ssaoVp.MinDepth = 0.0f;
+	ssaoVp.MaxDepth = 1.0f;
+	ssaoVp.TopLeftX = 0.0f;
+	ssaoVp.TopLeftY = 0.0f;
+	_deviceContext->RSSetViewports(1, &ssaoVp);
+
+	_orthoScreen->setOrthoScreenVertex();
+
+	PostProcessConstant constant;
+	constant.mtxViewProjInverse = drawSettings->camera->mtxProj.inverse().multiply(drawSettings->camera->mtxView.inverse()).transpose();
+	constant.mtxViewProj = drawSettings->camera->mtxProj.transpose();
+	_deviceContext->UpdateSubresource(_postProcessConstantPP.Get(), 0, 0, &constant, 0, 0);
+
+	_deviceContext->ClearRenderTargetView(_ssaoRt->rtv(), clearColor);
+	_deviceContext->OMSetRenderTargets(1, _ssaoRt->ppRtv(), 0);
+	_deviceContext->PSSetShader(_ssaoShader.Get(), 0, 0);
+	_deviceContext->PSSetShaderResources(0, 1, _deferredBuffers->_depthStencilSRV.GetAddressOf());
+	_deviceContext->PSSetShaderResources(1, 1, _deferredBuffers->_renderTargets[1]->ppSrv());
+	_deviceContext->PSSetConstantBuffers(0, 1, _postProcessConstantPP.GetAddressOf());
+	_deviceContext->Draw(4, 0);
+
+	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargets[3]->ppRtv(), _deferredBuffers->_depthStencilViewReadOnly.Get());
+	_deviceContext->RSSetViewports(1, &oldVp);
 
 	//TileBasedLighting
-	const Matrix4 mtxCamera = CameraComponent::mainCamera->cameraMatrix().inverse();
+	const Matrix4 mtxCamera = mainCamera->cameraMatrix().inverse();
 	const TileBasedPointLightType* pointLights = _sceneRendererManager->pointLights(mtxCamera);
 	const TileBasedSpotLightType* spotLights = _sceneRendererManager->spotLights(mtxCamera);
 	_tileCulling->draw(*drawSettings, pointLights, spotLights);
 
 	//ポストプロセス
-	_postProcess->draw(_deviceContext, _deferredBuffers.get(), _orthoScreen.get());
+	_deviceContext->PSSetShaderResources(7, 1, _ssaoRt->ppSrv());
+	_postProcess->draw(_deviceContext, _deferredBuffers.get(), _orthoScreen.get(), drawSettings->camera);
 
 	//デバッグジオメトリを描画
 	const auto& lines = _sceneRendererManager->debugLines();
@@ -257,4 +294,7 @@ void GameRenderer::createRenderTargets() {
 
 	drawSettings->mainShaderResourceView = _orthoScreen->getShaderResourceView();
 	drawSettings->deferredBuffers = _deferredBuffers.get();
+
+	_ssaoRt = nullptr;
+	_ssaoRt = std::make_unique<RenderTarget>(_device.Get(), DXGI_FORMAT_R8G8B8A8_UNORM, _width / 2.0f, _height / 2.0f);
 }

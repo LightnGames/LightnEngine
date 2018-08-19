@@ -1,13 +1,8 @@
 #include "Deferredbuffers.h"
 #include <Renderer/RendererUtil.h>
+#include <Renderer/GraphicsBuffers.h>
 
-Deferredbuffers::Deferredbuffers() {
-
-	for (int32 i = 0; i < BUFFER_COUNT; ++i) {
-		_renderTargetTextureArray[i]._pInterface = 0;
-		_renderTargetViewArray[i]._pInterface = 0;
-		_shaderResourceViewArray[i]._pInterface = 0;
-	}
+Deferredbuffers::Deferredbuffers() :_renderTargets{ nullptr } {
 
 	_depthStencilBuffer._pInterface = 0;
 	_depthStencilView._pInterface = 0;
@@ -68,6 +63,13 @@ HRESULT Deferredbuffers::initialize(ComPtr<ID3D11Device>& device, uint16 width, 
 		return result;
 	}
 
+	//読み取り専用デプスステンシルビュー
+	stencilDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
+	result = device->CreateDepthStencilView(_depthStencilBuffer.Get(), &stencilDesc, _depthStencilViewReadOnly.ReleaseAndGetAddressOf());
+	if (FAILED(result)) {
+		return result;
+	}
+
 	//シェーダーリソースビューの生成
 	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
 	ZeroMemory(&shaderDesc, sizeof(shaderDesc));
@@ -116,35 +118,23 @@ void Deferredbuffers::cleanUp() {
 		_depthStencilBuffer->Release();
 		_depthStencilBuffer._pInterface = 0;
 	}
-
-	for (int i = 0; i < BUFFER_COUNT; ++i) {
-
-		if (_shaderResourceViewArray[i] != NULL) {
-			_shaderResourceViewArray[i]->Release();
-			_shaderResourceViewArray[i]._pInterface = 0;
-		}
-
-		if (_renderTargetViewArray[i] != NULL) {
-			_renderTargetViewArray[i]->Release();
-			_renderTargetViewArray[i]._pInterface = 0;
-		}
-
-		if (_renderTargetTextureArray[i] != NULL) {
-			_renderTargetTextureArray[i]->Release();
-			_renderTargetTextureArray[i]._pInterface = 0;
-		}
-	}
 }
 
 void Deferredbuffers::setRenderTargets(ComPtr<ID3D11DeviceContext> context) {
-	context->OMSetRenderTargets(BUFFER_COUNT, _renderTargetViewArray[0].GetAddressOf(), _depthStencilView.Get());
+
+	ID3D11RenderTargetView* rtvs[BUFFER_COUNT] = { 0 };
+	for (int i = 0; i < BUFFER_COUNT; ++i) {
+		rtvs[i] = _renderTargets[i]->rtv();
+	}
+	
+	context->OMSetRenderTargets(BUFFER_COUNT, rtvs, _depthStencilView.Get());
 	context->RSSetViewports(1, &_viewport);
 	context->OMSetBlendState(0, 0, 0xffffffff);
 	context->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 }
 
 void Deferredbuffers::setRenderTargetLighting(ComPtr<ID3D11DeviceContext> deviceContext) {
-	deviceContext->OMSetRenderTargets(1, _renderTargetViewArray[3].GetAddressOf(), 0);
+	deviceContext->OMSetRenderTargets(1, _renderTargets[3]->ppRtv(), 0);
 }
 
 void Deferredbuffers::setRenderTargetEaryZ(ComPtr<ID3D11DeviceContext> context)
@@ -160,7 +150,7 @@ void Deferredbuffers::clearRenderTargets(ComPtr<ID3D11DeviceContext> context, fl
 	const float color[4] = { red,green,blue,alpha };
 
 	for (uint16 i = 0; i < BUFFER_COUNT; ++i) {
-		context->ClearRenderTargetView(_renderTargetViewArray[i].Get(), color);
+		context->ClearRenderTargetView(_renderTargets[i]->rtv(), color);
 	}
 }
 
@@ -168,8 +158,8 @@ void Deferredbuffers::setViewPort(ComPtr<ID3D11DeviceContext> deviceContext) {
 	deviceContext->RSSetViewports(1, &_viewport);
 }
 
-ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getShaderResourceView(uint16 index) const{
-	return _shaderResourceViewArray[index];
+ID3D11ShaderResourceView * Deferredbuffers::getShaderResourceView(uint16 index) const {
+	return _renderTargets[index]->srv();
 }
 
 ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getDepthStencilResource() const
@@ -187,51 +177,11 @@ Vector2 Deferredbuffers::getGBufferSize() const {
 
 HRESULT Deferredbuffers::createRenderTarget(uint16 index, DXGI_FORMAT format, ComPtr<ID3D11Device>& device) {
 	
-	HRESULT result;
-	
-	//レンダーターゲットを生成
-	D3D11_TEXTURE2D_DESC textureDesc;
-	ZeroMemory(&textureDesc, sizeof(textureDesc));
-	textureDesc.Width = _width;
-	textureDesc.Height = _height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = format;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D11_USAGE_DEFAULT;
-	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
+	_renderTargets[index] = std::make_unique<RenderTarget>(
+		device.Get(),
+		format,
+		_width,
+		_height);
 
-	result = device->CreateTexture2D(&textureDesc, NULL, _renderTargetTextureArray[index].ReleaseAndGetAddressOf());
-	if (FAILED(result)) {
-		return result;
-	}
-
-	//レンダーターゲットビューの生成
-	D3D11_RENDER_TARGET_VIEW_DESC renderDesc;
-	ZeroMemory(&renderDesc, sizeof(renderDesc));
-	renderDesc.Format = format;
-	renderDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	renderDesc.Texture2D.MipSlice = 0;
-	
-	result = device->CreateRenderTargetView(_renderTargetTextureArray[index].Get(), &renderDesc, _renderTargetViewArray[index].ReleaseAndGetAddressOf());
-	if (FAILED(result)) {
-		return result;
-	}
-
-	//シェーダーリソースビューの生成
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
-	ZeroMemory(&shaderDesc, sizeof(shaderDesc));
-	shaderDesc.Format = format;
-	shaderDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderDesc.Texture2D.MostDetailedMip = 0;
-	shaderDesc.Texture2D.MipLevels = 1;
-
-	result = device->CreateShaderResourceView(_renderTargetTextureArray[index].Get(), &shaderDesc, _shaderResourceViewArray[index].ReleaseAndGetAddressOf());
-	if (FAILED(result)) {
-		return result;
-	}
-	
-	return result;
+	return S_OK;
 }
