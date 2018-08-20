@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <Util/Type.h>
 #include <Util/ComPtr.h>
+#include <Util/RefPtr.h>
 #include <LMath.h>
 #include <memory>
 
@@ -38,9 +39,11 @@ public:
 
 	ID3D11ShaderResourceView* getShaderResourceView(uint16 index) const;
 
+	RefPtr<RenderTarget> getRenderTarget(uint16 index);
+
 	ComPtr<ID3D11ShaderResourceView> getDepthStencilResource() const;
 
-	ComPtr<ID3D11DepthStencilView> getDepthStencilView();
+	ID3D11DepthStencilView* getDepthStencilView(bool readOnly);
 
 	Vector2 getGBufferSize() const;
 
@@ -49,7 +52,7 @@ private:
 	//個々のレンダーターゲットをフォーマットとインデックスで生成
 	HRESULT createRenderTarget(uint16 index, DXGI_FORMAT format, ComPtr<ID3D11Device>& device);
 
-public:
+private:
 
 	uint16 _width;
 	uint16 _height;

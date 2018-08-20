@@ -101,7 +101,7 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 			ID3D11ShaderResourceView* srv = 0;
 
 			if (i == 0) {
-				srv = deferredBuffers->_renderTargets[3]->srv();
+				srv = deferredBuffers->getRenderTarget(3)->srv();
 			}
 			else {
 				srv = _bloomDownSamples[i - 1]->srv();
@@ -115,7 +115,7 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 			viewport.MinDepth = 0.0f;
 			viewport.MaxDepth = 1.0f;
 
-			GaussBlurParam src = CalcBlurParam(donwSampleWidth, donwSampleHeight, Vector2(1, 0), deviation, multiply);
+			GaussBlurParam src(donwSampleWidth, donwSampleHeight, Vector2(1, 0));
 
 			if (i == 0) {
 				src.offset[15].w = 1.0f;
@@ -130,7 +130,7 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 			deviceContext->Draw(4, 0);
 
 			srv = _bloomDownSamples[i]->srv();
-			src = CalcBlurParam(donwSampleWidth, donwSampleHeight, Vector2(0, 1), deviation, multiply);
+			src = GaussBlurParam(donwSampleWidth, donwSampleHeight, Vector2(0, 1));
 
 			deviceContext->OMSetRenderTargets(1, _bloomDownSamples[i + BLOOM_DOWN_SAMPLE]->ppRtv(), 0);
 			deviceContext->PSSetShaderResources(0, 1, &srv);
@@ -163,10 +163,10 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 	//最終パスポストプロセス
 	orthoScreen->setBackBuffer();
 	deviceContext->PSSetShader(_postProcessShader.Get(), 0, 0);
-	deviceContext->PSSetShaderResources(0, 1, deferredBuffers->_renderTargets[3]->ppSrv());
+	deviceContext->PSSetShaderResources(0, 1, deferredBuffers->getRenderTarget(3)->ppSrv());
 	deviceContext->PSSetShaderResources(1, 4, downSampleBlurs);
-	deviceContext->PSSetShaderResources(5, 1, deferredBuffers->_depthStencilSRV.GetAddressOf());
-	deviceContext->PSSetShaderResources(6, 1, deferredBuffers->_renderTargets[1]->ppSrv());
+	deviceContext->PSSetShaderResources(5, 1, deferredBuffers->getDepthStencilResource().GetAddressOf());
+	deviceContext->PSSetShaderResources(6, 1, deferredBuffers->getRenderTarget(1)->ppSrv());
 	deviceContext->PSSetConstantBuffers(0, 1, _postProcessConstant.GetAddressOf());
 	orthoScreen->setOrthoScreenVertex();
 	deviceContext->Draw(4, 0);
@@ -174,36 +174,31 @@ void PostProcess::draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferre
 	deviceContext->PSSetSamplers(0, 1, &oldSampler);
 }
 
-inline GaussBlurParam PostProcess::CalcBlurParam(uint32 width, uint32 height, Vector2 dir, float deviation, float multiply) {
+GaussBlurParam::GaussBlurParam(uint32 width, uint32 height, Vector2 dir, float range) {
 
-	GaussBlurParam param;
-
-	float range = 35.0f;
 	float t = 0.0f;
 	float d = range * range / 100.0f;
-	for(int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i) {
 		float r = 1.0f + 2.0f* i;
 		float e = -0.5f * (r * r) / d;
 		float w = exp(e);
-		param.offset[i].x = w;
+		offset[i].x = w;
 		if (i > 0) { w *= 2.0f; }
 		t += w;
 	}
 
 	for (int i = 0; i < 10; ++i) {
-		param.offset[i].x /= t;
+		offset[i].x /= t;
 	}
 
-	param.sampleCount = 19;
+	sampleCount = 19;
 	if (dir.x == 1) {
-		param.offset[15].x = 1.0f / (float)width;
+		offset[15].x = 1.0f / (float)width;
 	}
 	else {
-		param.offset[15].x = 1.0f / (float)height;
+		offset[15].x = 1.0f / (float)height;
 	}
 
-	param.offset[15].y = dir.x;
-	param.offset[15].z = dir.y;
-
-	return param;
+	offset[15].y = dir.x;
+	offset[15].z = dir.y;
 }

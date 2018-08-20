@@ -1,6 +1,5 @@
 #include "GameRenderer.h"
 #include "SceneRendererManager.h"
-
 #include "DrawSettings.h"
 #include "RenderableEntity.h"
 #include "Deferredbuffers.h"
@@ -17,8 +16,9 @@
 #include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/RendererUtil.h>
 #include <Components/CameraComponent.h>
-#include "PostProcess.h"
+#include "PostEffect/PostProcess.h"
 #include "GraphicsBuffers.h"
+#include "PostEffect/SSAO.h"
 
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
@@ -32,7 +32,8 @@ _deferredBuffers{ nullptr },
 _orthoScreen{ nullptr },
 _tileCulling{ nullptr },
 _graphicsResourceManager{ nullptr },
-_postProcess{ nullptr } {
+_postProcess{ nullptr },
+_ssao{ nullptr } {
 
 	_sceneRendererManager = std::make_unique<SceneRendererManager>();
 	drawSettings = std::make_unique<DrawSettings>();
@@ -43,6 +44,7 @@ _postProcess{ nullptr } {
 	_tileCulling = std::make_unique<TileBasedLightCulling>();
 	_graphicsResourceManager = std::make_unique<GraphicsResourceManager>();
 	_postProcess = std::make_unique<PostProcess>();
+	_ssao = std::make_unique<SSAO>();
 }
 
 GameRenderer::~GameRenderer() {
@@ -76,14 +78,7 @@ HRESULT GameRenderer::createGameWindow(const HINSTANCE & hInst, WNDPROC lpfnWndP
 
 	return S_OK;
 }
-struct PostProcessConstant {
-	Matrix4 mtxViewProjInverse;
-	Matrix4 mtxViewProj;
-};
 
-ComPtr<ID3D11Buffer> _postProcessConstantPP;
-std::unique_ptr<RenderTarget> _ssaoRt;
-ComPtr<ID3D11PixelShader> _ssaoShader;
 HRESULT GameRenderer::initDirect3D() {
 
 	//スワップチェインの作成
@@ -122,11 +117,9 @@ HRESULT GameRenderer::initDirect3D() {
 	_debugGeometryRenderer->initialize(_device);
 	_graphicsResourceManager->initialize(_device);
 	_postProcess->initialize(_device);
+	_ssao->initialize(_device);
 
 	_sceneRendererManager->setUp();
-
-	RendererUtil::createPixelShader("SSAO_ps.cso", _ssaoShader, _device);
-	RendererUtil::createConstantBuffer(_postProcessConstantPP, sizeof(PostProcessConstant), _device);
 
 	return S_OK;
 }
@@ -158,10 +151,6 @@ void GameRenderer::draw() {
 	_deferredBuffers->setRenderTargets(_deviceContext);
 	_deferredBuffers->clearRenderTargets(_deviceContext, 0.0f, 0.0f, 0.0f, 0.0f);
 
-	ImGui::Begin("Winds");
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
-
 	//Gbufferに描画
 	for (auto&& sm : _sceneRendererManager->renderableEntities()) {
 		sm->draw(*drawSettings.get());
@@ -171,7 +160,7 @@ void GameRenderer::draw() {
 	_sceneRendererManager->skyBox()->drawStencil(*drawSettings);
 
 	//レンダーターゲット切り替え・ライティング設定 ここから読み取り専用デプスステンシル
-	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargets[3]->ppRtv(), _deferredBuffers->_depthStencilViewReadOnly.Get());
+	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->getRenderTarget(3)->ppRtv(), _deferredBuffers->getDepthStencilView(true));
 	const float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	_deviceContext->OMSetBlendState(_orthoScreen->_blendState.Get(), blendFactor, D3D11_DEFAULT_SAMPLE_MASK);
 
@@ -189,36 +178,8 @@ void GameRenderer::draw() {
 		l->draw(*drawSettings.get());
 	}
 
-	D3D11_VIEWPORT oldVp;
-	uint32 vpNum = 1;
-	_deviceContext->RSGetViewports(&vpNum, &oldVp);
-
-	D3D11_VIEWPORT ssaoVp;
-	ssaoVp.Width = static_cast<float>(_width / 2.0f);
-	ssaoVp.Height = static_cast<float>(_height / 2.0f);
-	ssaoVp.MinDepth = 0.0f;
-	ssaoVp.MaxDepth = 1.0f;
-	ssaoVp.TopLeftX = 0.0f;
-	ssaoVp.TopLeftY = 0.0f;
-	_deviceContext->RSSetViewports(1, &ssaoVp);
-
-	_orthoScreen->setOrthoScreenVertex();
-
-	PostProcessConstant constant;
-	constant.mtxViewProjInverse = drawSettings->camera->mtxProj.inverse().multiply(drawSettings->camera->mtxView.inverse()).transpose();
-	constant.mtxViewProj = drawSettings->camera->mtxProj.transpose();
-	_deviceContext->UpdateSubresource(_postProcessConstantPP.Get(), 0, 0, &constant, 0, 0);
-
-	_deviceContext->ClearRenderTargetView(_ssaoRt->rtv(), clearColor);
-	_deviceContext->OMSetRenderTargets(1, _ssaoRt->ppRtv(), 0);
-	_deviceContext->PSSetShader(_ssaoShader.Get(), 0, 0);
-	_deviceContext->PSSetShaderResources(0, 1, _deferredBuffers->_depthStencilSRV.GetAddressOf());
-	_deviceContext->PSSetShaderResources(1, 1, _deferredBuffers->_renderTargets[1]->ppSrv());
-	_deviceContext->PSSetConstantBuffers(0, 1, _postProcessConstantPP.GetAddressOf());
-	_deviceContext->Draw(4, 0);
-
-	_deviceContext->OMSetRenderTargets(1, _deferredBuffers->_renderTargets[3]->ppRtv(), _deferredBuffers->_depthStencilViewReadOnly.Get());
-	_deviceContext->RSSetViewports(1, &oldVp);
+	//SSAO
+	_ssao->draw(_deviceContext, _deferredBuffers.get(), _orthoScreen.get(), drawSettings->camera);
 
 	//TileBasedLighting
 	const Matrix4 mtxCamera = mainCamera->cameraMatrix().inverse();
@@ -227,7 +188,7 @@ void GameRenderer::draw() {
 	_tileCulling->draw(*drawSettings, pointLights, spotLights);
 
 	//ポストプロセス
-	_deviceContext->PSSetShaderResources(7, 1, _ssaoRt->ppSrv());
+	_deviceContext->PSSetShaderResources(7, 1, _ssao->ssaoResource());
 	_postProcess->draw(_deviceContext, _deferredBuffers.get(), _orthoScreen.get(), drawSettings->camera);
 
 	//デバッグジオメトリを描画
@@ -235,6 +196,10 @@ void GameRenderer::draw() {
 	const auto& boxs = _sceneRendererManager->debugBoxs();
 	const auto& spheres = _sceneRendererManager->debugSpheres();
 	_debugGeometryRenderer->draw(spheres, boxs, lines, *drawSettings);
+
+	ImGui::Begin("Winds");
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::End();
 
 	//デバッグウィンドウを描画
 	ImguiWindow::render();
@@ -291,10 +256,8 @@ void GameRenderer::createRenderTargets() {
 	hr = _deferredBuffers->initialize(_device, _width, _height, 0.1f, 1000);
 	hr = _tileCulling->initialize(_device, _width, _height);
 	hr = _postProcess->setupRenderResource(_device, _width, _height);
+	hr = _ssao->setupRenderResource(_device, _width, _height);
 
 	drawSettings->mainShaderResourceView = _orthoScreen->getShaderResourceView();
 	drawSettings->deferredBuffers = _deferredBuffers.get();
-
-	_ssaoRt = nullptr;
-	_ssaoRt = std::make_unique<RenderTarget>(_device.Get(), DXGI_FORMAT_R8G8B8A8_UNORM, _width / 2.0f, _height / 2.0f);
 }

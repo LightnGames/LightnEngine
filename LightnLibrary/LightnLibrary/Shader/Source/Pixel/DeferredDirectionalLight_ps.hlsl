@@ -10,19 +10,13 @@ SamplerComparisonState ShadowSmp : register(s1);
 #include "../PhysicallyBasedRendering.hlsl"
 #include "../DeferredLight.hlsl"
 #include "../Gbuffer.hlsl"
+#include "../ScreenQuad.hlsl"
 
 cbuffer DirectionalLightInput : register(b0){
 	float4 lightDirection;
 	float4 lightColor;
     matrix inverseViewProjection;
     matrix mtxShadow;
-};
-
-struct PS_INPUT
-{
-	float4 Pos : SV_POSITION;
-	float2 Tex : TEXCOORD0;
-	float3 Eye : POSITION0;
 };
 
 float4 PS(PS_INPUT input) : SV_Target
@@ -43,7 +37,7 @@ float4 PS(PS_INPUT input) : SV_Target
     normal = DecodeNormal(normal);
 
     baseColor.xyz = pow(baseColor.xyz, 2.2f);
-    roughness = pow(roughness, 2.2f);
+    roughness = pow(roughness + 0.8f, 2.2f);
 
 	//clip(length(normal)-0.1);
 

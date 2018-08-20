@@ -18,6 +18,7 @@ class StaticInstancedMeshRenderer;
 class TileBasedLightCulling;
 class GraphicsResourceManager;
 class PostProcess;
+class SSAO;
 
 class GameRenderer :public Singleton<GameRenderer>{
 
@@ -78,4 +79,5 @@ private:
 	std::unique_ptr<TileBasedLightCulling> _tileCulling;
 	std::unique_ptr<GraphicsResourceManager> _graphicsResourceManager;
 	std::unique_ptr<PostProcess> _postProcess;
+	std::unique_ptr<SSAO> _ssao;
 };

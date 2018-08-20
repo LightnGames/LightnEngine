@@ -162,13 +162,17 @@ ID3D11ShaderResourceView * Deferredbuffers::getShaderResourceView(uint16 index) 
 	return _renderTargets[index]->srv();
 }
 
+RefPtr<RenderTarget> Deferredbuffers::getRenderTarget(uint16 index) {
+	return _renderTargets[index].get();
+}
+
 ComPtr<ID3D11ShaderResourceView> Deferredbuffers::getDepthStencilResource() const
 {
 	return _depthStencilSRV;
 }
 
-ComPtr<ID3D11DepthStencilView> Deferredbuffers::getDepthStencilView() {
-	return _depthStencilView;
+ID3D11DepthStencilView* Deferredbuffers::getDepthStencilView(bool readOnly) {
+	return readOnly ? _depthStencilViewReadOnly.Get() : _depthStencilView.Get();
 }
 
 Vector2 Deferredbuffers::getGBufferSize() const {

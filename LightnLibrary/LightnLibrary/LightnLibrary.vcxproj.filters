@@ -100,6 +100,12 @@
     <Filter Include="リソース ファイル\Pixel">
       <UniqueIdentifier>{e2a4415d-d5b2-46d6-a32e-5b566fa81fc7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\Renderer\PostEffect">
+      <UniqueIdentifier>{6c0119b4-e3e9-4caa-a7da-c9db5b409dd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Renderer\PostEffect">
+      <UniqueIdentifier>{62a7efe7-e436-4bd7-a473-5450ef342108}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\Source\Compute\CreateGpuInstanceList.hlsl">
@@ -170,6 +176,12 @@
     </FxCompile>
     <FxCompile Include="Shader\Source\Pixel\SSAO_ps.hlsl">
       <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\BilateralFilter_ps.hlsl">
+      <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\ScreenQuad.hlsl">
+      <Filter>リソース ファイル</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -341,11 +353,14 @@
     <ClCompile Include="Engine\Renderer\Mesh\SkyBox.cpp">
       <Filter>ソース ファイル\Renderer\Mesh</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Renderer\PostProcess.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Renderer\GraphicsBuffers.cpp">
       <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\PostEffect\SSAO.cpp">
+      <Filter>ソース ファイル\Renderer\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Renderer\PostEffect\PostProcess.cpp">
+      <Filter>ソース ファイル\Renderer\PostEffect</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -568,11 +583,14 @@
     <ClInclude Include="Engine\Renderer\Camera.h">
       <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\PostProcess.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\Renderer\GraphicsBuffers.h">
       <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\PostEffect\SSAO.h">
+      <Filter>ヘッダー ファイル\Renderer\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Renderer\PostEffect\PostProcess.h">
+      <Filter>ヘッダー ファイル\Renderer\PostEffect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

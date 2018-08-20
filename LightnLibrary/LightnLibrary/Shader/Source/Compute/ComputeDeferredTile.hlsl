@@ -81,7 +81,7 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     data.albedo = pow(data.albedo, 2.2f);
     data.roughness = pow(data.roughness, 2.2f);
 
-    data.normal = DecodeNormal(data.normal);;
+    data.normal = DecodeNormal(data.normal);
 
     return data;
 }

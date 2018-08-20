@@ -19,6 +19,8 @@ struct GaussBlurParam {
 	uint32 sampleCountDummy2;
 	uint32 sampleCountDummy3;
 	Vector4 offset[16];
+
+	GaussBlurParam(uint32 width, uint32 height, Vector2 dir, float range = 35.0f);
 };
 
 class PostProcess {
@@ -32,11 +34,7 @@ public:
 
 	void draw(ComPtr<ID3D11DeviceContext> deviceContext, RefPtr<Deferredbuffers> deferredBuffers, RefPtr<OrthoScreen> orthoScreen, RefPtr<Camera> camera);
 
-private:
-
-	inline GaussBlurParam CalcBlurParam(uint32 width, uint32 height, Vector2 dir, float deviation, float multiply);
-
-private:
+public:
 
 	uint16 _width;
 	uint16 _height;

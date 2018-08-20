@@ -1,7 +1,8 @@
 Texture2D ColorTexture : register(t0);
+Texture2D DepthTexture : register(t1);
 SamplerState samLinear : register(s0);
 
-cbuffer CbBlur :register(b0)
+cbuffer CbBlur : register(b0)
 {
     uint4 SampleCount : packoffset(c0);
     float4 Offset[16] : packoffset(c1);
@@ -17,6 +18,8 @@ float4 PS(PS_INPUT input) : SV_Target
     float bloomPower = 1.5f;
     float4 result = 0;
 
+    //float centerDepth = DepthTexture.Sample(samLinear, input.Tex).r;
+    float4 centerColor = ColorTexture.Sample(samLinear, input.Tex);
     float pixScale = Offset[15].x;
     float horizontal = Offset[15].y;
     float vertical = Offset[15].z;
@@ -29,16 +32,8 @@ float4 PS(PS_INPUT input) : SV_Target
         float offsetScale = offsetIndex * pixScale;
         float2 offset = float2(offsetScale * horizontal, offsetScale * vertical);
         float4 color = ColorTexture.Sample(samLinear, input.Tex + offset) * Offset[abs(offsetIndex)].x;
-        float knee = softThreadHold * threadHold;
-        float soft = pow(min(knee * 2.0f, max(0, color - threadHold + knee)), 2.0f) / (4 * knee * 0.00001f);
-
         result += color;
     }
-
-    float4 bloomSource = max(result - threadHold, 0) / max(result, 0.0001f) * bloomPower;
-    result = lerp(result, bloomSource, Offset[15].w);
-    result = saturate(result);
-    result.a = 1.0f;
-
+    
     return result;
 }

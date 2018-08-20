@@ -66,7 +66,7 @@ float4 PS(PS_INPUT input) : SV_Target
     float3 retColor = pow(color, 1 / 2.2);
 
     float ssao = SSAO.Sample(samLinear, input.Tex).r;
-    retColor.xyz = lerp(retColor.xyz, float3(0, 0, 0), ssao);
+    retColor.xyz = lerp(retColor.xyz, float3(0, 0, 0), ssao*0.6f);
 
     //Vignette
     float2 tc = input.Tex - float2(0.5f, 0.5f);
