@@ -1,25 +1,129 @@
-Texture2D RT0 : register(t0);
-Texture2D RT1 : register(t1);
-Texture2D RT2 : register(t2);
-TextureCube cubeMap : register(t3);
+Texture2D<float4> gBufferTextures[4] : register(t0);
+TextureCube cubeMap : register(t4);
 SamplerState samLinear : register(s0);
 
 #include "../PhysicallyBasedRendering.hlsl"
 #include "../Gbuffer.hlsl"
+#include "../ScreenQuad.hlsl"
+#include "../DeferredLight.hlsl"
 
 cbuffer SkyLightInput : register(b0){
 	float4 lightColor;
 	float4 lightIntensity;
+    float4x4 inverseViewProjection;
+    float4 cameraPosition;
 };
 
-struct PS_INPUT
+//キューブマップから環境スペキュラ色を参照
+float3 PrefilterEnvMap(float Roughness, float3 R)
 {
-	float4 Pos : SV_POSITION;
-	float2 Tex : TEXCOORD0;
-	float3 Eye : POSITION0;
-};
+    float TotalWeight = 0;
 
-float4 PS ( PS_INPUT input ) : SV_Target
+    float3 N = R;
+    float3 V = R;
+
+    float3 PrefilteredColor = 0;
+    const uint NumSamples = 16;
+
+    int maxMipLevels, width, height;
+    cubeMap.GetDimensions(0, width, height, maxMipLevels);
+
+    for (uint i = 0; i < NumSamples; i++)
+    {
+
+        float2 Xi = Hammersley(i, NumSamples);
+
+        float3 H = ImportanceSampleGGX(Xi, Roughness, N);
+
+        float3 L = 2 * dot(V, H) * H - V;
+
+        float NoL = saturate(dot(N, L));
+        if (NoL > 0)
+        {
+            PrefilteredColor += cubeMap.SampleLevel(samLinear, L, Roughness * maxMipLevels).rgb * NoL;
+            TotalWeight += NoL;
+        }
+    }
+
+    PrefilteredColor = pow(PrefilteredColor, 2.2f);
+    return PrefilteredColor / TotalWeight;
+}
+
+float3 CubemapDiffuse(float3 N)
+{
+
+    float3 PrefilteredColor = 0;
+    const uint NumSamples = 8;
+
+    int maxMipLevels, width, height;
+    cubeMap.GetDimensions(0, width, height, maxMipLevels);
+
+    for (uint i = 0; i < NumSamples; i++)
+    {
+
+        float3 Xi = float3(Hammersley(i, NumSamples), 0);
+		//Xi += N;
+        Xi = lerp(N, Xi, 0.5);
+
+        PrefilteredColor += cubeMap.SampleLevel(samLinear, Xi, 0).rgb;
+    }
+
+    PrefilteredColor = pow(PrefilteredColor, 2.2f);
+    return PrefilteredColor / NumSamples;
+
+}
+
+//キューブマップから環境色を参照
+float2 IntegrateBRDF(float Roughness, float NoV)
+{
+
+    float3 V;
+    V.x = sqrt(1.0f - NoV * NoV); // sin
+    V.y = 0;
+    V.z = NoV; // cos
+
+    float A = 0;
+    float B = 0;
+
+    const uint NumSamples = 16;
+    for (uint i = 0; i < NumSamples; i++)
+    {
+        float2 Xi = Hammersley(i, NumSamples);
+        float3 H = ImportanceSampleGGX(Xi, Roughness, float3(0, 0, 1));
+        float3 L = 2 * dot(V, H) * H - V;
+
+        float NoL = saturate(L.z);
+        float NoH = saturate(H.z);
+        float VoH = saturate(dot(V, H));
+
+        if (NoL > 0)
+        {
+
+            float G = G_Smith(Roughness, NoV, NoL);
+            float G_Vis = G * VoH / (NoH * NoV);
+
+            float Fc = pow(1 - VoH, 5);
+            A += (1 - Fc) * G_Vis;
+            B += Fc * G_Vis;
+        }
+    }
+
+    return float2(A, B) / NumSamples;
+}
+
+//総合IBLライティングカラーを取得
+float3 ApproximateSpecularIBL(float3 SpecularColor, float Roughness, float3 N, float3 V)
+{
+
+    float NoV = dot(N, V);
+    float3 R = normalize(2 * dot(V, N) * N - V);
+    float3 PrefilteredColor = PrefilterEnvMap(Roughness, R);
+    float2 EnvBRDF = IntegrateBRDF(Roughness, NoV);
+
+    return PrefilteredColor * (SpecularColor * EnvBRDF.x + EnvBRDF.y);
+}
+
+float4 PS(PS_INPUT_SCREEN input) : SV_Target
 {
     float4 baseColor;
 	float4 rtMainColor;
@@ -27,9 +131,9 @@ float4 PS ( PS_INPUT input ) : SV_Target
 	float roughness;
 	float metallic;
 
-    baseColor = RT0.Sample(samLinear, input.Tex);
-    normal = RT1.Sample(samLinear, input.Tex).xyz;
-	float4 RT2Value = RT2.Sample(samLinear, input.Tex);
+    baseColor = gBufferTextures[1].Sample(samLinear, input.Tex);
+    normal = gBufferTextures[2].Sample(samLinear, input.Tex).xyz;
+    float4 RT2Value = gBufferTextures[3].Sample(samLinear, input.Tex);
 
 	roughness = RT2Value.r;
 	metallic = RT2Value.g;
@@ -37,10 +141,14 @@ float4 PS ( PS_INPUT input ) : SV_Target
 
     baseColor.xyz = pow(baseColor.xyz, 2.2f);
     roughness = pow(roughness, 2.2f);
+    //roughness = 0;
 
 	//メタリックの値からテクスチャカラー
     float3 diffuseColor = lerp(baseColor.xyz, float3(0.04, 0.04, 0.04), metallic);
     float3 specularColor = lerp(float3(0.04, 0.04, 0.04), baseColor.xyz, metallic);
+
+    float3 worldPosition = ReconstructWorldPositionFromDepth(gBufferTextures[0], samLinear, input.Tex, inverseViewProjection);
+    float3 eyeDir = -normalize(worldPosition - cameraPosition.xyz);
 
     //キューブマップ
     int maxMipLevels, width, height;
@@ -48,12 +156,16 @@ float4 PS ( PS_INPUT input ) : SV_Target
 
     //キューブマップテクスチャをサンプル
     float3 cubeMapDiffuse = diffuseColor * CubemapDiffuse(normal);
-    float3 cubeMapSpecular = ApproximateSpecularIBL(specularColor, roughness, normal, -input.Eye);
+    float3 cubeMapSpecular = ApproximateSpecularIBL(specularColor, roughness, normal, eyeDir);
 	//return float4(cubeMapDiffuse,1);
 
     float3 skyColor = diffuseColor * lightColor.xyz;
+    cubeMapDiffuse *= skyColor;
 
-    float4 outputColor = float4(cubeMapDiffuse * lightIntensity.r + cubeMapSpecular * lightIntensity.g + skyColor, 1);
+    float4 outputColor = float4(cubeMapDiffuse * lightIntensity.r + cubeMapSpecular * lightIntensity.g, 1);
+    //outputColor.xyz = float3(0,0,0);
+    //outputColor.a = 1;
+    //outputColor.x = dot(normal, eyeDir);
 
     return outputColor;
 }

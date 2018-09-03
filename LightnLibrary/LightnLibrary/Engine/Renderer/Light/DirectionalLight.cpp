@@ -8,6 +8,7 @@
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RenderableEntity.h>
 #include <Renderer/GameRenderer.h>
+#include <Renderer/StaticInstancedMeshRenderer.h>
 #include <ThirdParty/ImGui/imgui.h>
 
 DirectionalLight::DirectionalLight() {
@@ -30,18 +31,22 @@ void DirectionalLight::initialize(ComPtr<ID3D11Device>& device) {
 void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>& lightComponent) {
 
 	auto deviceContext = settings.deviceContext;
+	auto camera = settings.camera;
 
 	ImGui::Begin("DirectionalLight");
 	static float pitchDir = 40.0;
 	static float yawDir = 40.0;
 	static Vector3 lightColor = Vector3::one;
-	static float lightIntensity = 3.0f;
+	static float lightIntensity = 5.0f;
 
 	ImGui::ColorEdit3("Color", &lightColor.x);
 	ImGui::SliderFloat("Pitch", &pitchDir, 0.0f, 360.0f);
 	ImGui::SliderFloat("Yaw", &yawDir, 0.0f, 360.0f);
 	ImGui::SliderFloat("Intensity", &lightIntensity, 0.0f, 100.0f);
 	ImGui::End();
+
+	Matrix4 viewOffset;
+	viewOffset = Matrix4::translateXYZ(Quaternion::rotVector(settings.camera->rotation, Vector3::forward*30));
 
 	DirectionalLightType lightBuffer;
 	ID3D11RenderTargetView* beforeViews = 0;
@@ -58,7 +63,6 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 	if (lightComponent->isEnableShadow()) {
 
 		//シャドウパラメータ
-		auto camera = settings.camera;
 		RefPtr<ShadowResource> resource = lightComponent->getShadowResource();
 		ID3D11DepthStencilView* depthView = resource->_depthStencilView.Get();
 		ID3D11ShaderResourceView* depthSRV = resource->_depthStencilSRV.Get();
@@ -81,15 +85,19 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 		DrawSettings lightSetting = settings;
 		Camera lightCamera;
 		lightCamera.position = camera->position + Vector3::up * 10;
-		const Matrix4 mtxView = Matrix4::matrixFromQuaternion(Quaternion::euler({ pitchDir,yawDir,0 })).multiply(Matrix4::translateXYZ(lightCamera.position));
+		lightCamera.rotation = Quaternion::euler({ pitchDir,yawDir,0 });
+		const Matrix4 mtxView =Matrix4::matrixFromQuaternion(lightCamera.rotation).multiply(Matrix4::translateXYZ(lightCamera.position)).multiply(viewOffset);
 		lightCamera.mtxView = mtxView.inverse();
 		lightCamera.mtxProj = Matrix4::orthographicProjectionLH(scale, scale, nearZ, farZ, 0.1f);
 		lightSetting.camera = &lightCamera;
 
-		//シャドウデプスを描画 カリングがメインカメラのフラスタムのまま・・・
+		//シャドウカメラからカリング情報を再構築
+		StaticInstancedMeshRenderer::instance().clearCullingBufferShadow(deviceContext, lightCamera);
+
+		//シャドウデプスを描画
 		auto& sceneRendererManager = SceneRendererManager::instance();
 		for (auto&& sm : sceneRendererManager.renderableEntities()) {
-			sm->draw(lightSetting);
+			sm->drawDepth(lightSetting);
 		}
 
 		ImGui::Begin("shadow");
@@ -110,8 +118,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 		lightBuffer.mtxShadow = lightCamera.mtxView.multiply(lightCamera.mtxProj).multiply(Matrix4::textureBias).transpose();
 
 		//シャドウ用リソースをシェーダーにセット
-		deviceContext->PSSetShaderResources(4, 1, settings.deferredBuffers->getDepthStencilResource().GetAddressOf());
-		deviceContext->PSSetShaderResources(5, 1, &depthSRV);
+		deviceContext->PSSetShaderResources(4, 1, &depthSRV);
 		deviceContext->PSSetSamplers(1, 1, &shadowSampler);
 	}
 
@@ -119,6 +126,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 	lightDirection = Quaternion::rotVector(Quaternion::euler({ pitchDir,yawDir,0 }), lightDirection);
 	lightBuffer.direction = Vector3::normalize(-lightDirection);
 	lightBuffer.lightColor = lightColor * lightIntensity;
+	lightBuffer.cameraPosition = camera->position;
 
 	deviceContext->UpdateSubresource(_lightBuffer.Get(), 0, 0, &lightBuffer, 0, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, _lightBuffer.GetAddressOf());

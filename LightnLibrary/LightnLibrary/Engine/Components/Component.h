@@ -34,6 +34,7 @@ public:
 
 	Vector3 getWorldPosition() const;
 	Quaternion getWorldRotation() const;
+	Quaternion getLocalRotation() const;
 	Vector3 getLocalScale() const;
 	Matrix4 getWorldMatrix() const;
 

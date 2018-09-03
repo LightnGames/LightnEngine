@@ -13,7 +13,7 @@ public:
 
 	virtual void update(float deltaTime) override;
 
-private:
+public:
 
 	RefPtr<SpotLightComponent> _lightComponent;
 

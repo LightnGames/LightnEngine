@@ -73,38 +73,61 @@ void SkeltalAnimation::load(const std::string& fileName){
 	fin.close();
 }
 
-void SkeltalAnimation::update(float deltaTime){
+void SkeltalAnimation::update(float deltaTime, int rootMotionIndex, float overrideFrame){
 
 	//フレーム更新
 	//逆再生には未対応
+	_beforePlaingFrame = _plaingFrame;
 	_plaingFrame += 0.5f * getPlayRate();
 
-	if(_plaingFrame >= _maxFrame){
-		_plaingFrame -= _maxFrame;
+	if (overrideFrame >= 0.0f) {
+		_plaingFrame = overrideFrame;
 	}
 
+	//配列インデックスのため最大数-1でループ
+	if (_plaingFrame >= _maxFrame - 1) {
+		_plaingFrame -= _maxFrame - 1;
+	}
+
+	const uint32 loopBlend = clamp(_maxFrame * LOOP_BLEND_RANGE + 4, 0, _maxFrame);
+
+	_rootMotionTransformSecond = _rootMotionTransform;
+
+	//どのフレーム間か調べる
+	int firstFrame = static_cast<int>(std::floorf(_plaingFrame));
+	int secondFrame = static_cast<int>(std::ceilf(_plaingFrame));
+	
+	//フレームの中間値(0.0f~1.0f)
+	const float lerpValue = _plaingFrame - firstFrame;
+
 	for(int i = 0; i < _animationBones.size(); i++){
-
-		//どのフレーム間か調べる
-		int firstFrame = static_cast<int>( std::floorf(_plaingFrame) );
-		int secondFrame = static_cast<int>( std::ceilf(_plaingFrame) );
-
-		//フレームの中間値(0.0f~1.0f)
-		const float lerpValue = _plaingFrame - firstFrame;
-
-		//最終フレームを参照したら0に戻す
-		if(secondFrame == _maxFrame){
-			secondFrame = 0;
-		}
 
 		//参照するキーを取得
 		const TransformQ firstkey = _animationBones[i][firstFrame];
 		const TransformQ secondKey = _animationBones[i][secondFrame];
 
 		//中間値で補完した各座標を取得
-		const Vector3 lerpPosition = Vector3::lerp(firstkey.position, secondKey.position, lerpValue);
-		const Vector3 lerpScale = Vector3::lerp(firstkey.scale, secondKey.scale, lerpValue);
-		const Quaternion slerpRotation = Quaternion::slerp(firstkey.rotation, secondKey.rotation, lerpValue);
+		Vector3 lerpPosition = Vector3::lerp(firstkey.position, secondKey.position, lerpValue);
+		Vector3 lerpScale = Vector3::lerp(firstkey.scale, secondKey.scale, lerpValue);
+		Quaternion slerpRotation = Quaternion::slerp(firstkey.rotation, secondKey.rotation, lerpValue);
+
+		if (i == rootMotionIndex) {
+			_rootMotionTransform.position = lerpPosition;
+			_rootMotionTransform.scale = lerpScale;
+			_rootMotionTransform.rotation = slerpRotation;
+		}
+
+		//ループアニメーションの繋ぎ補完
+		const int blendFrame = firstFrame - _maxFrame + loopBlend;
+		if (blendFrame > 0) {
+			const TransformQ& startTrans = _animationBones[i][0];
+			const float blendAlpha = blendFrame / static_cast<float>(loopBlend + 1);
+			
+			lerpPosition = Vector3::lerp(lerpPosition, startTrans.position, blendAlpha);
+			lerpScale = Vector3::lerp(lerpScale, startTrans.scale, blendAlpha);
+			//補完方向が右回りと左回りで異なるとぐちゃる
+			slerpRotation = Quaternion::slerp(slerpRotation, startTrans.rotation, blendAlpha);
+		}
 
 		//行列に変換
 		const Matrix4 translate = Matrix4::translateXYZ(lerpPosition);
@@ -141,6 +164,22 @@ float SkeltalAnimation::getPlayRate() const{
 
 int SkeltalAnimation::getMaxFrame() const{
 	return _maxFrame;
+}
+
+float SkeltalAnimation::getPlaingFrame() const {
+	return _plaingFrame;
+}
+
+float SkeltalAnimation::getBeforePlaingFrame() const {
+	return _beforePlaingFrame;
+}
+
+const std::vector<AnimationBone>& SkeltalAnimation::getAnimationBones() const {
+	return _animationBones;
+}
+
+const TransformQ & SkeltalAnimation::getRootMotionTransform(bool second) const {
+	return second ? _rootMotionTransformSecond : _rootMotionTransform;
 }
 
 std::string SkeltalAnimation::getName() const{

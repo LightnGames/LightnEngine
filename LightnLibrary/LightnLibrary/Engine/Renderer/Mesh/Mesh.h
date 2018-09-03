@@ -50,6 +50,8 @@ struct MaterialData
 	std::string               pixelShaderFileName;
 	std::vector<std::string>  textureFileNames;
 	UINT                      textureCount;
+	UINT                      alphaType;
+	D3D11_CULL_MODE           cullMode;
 
 	//バッファデータ
 	ComPtr<ID3D11VertexShader>       pVertexShader;

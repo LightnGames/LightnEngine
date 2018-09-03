@@ -5,7 +5,7 @@ SamplerState samLinear : register(s0);
 #include "../TileBasedCullingInclude.hlsl"
 #include "../ScreenQuad.hlsl"
 
-float4 PS(PS_INPUT input) : SV_Target
+float4 PS(PS_INPUT_SCREEN input) : SV_Target
 {
     uint2 coords;
     coords.x = input.Tex.x * framebufferDimensions.x;

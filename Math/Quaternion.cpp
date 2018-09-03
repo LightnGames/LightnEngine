@@ -35,9 +35,9 @@ Quaternion Quaternion::slerp(const Quaternion q1, const Quaternion & q2,float t)
 	return q1*k0 + t2*k1;
 }
 
-Quaternion Quaternion::euler(const Vector3 & euler) {
+Quaternion Quaternion::euler(const Vector3 & euler, bool valueIsRadian) {
 
-	const Vector3 rad = euler * M_PI / 180;
+	const Vector3 rad = valueIsRadian ? euler : (euler * M_PI / 180);
 	Quaternion q;
 
 	double cy = cos(rad.z * 0.5);
@@ -56,6 +56,19 @@ Quaternion Quaternion::euler(const Vector3 & euler) {
 
 Vector3 Quaternion::rotVector(const Quaternion & q, const Vector3 & v)
 {
+
+	// nVidia SDK implementation
+	Vector3 uv, uuv;
+	Vector3 qvec(q.x, q.y, q.z);
+	//uv = qvec.crossProduct(v);
+	uv = Vector3::cross(qvec, v);
+	//uuv = qvec.crossProduct(uv);
+	uuv = Vector3::cross(qvec, uv);
+	uv *= (2.0f * q.w);
+	uuv *= 2.0f;
+
+	return v + uv + uuv;
+
 	const Vector3 u(q.x, q.y, q.z);
 	float s = q.w;
 
@@ -66,20 +79,49 @@ Vector3 Quaternion::rotVector(const Quaternion & q, const Vector3 & v)
 	return result;
 }
 
+//行列をかますのは不毛？
+#include "include/Matrix4.h"
+Quaternion Quaternion::lookRotation(const Vector3 & direction, const Vector3 & up) {
+
+	Vector3 leftDir = direction;
+	leftDir.x *= -1;
+	Vector3 xaxis = Vector3::cross(up, leftDir);
+	xaxis.normalize();
+
+	Vector3 yaxis = Vector3::cross(leftDir, xaxis);
+	yaxis.normalize();
+
+	Matrix4 mat;
+
+	mat.m[0][0] = xaxis.x;
+	mat.m[0][1] = yaxis.x;
+	mat.m[0][2] = leftDir.x;
+
+	mat.m[1][0] = xaxis.y;
+	mat.m[1][1] = yaxis.y;
+	mat.m[1][2] = leftDir.y;
+
+	mat.m[2][0] = xaxis.z;
+	mat.m[2][1] = yaxis.z;
+	mat.m[2][2] = leftDir.z;
+
+	return mat.rotation();
+}
+
 float Quaternion::dot(const Quaternion & q1, const Quaternion & q2){
 	return q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
 }
 
 Quaternion Quaternion::inverse() const {
 
-	float fNorm = w * w + x * x + y * y + z * z;
+	const float fNorm = w * w + x * x + y * y + z * z;
 
 	//不正なクォータニオン
 	if (fNorm == 0.0f) {
-		return Quaternion();
+		return Quaternion::identity;
 	}
 
-	float fInvNorm = 1.0f / fNorm;
+	const float fInvNorm = 1.0f / fNorm;
 	return Quaternion(w*fInvNorm, -x * fInvNorm, -y * fInvNorm, -z * fInvNorm);
 }
 
@@ -106,6 +148,72 @@ Vector3 Quaternion::toEulerAngle() const {
 	result.z = atan2(siny, cosy);
 
 	return result;
+}
+
+float Quaternion::getRoll(bool reprojectAxis) const {
+	if (reprojectAxis) {
+		// roll = atan2(localx.y, localx.x)
+		// pick parts of xAxis() implementation that we need
+		//			Real fTx  = 2.0*x;
+		float fTy = 2.0f*y;
+		float fTz = 2.0f*z;
+		float fTwz = fTz * w;
+		float fTxy = fTy * x;
+		float fTyy = fTy * y;
+		float fTzz = fTz * z;
+
+		// Vector3(1.0-(fTyy+fTzz), fTxy+fTwz, fTxz-fTwy);
+
+		return atan2(fTxy + fTwz, 1.0f - (fTyy + fTzz));
+
+	}
+	else {
+		return atan2(2 * (x*y + w * z), w*w + x * x - y * y - z * z);
+	}
+}
+//-----------------------------------------------------------------------
+float Quaternion::getPitch(bool reprojectAxis) const {
+	if (reprojectAxis) {
+		// pitch = atan2(localy.z, localy.y)
+		// pick parts of yAxis() implementation that we need
+		float fTx = 2.0f*x;
+		//			Real fTy  = 2.0f*y;
+		float fTz = 2.0f*z;
+		float fTwx = fTx * w;
+		float fTxx = fTx * x;
+		float fTyz = fTz * y;
+		float fTzz = fTz * z;
+
+		// Vector3(fTxy-fTwz, 1.0-(fTxx+fTzz), fTyz+fTwx);
+		return atan2(fTyz + fTwx, 1.0f - (fTxx + fTzz));
+	}
+	else {
+		// internal version
+		return atan2(2 * (y*z + w * x), w*w - x * x - y * y + z * z);
+	}
+}
+//-----------------------------------------------------------------------
+float Quaternion::getYaw(bool reprojectAxis) const {
+	if (reprojectAxis) {
+		// yaw = atan2(localz.x, localz.z)
+		// pick parts of zAxis() implementation that we need
+		float fTx = 2.0f*x;
+		float fTy = 2.0f*y;
+		float fTz = 2.0f*z;
+		float fTwy = fTy * w;
+		float fTxx = fTx * x;
+		float fTxz = fTz * x;
+		float fTyy = fTy * y;
+
+		// Vector3(fTxz+fTwy, fTyz-fTwx, 1.0-(fTxx+fTyy));
+
+		return atan2(fTxz + fTwy, 1.0f - (fTxx + fTyy));
+
+	}
+	else {
+		// internal version
+		return asin(-2 * (x*z - w * y));
+	}
 }
 
 Quaternion operator-(const Quaternion & q){
@@ -136,6 +244,7 @@ Quaternion & operator*=(Quaternion & q1, const Quaternion & q2){
 		q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z,
 		-q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w
 	};
+
 	q1 = result;
 	return q1;
 }

@@ -324,7 +324,7 @@ void CS(uint3 groupId : SV_GroupID,
                 float attenuation = PhysicalAttenuation(0.0f, 0.03f, 0.03f, lightDistance);
                 float lMax = max(0.0f, light.attenuationEnd - lightDistance) / light.attenuationEnd;
 
-                float spotDot = dot(-L, light.direction.xyz);
+                float spotDot = dot(L, light.direction.xyz);
                 float spotValue = smoothstep(0.5f, 0.6f, spotDot);
                 attenuation *= pow(max(spotValue, 0.0), 1);
 

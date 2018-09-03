@@ -11,7 +11,7 @@ cbuffer CbBlur : register(b0)
 #include "../ScreenQuad.hlsl"
 
 //定数バッファのオフセットを利用してガウスブラーをかける
-float4 PS(PS_INPUT input) : SV_Target
+float4 PS(PS_INPUT_SCREEN input) : SV_Target
 {
     float threadHold = 1.0f;
     float softThreadHold = 0.5f;

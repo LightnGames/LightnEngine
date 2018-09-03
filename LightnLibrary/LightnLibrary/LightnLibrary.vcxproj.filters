@@ -106,6 +106,9 @@
     <Filter Include="ソース ファイル\Renderer\PostEffect">
       <UniqueIdentifier>{62a7efe7-e436-4bd7-a473-5450ef342108}</UniqueIdentifier>
     </Filter>
+    <Filter Include="リソース ファイル\App">
+      <UniqueIdentifier>{4536287a-1ce3-4a46-91dc-1ba540a49dcd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shader\Source\Compute\CreateGpuInstanceList.hlsl">
@@ -182,6 +185,18 @@
     </FxCompile>
     <FxCompile Include="Shader\Source\ScreenQuad.hlsl">
       <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\DeferredGeometry.hlsl">
+      <Filter>リソース ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\App\Grass_ps.hlsl">
+      <Filter>リソース ファイル\App</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\Pixel\MaskedDepth_ps.hlsl">
+      <Filter>リソース ファイル\Pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="Shader\Source\App\Grass_vs.hlsl">
+      <Filter>リソース ファイル\App</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

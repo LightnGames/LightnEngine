@@ -64,7 +64,11 @@ Vector3 Component::getWorldPosition() const {
 }
 
 Quaternion Component::getWorldRotation() const {
-	return _localTransform.rotation * _parentActor->getActorRotation();
+	return _parentActor->getActorRotation()*_localTransform.rotation;
+}
+
+Quaternion Component::getLocalRotation() const {
+	return _localTransform.rotation;
 }
 
 Vector3 Component::getLocalScale() const {

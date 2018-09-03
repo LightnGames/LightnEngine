@@ -6,10 +6,6 @@ AnimationControllerComponent::AnimationControllerComponent() {
 
 void AnimationControllerComponent::initialize(RefPtr<Avator> avator) {
 	_animationController = std::make_unique<AnimationController>(avator);
-	_animationController->addAnimationList("Resources/LP287/ARRun.anim");
-	_animationController->addAnimationList("Resources/LP287/ARIdle.anim");
-
-	play("ARIdle");
 
 	//_animationController->addAnimationList("ZombieRun.anim");
 	//_animationController->play("ZombieRun");

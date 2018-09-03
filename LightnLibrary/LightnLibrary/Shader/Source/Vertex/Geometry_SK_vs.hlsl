@@ -89,10 +89,11 @@ PS_INPUT VS ( VS_INPUT input )
 
     //=============================================================================各行列合成
 
+    //output.Pos.w = 1;
     //output.Pos = localPos;
     //output.Normal = localNormal;
-    //output.Tangent = input.Tangent;
-    //output.Binormal = input.Binormal;
+    //output.Tangent = localBinormal;
+    //output.Binormal = localTangent;
 
     float4 worldPos = mul(output.Pos, mtxWorld);
     output.Pos = worldPos;
@@ -100,7 +101,7 @@ PS_INPUT VS ( VS_INPUT input )
 	output.Pos = mul ( output.Pos, mtxProj );
 	
     //視点ベクトル
-    output.Eye = normalize(worldPos.xyz - cameraPos);
+    //output.Eye = normalize(worldPos.xyz - cameraPos);
 
     //テクスチャ
     output.Tex = input.Tex;

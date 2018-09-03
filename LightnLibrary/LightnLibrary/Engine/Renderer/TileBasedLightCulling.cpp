@@ -4,7 +4,6 @@
 #include <Renderer/DrawSettings.h>
 #include <Renderer/Deferredbuffers.h>
 #include <Renderer/GraphicsResourceManager.h>
-#include <Components/CameraComponent.h>
 #include <ShaderDefines.h>
 
 struct PerFrameConstants{
@@ -79,7 +78,7 @@ void TileBasedLightCulling::draw(const DrawSettings& settings,
 
 	auto deferredBuffers = settings.deferredBuffers;
 	auto deviceContext = settings.deviceContext;
-	auto& camera = CameraComponent::mainCamera;
+	auto camera = settings.camera;
 
 	ID3D11ShaderResourceView* resource[4] = {
 	deferredBuffers->getDepthStencilResource().Get(),
@@ -94,10 +93,10 @@ void TileBasedLightCulling::draw(const DrawSettings& settings,
 	const uint32 dispatchHeight = (height + COMPUTE_SHADER_TILE_GROUP_DIM - 1) / COMPUTE_SHADER_TILE_GROUP_DIM;
 
 	PerFrameConstants perFrame;
-	perFrame.cameraProj = camera->mtxProj().transpose();
-	perFrame.cameraRotate = Matrix4::matrixFromQuaternion(camera->getWorldRotation()).transpose();
+	perFrame.cameraProj = camera->mtxProj.transpose();
+	perFrame.cameraRotate = Matrix4::matrixFromQuaternion(camera->rotation).transpose();
 	perFrame.camerProjInverse = perFrame.cameraProj.inverse();
-	perFrame.cameraNearFar = Vector2(camera->farClip(), camera->nearClip());
+	perFrame.cameraNearFar = Vector2(camera->farClip, camera->nearClip);
 	perFrame.framebufferDimensionsX = width;
 	perFrame.framebufferDimensionsY = height;
 	

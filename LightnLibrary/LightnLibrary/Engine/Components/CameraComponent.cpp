@@ -5,6 +5,8 @@
 RefPtr<CameraComponent> CameraComponent::mainCamera = 0;
 
 CameraComponent::CameraComponent(){
+	setNearClip(0.1f);
+	setFarClip(1000.0f);
 	setFov(45);
 }
 
@@ -38,8 +40,8 @@ void CameraComponent::setFov(float fov)
 	//éÀâeçsóÒ
 	float fovT = radianFromDegree(fov);
 	float aspect = screenSize.x / screenSize.y;
-	float minZ = 0.1f;
-	float maxZ = 1000.0f;
+	float minZ = nearClip();
+	float maxZ = farClip();
 	setProjection(fovT, aspect, minZ, maxZ);
 
 	_camera.fov = fov;
@@ -68,4 +70,8 @@ float CameraComponent::fov() const
 
 RefPtr<Camera> CameraComponent::camera() {
 	return &_camera;
+}
+
+const Camera & CameraComponent::refCamera() const {
+	return _camera;
 }

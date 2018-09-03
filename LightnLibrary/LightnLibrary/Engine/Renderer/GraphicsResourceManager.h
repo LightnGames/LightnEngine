@@ -58,6 +58,9 @@ public:
 	//シンプルサンプラを取得
 	const ComPtr<ID3D11SamplerState>& simpleSamplerState() const;
 
+	ID3D11PixelShader* simpleMaskedDepthShader();
+	ID3D11RasterizerState* rasterState(D3D11_CULL_MODE mode);
+
 private:
 
 	std::unordered_map<std::string, Texture> _textures;
@@ -70,4 +73,6 @@ private:
 
 	ComPtr<ID3D11Device> _device;
 	ComPtr<ID3D11SamplerState> _simpleSampler;
+	ComPtr<ID3D11PixelShader> _simpleMaskedDepthShader;
+	ComPtr<ID3D11RasterizerState> _dualRaster;
 };

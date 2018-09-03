@@ -7,6 +7,7 @@ SamplerState samLinear : register(s0);
 
 #include "../PhysicallyBasedRendering.hlsl"
 #include "../DeferredLight.hlsl"
+#include "../ScreenQuad.hlsl"
 
 cbuffer SpotLightInput : register(b0){
 	float4 lightPosition;
@@ -16,14 +17,7 @@ cbuffer SpotLightInput : register(b0){
 	matrix inverseViewProjection;
 };
 
-struct PS_INPUT
-{
-	float4 Pos : SV_POSITION;
-	float2 Tex : TEXCOORD0;
-	float3 Eye : POSITION0;
-};
-
-float4 PS ( PS_INPUT input ) : SV_Target
+float4 PS (PS_INPUT_SCREEN input ) : SV_Target
 {
     float4 baseColor;
 	float4 rtMainColor;
@@ -57,7 +51,7 @@ float4 PS ( PS_INPUT input ) : SV_Target
 
 	//ŠgŽUŒõ‚ÆƒXƒyƒLƒ…ƒ‰
 	float3 directDiffuse = irradistance * DiffuseBRDF(diffuseColor);
-    float3 directSpecular = irradistance * SpecularBRDF(normal, -input.Eye, L, specularColor, roughness);
+    float3 directSpecular = irradistance; /* * SpecularBRDF(normal, -input.Eye, L, specularColor, roughness);*/
 
 	return float4(directDiffuse + directSpecular,1);
 }

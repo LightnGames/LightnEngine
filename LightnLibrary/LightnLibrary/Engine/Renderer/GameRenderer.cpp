@@ -79,6 +79,10 @@ HRESULT GameRenderer::createGameWindow(const HINSTANCE & hInst, WNDPROC lpfnWndP
 	return S_OK;
 }
 
+struct WorldConstant {
+	Vector4 time;
+};
+ComPtr<ID3D11Buffer> worldConstant;
 HRESULT GameRenderer::initDirect3D() {
 
 	//スワップチェインの作成
@@ -120,10 +124,10 @@ HRESULT GameRenderer::initDirect3D() {
 	_ssao->initialize(_device);
 
 	_sceneRendererManager->setUp();
+	RendererUtil::createConstantBuffer(worldConstant, sizeof(WorldConstant), _device);
 
 	return S_OK;
 }
-
 
 void GameRenderer::draw() {
 
@@ -136,12 +140,22 @@ void GameRenderer::draw() {
 	drawSettings->camera = mainCamera->camera();
 	drawSettings->camera->mtxView = mainCamera->cameraMatrix().inverse();
 	drawSettings->camera->position = mainCamera->getWorldPosition();
+	drawSettings->camera->rotation = mainCamera->getWorldRotation();
 
 	//StaticInstanceMeshのカリング情報をクリア
-	_staticInstancedMeshRenderer->clearCullingBuffer(_deviceContext);
+	_staticInstancedMeshRenderer->clearCullingBuffer(_deviceContext, mainCamera->refCamera());
 
 	//ZPrePass
 	_deferredBuffers->setRenderTargetEaryZ(_deviceContext);
+
+	static float time = 0.0f;
+	time += 0.0166666666f;
+	WorldConstant world;
+	world.time.x = time;
+	world.time.y = std::pow(time, 2);
+
+	_deviceContext->UpdateSubresource(worldConstant.Get(), 0, 0, &world, 0, 0);
+	_deviceContext->VSSetConstantBuffers(2, 1, worldConstant.GetAddressOf());
 
 	for (auto&& sm : _sceneRendererManager->renderableEntities()) {
 		sm->drawDepth(*drawSettings.get());

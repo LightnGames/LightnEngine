@@ -7,6 +7,7 @@
 #include "Mesh/StaticInstanceMesh.h"
 #include <DirectXTex.h>
 #include <functional>
+#include <Renderer/RendererUtil.h>
 #include "Light/DirectionalLight.h"
 #include "Light/SkyLight.h"
 #include "Light/PointLight.h"
@@ -47,6 +48,24 @@ void GraphicsResourceManager::initialize(ComPtr<ID3D11Device> device) {
 
 	_skyLight = std::make_unique<SkyLight>();
 	_skyLight->initialize(_device);
+
+	RendererUtil::createPixelShader("MaskedDepth_ps.cso", _simpleMaskedDepthShader, device);
+
+	D3D11_RASTERIZER_DESC rasterizerDesc =
+	{
+		D3D11_FILL_SOLID,
+		D3D11_CULL_NONE,
+		FALSE,
+		0,
+		0.0f,
+		FALSE,
+		FALSE,
+		FALSE,
+		FALSE,
+		FALSE
+	};
+
+	device->CreateRasterizerState(&rasterizerDesc, _dualRaster.ReleaseAndGetAddressOf());
 
 }
 
@@ -191,4 +210,23 @@ RefPtr<SpotLight> GraphicsResourceManager::getSpotLight() const
 
 const ComPtr<ID3D11SamplerState>& GraphicsResourceManager::simpleSamplerState() const{
 	return _simpleSampler;
+}
+
+ID3D11PixelShader * GraphicsResourceManager::simpleMaskedDepthShader() {
+	return _simpleMaskedDepthShader.Get();
+}
+
+ID3D11RasterizerState * GraphicsResourceManager::rasterState(D3D11_CULL_MODE mode) {
+
+	if (mode & D3D11_CULL_FRONT) {
+		return nullptr;
+	}
+
+	if (mode & D3D11_CULL_NONE) {
+		return _dualRaster.Get();
+	}
+
+	if (mode & D3D11_CULL_BACK) {
+		return nullptr;
+	}
 }

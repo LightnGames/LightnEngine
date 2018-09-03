@@ -22,7 +22,7 @@ void SkeletalMesh::draw(const DrawSettings& drawSettings, const Matrix4& worldMa
 		//constantBuffer.bone[k] = Matrix4::identity;
 	};
 
-	drawMesh(deviceContext, static_cast<void*>(&constantBuffer), sizeof(SKVertex));
+	drawMesh(deviceContext, &constantBuffer, sizeof(SKVertex));
 
 	return;
 
@@ -48,38 +48,7 @@ void SkeletalMesh::drawDepth(const DrawSettings & drawSettings, const Matrix4 & 
 		//constantBuffer.bone[k] = Matrix4::identity;
 	};
 
-	//頂点バッファをセット
-	const UINT stride = sizeof(SKVertex);
-	const UINT offset = 0;
-	deviceContext->IASetVertexBuffers(0, 1, _meshes.vertexBuffer.GetAddressOf(), &stride, &offset);
-
-	//マテリアルの数だけループ
-	for (UINT j = 0; j < _meshes.materialSlots.size(); ++j) {
-
-		const auto& material = _meshes.materialSlots[j];
-
-		//使用シェーダーをセット
-		deviceContext->VSSetShader(material->pVertexShader.Get(), NULL, 0);
-
-		//インデックスバッファをセット
-		deviceContext->IASetIndexBuffer(material->pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-
-		//頂点インプットレイアウトをセット
-		deviceContext->IASetInputLayout(material->pVertexLayout.Get());
-
-		//ポリゴンの描画ルールをセット
-		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		//コンスタントバッファー内容更新
-		deviceContext->UpdateSubresource(material->pConstantBuffer.Get(), 0, NULL, &constantBuffer, 0, 0);
-
-		//コンスタントバッファーを使うシェーダーにセット
-		deviceContext->VSSetConstantBuffers(0, 1, material->pConstantBuffer.GetAddressOf());
-
-		//描画
-		deviceContext->DrawIndexed(material->faceCount * 3, 0, 0);
-
-	}
+	drawMeshDepth(deviceContext, &constantBuffer, sizeof(SKVertex));
 }
 
 RefPtr<Skeleton> SkeletalMesh::getSkeleton() {

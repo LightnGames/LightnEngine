@@ -15,7 +15,7 @@ public:
 
 	void play(const std::string & name, float blendTime = 0.6f);
 
-private:
+public:
 
 	std::unique_ptr<AnimationController> _animationController;
 

@@ -5,11 +5,13 @@
 #include <chrono>
 #include <string>
 #include <unordered_map>
+#include <unordered_map>
 #include <Renderer/Mesh/Mesh.h>
 #include <Loader/MeshLoader.h>
 #include <Renderer/Mesh/SkeletalMesh.h>
 #include <Animation/SkeltalAnimation.h>
 #include <Util/Type.h>
+#include <cassert>
 
 using namespace fbxsdk;
 
@@ -17,6 +19,7 @@ fbxsdk::FbxManager* manager;
 fbxsdk::FbxScene* scene;
 fbxsdk::FbxImporter* importer;
 
+bool animationLoop = true;
 int indexOffset = 0;
 int materialOffset = 0;
 std::vector<MeshVertex> publicVertex;
@@ -25,6 +28,7 @@ std::unordered_map<std::string, std::vector<int>> _nIndex;
 MeshType _type;
 
 std::unique_ptr<Skeleton> _skeleton;
+int dii[MAX_BONES];
 
 bool isSkeletalMesh() {
 	return _type == MeshType::Skeletal;
@@ -113,6 +117,8 @@ std::unique_ptr<Skeleton> loadSkeleton() {
 	//スケルトン生成
 	auto skeleton = std::make_unique<Skeleton>();
 
+	std::vector<Bone> bones(MAX_BONES);
+
 	//メッシュ数を取得
 	const int meshCount = scene->GetMemberCount<FbxMesh>();
 
@@ -147,8 +153,20 @@ std::unique_ptr<Skeleton> loadSkeleton() {
 				boneIndex++;
 			}
 
+			if (bones[boneIndex].name == "") {
+				FbxAMatrix mat;
+				cluster->GetTransformLinkMatrix(mat);
+
+				Bone bone;
+				bone.name = clusterName;
+				bone.matrix = Matrix4::multiply(castFromFbxMatrix(mat), Matrix4::multiply(Matrix4::rotateY(180), mtxScale));
+				bones[boneIndex] = bone;
+			}
+
+			continue;
+
 			//既存ボーンといずれも一致しない場合新規追加する
-			if (boneIndex == skeleton->boneMatrices.size()) {
+			if (boneIndex >= skeleton->boneMatrices.size()) {
 
 				FbxAMatrix mat;
 				cluster->GetTransformLinkMatrix(mat);
@@ -160,6 +178,10 @@ std::unique_ptr<Skeleton> loadSkeleton() {
 				skeleton->boneMatrices.emplace_back(bone);
 			}
 		}
+	}
+
+	for (int i = 0; i < childlen.size(); ++i) {
+		skeleton->boneMatrices.emplace_back(bones[i]);
 	}
 
 	return skeleton;
@@ -275,10 +297,10 @@ HRESULT loadLocalMesh(const int index) {
 
 	//現在のノードからマテリアル数を取得
 	const UINT materialCount = mesh->GetNode()->GetMaterialCount();
-
 	//マテリアルの数だけチェック
 	int indexCount = 0;
 	for (UINT i = 0; i < materialCount; ++i) {
+
 		int iCount = 0;
 		std::vector<int> pIndex(faceCount * 3);
 
@@ -370,6 +392,10 @@ HRESULT loadLocalMesh(const int index) {
 			boneIndex++;
 		}
 
+		if (boneIndex == 1) {
+			int fuu = 0;
+		}
+
 		const int numIndex = cluster->GetControlPointIndicesCount();
 		const int* pIndex = cluster->GetControlPointIndices();
 		const double* pWeight = cluster->GetControlPointWeights();
@@ -387,13 +413,53 @@ HRESULT loadLocalMesh(const int index) {
 					if (0.0f == skVertices[v].boneWeight[k]) {
 						skVertices[v].boneIndex[k] = boneIndex;
 						skVertices[v].boneWeight[k] = pWeight[j];
+
 						break;
+					}
+
+					//ウェイトが4つ以上検出された場合
+					if (k == 3) {
+						int minIndex = 0;
+						float minWeight = 1.0f;
+						for (int l = 0; l < 4; ++l) {
+							if (skVertices[v].boneWeight[k] < minWeight) {
+								minIndex = l;
+								minWeight = skVertices[v].boneWeight[k];
+							}
+						}
+
+						if (pWeight[j] > minWeight) {
+							skVertices[v].boneIndex[minIndex] = boneIndex;
+							skVertices[v].boneWeight[minIndex] += pWeight[j];
+						}
 					}
 				}
 			}
 		}
 	}
 
+	int count = 0;
+	for (auto&& v : skVertices) {
+		if (v.boneWeight[0] + v.boneWeight[1] + v.boneWeight[2] + v.boneWeight[3] < 0.7f) {
+
+			if ((v.pos.x != 0.0f) && (v.tex.x > 0)) {
+				v.boneWeight[0] = skVertices[count-1].boneWeight[0];
+				v.boneWeight[1] = skVertices[count-1].boneWeight[1];
+				v.boneWeight[2] = skVertices[count-1].boneWeight[2];
+				v.boneWeight[3] = skVertices[count-1].boneWeight[3];
+
+				v.boneIndex[0] = skVertices[count-1].boneIndex[0];
+				v.boneIndex[1] = skVertices[count-1].boneIndex[1];
+				v.boneIndex[2] = skVertices[count-1].boneIndex[2];
+				v.boneIndex[3] = skVertices[count-1].boneIndex[3];
+			}
+		}
+
+		count++;
+	}
+
+	dii;
+	_skeleton->boneMatrices;
 	publicSKVertex.reserve(publicSKVertex.size() + skVertices.size());
 	std::copy(skVertices.begin(), skVertices.end(), std::back_inserter(publicSKVertex));
 
@@ -456,6 +522,24 @@ void loadMesh(const std::string& meshFilePath) {
 		loadLocalMesh(meshIndex);
 	}
 
+	dii;
+	_skeleton->boneMatrices;
+	publicSKVertex;
+
+	int index = 0;
+	float minW = 1.0f;
+	for (auto&& v : publicSKVertex) {
+		float w = v.boneWeight[0] + v.boneWeight[1] + v.boneWeight[2] + v.boneWeight[3];
+		if (w < minW) {
+			minW = w;
+
+			if (w == 0.0f) {
+				int out = 1;
+			}
+		}
+		index++;
+	}
+
 	std::ofstream fout;
 	fout.open(meshFilePath + "mesh", std::ios::out | std::ios::binary | std::ios::trunc);
 
@@ -488,11 +572,14 @@ void loadMesh(const std::string& meshFilePath) {
 		createAABB<std::vector<SKVertex>>(publicSKVertex, first, end);
 	}
 
+	char* baka = "BAKA";
+	uint32 align = binSize % 4;
 	fout.write(reinterpret_cast<char*>(&binSize), 4);
 	fout.write(reinterpret_cast<char*>(vertexPtr), binSize);
 
 	fout.write(reinterpret_cast<char*>(&first), sizeof(Vector3));
 	fout.write(reinterpret_cast<char*>(&end), sizeof(Vector3));
+	//fout.write(reinterpret_cast<char*>(baka), 4);
 
 	std::cout << "first X:" << first.x << " Y:" << first.y << " Z:" << first.z << std::endl;
 	std::cout << "end X:" << end.x << " Y:" << end.y << " Z:" << end.z << std::endl;
@@ -518,6 +605,12 @@ void loadMesh(const std::string& meshFilePath) {
 	fout.close();
 }
 
+bool checkEnableAnimCurve(const FbxAnimCurve* curve) {
+	if (curve == nullptr) { return false; }
+	if (curve->KeyGetCount() < 2) { return false; }
+	return true;
+}
+
 void loadAnim(const std::string& meshFilePath){
 
 	std::vector<AnimationBone> _animationBones;
@@ -536,7 +629,18 @@ void loadAnim(const std::string& meshFilePath){
 	//アニメーションカーブ取得
 	FbxAnimStack* pAnimStack = scene->GetSrcObject<FbxAnimStack>(0);
 	FbxAnimLayer* lAnimLayer = pAnimStack->GetMember<FbxAnimLayer>(0);
-	FbxAnimCurve* curve = childlen[0]->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X);
+	FbxAnimCurve* curve = nullptr;
+
+	for (int i = 0; i < childlen.size(); ++i) {
+		curve = childlen[i]->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_X);
+		if (checkEnableAnimCurve(curve)) { break; }
+		curve = childlen[i]->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Y);
+		if (checkEnableAnimCurve(curve)) { break; }
+		curve = childlen[i]->LclTranslation.GetCurve(lAnimLayer, FBXSDK_CURVENODE_COMPONENT_Z);
+		if (checkEnableAnimCurve(curve)) { break; }
+	}
+
+	assert(curve != nullptr&&"アニメーションカーブが見つかりません");
 
 	//キーフレームの間隔からアニメーションフレームレートを割り出す
 	const int keyCount = curve->KeyGetCount();
@@ -554,8 +658,10 @@ void loadAnim(const std::string& meshFilePath){
 
 	int count = 0;
 
+	std::cout << "総フレーム数 " << keyCountPer30fps << std::endl;
+
 	//骨の数だけループ
-	for(auto& b : childlen){
+	for(auto&& b : childlen){
 
 		AnimationBone animBone;
 		animBone.keys.reserve(keyCountPer30fps);
@@ -629,10 +735,13 @@ void loadAnim(const std::string& meshFilePath){
 
 int main(int argc, char *argv[]){
 	
+	//argc = 2;
+	//argv[1] = "C:/Users/Dunois/Documents/VisualStudio Projects/LightnEngine/LightnLibrary/LightnLibrary/Resources/Hero/Hero_Run.fbx";
 	if(argc > 1){
 		for(int i = 1; i<argc; i++){
 
 			std::string fileName(argv[i]);
+
 			std::cout << fileName<< " 処理開始" << std::endl;
 
 			indexOffset = 0;

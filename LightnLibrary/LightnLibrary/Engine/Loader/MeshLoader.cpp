@@ -27,6 +27,7 @@ HRESULT MeshLoader::load(const std::string & filePath, const std::vector<std::st
 
 	//メッシュバイナリロード
 	std::ifstream fin("Resources/" + fileName, std::ios::in | std::ios::binary);
+	fin.exceptions(std::ios::badbit);
 	
 	if (fin.fail()) {
 		int b = 0;
@@ -40,8 +41,10 @@ HRESULT MeshLoader::load(const std::string & filePath, const std::vector<std::st
 	if (getType() == MeshType::Skeletal) {
 
 		//スケルトンロード
+		int gcnt = 0;
 		int boneCount = 0;
 		fin.read(reinterpret_cast<char*>(&boneCount), 4);
+		gcnt = fin.gcount();
 
 		_skeleton = std::make_unique<Skeleton>(boneCount);
 
@@ -99,24 +102,38 @@ void MeshLoader::loadMaterialAndVertexData(std::ifstream& fin) {
 		_mesh.materialSlots.emplace_back(std::move(material));
 	}
 
-	//頂点バッファ読み込み
-	int vertexSize = 0;
-	fin.read(reinterpret_cast<char*>(&vertexSize), 4);
+	try {
+		//頂点バッファ読み込み
+		int gcnt = 0;
+		int vertexSize = 0;
+		fin.read(reinterpret_cast<char*>(&vertexSize), 4);
+		gcnt = fin.gcount();
 
-	auto vertexBuf = std::unique_ptr<char>(new char[vertexSize]);
-	fin.read(reinterpret_cast<char*>(vertexBuf.get()), vertexSize);
+		auto vertexBuf = std::unique_ptr<char>(new char[vertexSize]);
+		fin.read(reinterpret_cast<char*>(vertexBuf.get()), vertexSize);
+		gcnt = fin.gcount();
 
-	//バウンディングボックス読み込み
-	Vector3 min;
-	Vector3 max;
-	fin.read(reinterpret_cast<char*>(&min), sizeof(Vector3));
-	fin.read(reinterpret_cast<char*>(&max), sizeof(Vector3));
+		char ppp[4];
 
-	_mesh.boundingBox.min = min;
-	_mesh.boundingBox.max = max;
+		//バウンディングボックス読み込み
+		Vector3 min;
+		Vector3 max;
+		//fin.read(reinterpret_cast<char*>(ppp), 4);
+		gcnt = fin.gcount();
+		fin.read(reinterpret_cast<char*>(&min), sizeof(Vector3));
+		gcnt = fin.gcount();
+		fin.read(reinterpret_cast<char*>(&max), sizeof(Vector3));
+		gcnt = fin.gcount();
 
-	//スタティックメッシュ頂点バッファ生成
-	RendererUtil::createVertexBuffer(vertexBuf.get(), vertexSize, _mesh.vertexBuffer, _device);
+		_mesh.boundingBox.min = min;
+		_mesh.boundingBox.max = max;
+
+		//スタティックメッシュ頂点バッファ生成
+		RendererUtil::createVertexBuffer(vertexBuf.get(), vertexSize, _mesh.vertexBuffer, _device);
+	}
+catch (std::ios_base::failure& e) {
+	std::cerr << "file read error." << std::endl;
+	}
 
 	//メッシュ属性をメンバに格納
 	_materialSlotCount = materialCount;
@@ -184,25 +201,39 @@ HRESULT MeshLoader::loadMaterialFromFile(const std::vector<std::string>& fileNam
 		//ファイルの行ごとに処理
 		while (getline(ifs, str)) {
 
-			if (lineCount == 0) {
+			switch (lineCount) {
+			case 0:
 				//頂点シェーダーファイル名取得
 				material->vertexShaderFileName = std::string(str.c_str());
-			} else if (lineCount == 1) {
+				break;
+			case 1:
 				//ピクセルシェーダー名取得
 				material->pixelShaderFileName = std::string(str.c_str());
-
-			} else if (lineCount == 2) {
-
+				break;
+			case 2:
+				//マテリアルアルファタイプを取得
+				material->alphaType = std::stoi(str);
+				break;
+			case 3:
+				//ポリゴン表示モード
+				switch (std::stoi(str)) {
+				case 0: material->cullMode = D3D11_CULL_BACK; break;
+				case 1: material->cullMode = D3D11_CULL_NONE; break;
+				case 2: material->cullMode = D3D11_CULL_FRONT; break;
+				}
+				break;
+			case 4:
 				//このマテリアルのテクスチャ枚数取得
 				textureCount = std::stoi(str);
 				material->textureCount = textureCount;
-
-			} else {
+				break;
+			default:
 				//テクスチャの数だけファイル名を読み込み
 				if (loadTextureCount < textureCount) {
 					material->textureFileNames.push_back(std::string(str.c_str()));
 					loadTextureCount++;
 				}
+				break;
 			}
 
 			lineCount++;

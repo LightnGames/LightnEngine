@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <Util/RefPtr.h>
+#include <LMath.h>
 
 class SkeltalAnimation;
 struct Avator;
@@ -28,6 +29,13 @@ public:
 
 	//アニメーションを更新
 	void update(float deltaTime);
+
+	float debugTime = -1.0f;
+	bool applyRootMotion = false;
+	int rootMotionIndex = 0;
+	TransformQ rootMotionVelocity;
+
+	void setRootMotionBone(const std::string& boneName);
 
 private:
 

@@ -87,7 +87,7 @@ const TileBasedSpotLightType * SceneRendererManager::spotLights(const Matrix4 & 
 		auto& ptr = _spotLightListPtr.get()[counter];
 		ptr = p->light;
 		ptr.positionView = Matrix4::transform(p->getWorldPosition(), mtxCamera);
-		ptr.direction = Quaternion::rotVector(p->getWorldRotation(), Vector3::forward);
+		ptr.direction = p->forwardVector();
 
 		++counter;
 	}

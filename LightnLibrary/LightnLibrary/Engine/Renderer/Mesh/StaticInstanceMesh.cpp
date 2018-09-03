@@ -2,6 +2,7 @@
 #include <Renderer/RendererUtil.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererSettings.h>
+#include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/StaticInstancedMeshRenderer.h>
 
 StaticInstanceMesh::StaticInstanceMesh(const LocalMesh & meshes) :_meshes{ meshes }
@@ -123,6 +124,8 @@ void StaticInstanceMesh::draw(const DrawSettings& drawSettings, RefPtr<StaticIns
 			deviceContext->PSSetShaderResources(k + globalTextureCount, 1, material->ppTextures[k].GetAddressOf());
 		}
 
+		deviceContext->RSSetState(GraphicsResourceManager::instance().rasterState(material->cullMode));
+
 		//テクスチャサンプラーをセット
 		deviceContext->PSSetSamplers(0, 1, material->pSamplerLiner.GetAddressOf());
 
@@ -179,12 +182,22 @@ void StaticInstanceMesh::drawDepth(const DrawSettings& drawSettings, RefPtr<Stat
 		for (UINT j = 0; j < _meshes.materialSlots.size(); ++j) {
 
 			const auto& material = _meshes.materialSlots[j];
+
+			//アルファがMaskedならアルベドのアルファを参照する必要があるのでそのテクスチャをセット
+			if (material->alphaType == 1) {
+				deviceContext->PSSetShader(GraphicsResourceManager::instance().simpleMaskedDepthShader(), 0, 0);
+				deviceContext->PSSetShaderResources(0, 1, material->ppTextures[0].GetAddressOf());
+			}
+
+			deviceContext->RSSetState(GraphicsResourceManager::instance().rasterState(material->cullMode));
 			deviceContext->VSSetShader(material->pVertexShader.Get(), NULL, 0);
 			deviceContext->IASetIndexBuffer(material->pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			deviceContext->IASetInputLayout(material->pVertexLayout.Get());
 			deviceContext->UpdateSubresource(material->pConstantBuffer.Get(), 0, NULL, &constantBuffer, 0, 0);
 			deviceContext->VSSetConstantBuffers(0, 1, material->pConstantBuffer.GetAddressOf());
 			deviceContext->DrawIndexedInstancedIndirect(instanceData->indtsnceDrawListBuffer.Get(), (_meshDrawOffset + j) * 20);
+			
+			deviceContext->PSSetShader(0, 0, 0);
 		}
 	}
 }

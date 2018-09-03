@@ -4,6 +4,8 @@
 struct SkyLightType {
 	Vector4 color;
 	Vector4 intensity;
+	Matrix4 mtxViewProjInv;
+	Vector4 cameraPosition;
 };
 
 class SkyLight :public Light{

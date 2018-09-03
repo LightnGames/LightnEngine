@@ -24,7 +24,7 @@ float rand(float2 co)
 
 #define SSAO_SAMPLE_COUNT 6
 
-float4 PS(PS_INPUT input) : SV_Target
+float4 PS(PS_INPUT_SCREEN input) : SV_Target
 {
     //UE4 SSAO
     float3 normal = Normal.Sample(samLinear, input.Tex).xyz;

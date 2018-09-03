@@ -19,22 +19,22 @@
 #include <ThirdParty/ImGui/imgui.h>
 
 RefPtr<SkyboxActor> sky;
-std::vector<RefPtr<StaticMeshActor>> smTests;
 RefPtr<SkeletalMeshActor> sk;
+RefPtr<SkeletalMeshActor> sk2;
 RefPtr<DirectionalLightActor> dirLight;
-RefPtr<SpotLightActor> spotLight;
-RefPtr<PointLightActor> pointLight;
 
 Scene::Scene() {
 
 	sky = makeChild<SkyboxActor>();
 	sk = makeChild<SkeletalMeshActor>();
+	//sk2 = makeChild<SkeletalMeshActor>();
 	dirLight = makeChild<DirectionalLightActor>();
-	pointLight = makeChild<PointLightActor>();
-	pointLight->setActorPosition({ 0,3,1 });
-	spotLight = makeChild<SpotLightActor>();
-	spotLight->setActorRotation(Quaternion::euler({ 0,90,0 }));
-	spotLight->setActorPosition({ 1,1,-4 });
+
+	sk->_camera = sk->addComponent<CameraComponent>();
+	CameraComponent::mainCamera = sk->_camera;
+
+	sk->_camera->setWorldPosition({ 0.7f, 2.6f, -6.3f });
+	sk->_camera->setWorldRotation(Quaternion::euler({ 0, 0, 0 }));
 
 	//マテリアルデータ
 	std::vector<std::string> lp287mat;
@@ -45,12 +45,38 @@ Scene::Scene() {
 	lp287mat.push_back("M_LP287_Pants.mat");
 	lp287mat.push_back("M_LP287_Jacet.mat");
 
+	std::vector<std::string> heromat;
+	heromat.push_back("M_Hero.mat");
+	heromat.push_back("M_Hero.mat");
+	heromat.push_back("M_Hero_Crossbow.mat");
+
+	sk->setUpSkeletalMesh("Hero/Hero.mesh", heromat);
+	sk->setActorPosition({ 15,0.1f,0 });
+	//sk2->setActorRotation(Quaternion::euler({ 15,0.1f,5 }));
+	sk->setActorScale({ 0.015f,0.015f,0.015f });
+
+	auto& anim = sk->_animationComponent->_animationController;
+
+	anim->addAnimationList("Resources/Hero/Hero_idle.anim");
+	anim->addAnimationList("Resources/Hero/Hero_Run.anim");
+	anim->addAnimationList("Resources/Hero/Hero_StandHalfTurnRight.anim");
+	anim->play("Hero_idle");
+
+	anim->applyRootMotion = true;
+	anim->setRootMotionBone("Bip001 Pelvis");
+
 	std::vector<std::string> zombieMat;
 	zombieMat.push_back("SkeltalTest.mat");
 	zombieMat.push_back("SkeltalTest.mat");
 	/*zombieMat.push_back("SkeltalTest.mat");
 	zombieMat.push_back("SkeltalTest.mat");*/
-	sk->setUpSkeletalMesh("LP287/LP287.mesh", lp287mat);
+	//sk->setUpSkeletalMesh("LP287/LP287.mesh", lp287mat);
+	//sk->setActorPosition({ 15,0,0 });
+	//sk->setActorScale({ 0.015f,0.015f,0.015f });
+
+	//sk->_animationComponent->_animationController->addAnimationList("Resources/LP287/ARRun.anim");
+	//sk->_animationComponent->_animationController->addAnimationList("Resources/LP287/ARIdle.anim");
+	//sk->_animationComponent->_animationController->play("ARIdle");
 
 	//_skeletalMesh = GraphicsResourceManager::instance().loadRenderableObject("Zombie.FBX", zombieMat).cast<SkeletalMesh>();
 
@@ -98,15 +124,6 @@ Scene::Scene() {
 		fin.read(reinterpret_cast<char*>(&rotation), 16);
 		fin.read(reinterpret_cast<char*>(&scale), 12);
 
-		//auto mesh = makeChild<StaticMeshActor>();
-		//smTests.emplace_back(mesh);
-
-		//mesh->setActorPosition(position);
-		//mesh->setActorScale(scale);
-		//mesh->setActorRotation(rotation);
-
-		//mesh->setUpStaticMesh(std::string(objectName) + ".mesh", materialNames);
-
 		std::string keyName(objectName + append);
 
 		if (instanceMatrices.count(keyName) > 0) {
@@ -144,7 +161,43 @@ Scene::Scene() {
 		}
 
 		maxDrawCount += (m.size() + a);
+	}
 
+	int32 lightCount;
+	fin.read(reinterpret_cast<char*>(&lightCount), 4);
+
+	for (int i = 0; i < lightCount; ++i) {
+
+		int lightType;
+		float intensity;
+		float range;
+		Vector3 position;
+		Quaternion rotation;
+
+		fin.read(reinterpret_cast<char*>(&lightType), 4);
+		fin.read(reinterpret_cast<char*>(&intensity), 4);
+		fin.read(reinterpret_cast<char*>(&range), 4);
+
+		fin.read(reinterpret_cast<char*>(&position), 12);
+		fin.read(reinterpret_cast<char*>(&rotation), 16);
+
+		if (lightType == 2) {
+			auto pointLight = makeChild<PointLightActor>();
+			pointLight->setActorPosition(position);
+			pointLight->setActorRotation(rotation);
+
+			pointLight->_lightComponent->light.color = Vector3(1, 1, 1)*intensity;
+			pointLight->_lightComponent->light.attenuationEnd = range;
+		}
+
+		if (lightType == 0) {
+			auto spotLight = makeChild<SpotLightActor>();
+			spotLight->setActorPosition(position);
+			spotLight->setActorRotation(rotation);
+
+			spotLight->_lightComponent->light.color = Vector3(1, 1, 1)*intensity;
+			spotLight->_lightComponent->light.attenuationEnd = range;
+		}
 	}
 
 	fin.close();
@@ -198,31 +251,44 @@ void Scene::update(float deltaTime)
 	velocity *= speed;
 
 	static bool walkAnim = false;
+	static float ccc = 2.0f;
+	ccc -= 0.1f;
+	if (ccc < 0) {
+		//sk->_animationComponent->play("Hero_idle", 0.2f);
+	}
 
 	if ((Vector3::length(velocity) < 0.01f) && walkAnim) {
-		sk->_animationComponent->play("ARIdle", 0.2f);
+		sk->_animationComponent->play("Hero_idle", 0.2f);
+		//sk->_animationComponent->play("Hero_StandHalfTurnRight");
 		walkAnim = false;
 	}
 
 
 	if ((Vector3::length(velocity) > 0.01f) && !walkAnim) {
-		sk->_animationComponent->play("ARRun", 0.2f);
+		sk->_animationComponent->play("Hero_Run", 0.2f);
 		walkAnim = true;
 	}
 
-	static float y = 1.0f;
-	ImGui::Begin("height");
-	ImGui::SliderFloat("Yaw", &y, -10.0f, 10.0f);
-	ImGui::End();
+	Vector3 rootMotionVelocity = sk->_animationComponent->_animationController->rootMotionVelocity.position;
+	rootMotionVelocity.y = 0;
+	//回転にルートモーションを適用してしまうと90度補正しないとZを正面に向かない
+	Vector3 moveVelocity = Quaternion::rotVector(sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler({ 0,-90,0 }), rootMotionVelocity);
+	if (velocity.length() > 0) {
+		Quaternion inpuRotate = Quaternion::lookRotation(velocity.normalize());
+		Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*Quaternion::euler({ 0,90,0 }), 0.2f);
+		sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);
 
+		//moveVelocity = Quaternion::rotVector(sk->getActorRotation()*inpuRotate, rootMotionVelocity);
+	}
+	//sk2->_animationComponent->_animationController->debugTime = time;
 
-	pointLight->setActorPosition({ 0,y,1 });
-	velocity = Quaternion::rotVector(sk->getActorRotation(), velocity);
+	//sk->_skeletalMeshComponent->setLocalRotation(sk->_skeletalMeshComponent->getLocalRotation()*sk->_animationComponent->_animationController->rootMotionVelocity.rotation);
+	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0,90,0 }));
 
-	sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0, 90, 0}));
-	sk->setActorScale({ 0.01f,0.01f,0.01f });
-	sk->setActorPosition(sk->getActorPosition() + velocity);
+	moveVelocity *= sk->getActorScale().x;
+	sk->setActorPosition(sk->getActorPosition() + moveVelocity);
 	sk->setActorRotation(Quaternion::euler({ 0,turnVelocity,0 }));
+	sk->_camera->setLocalRotation(Quaternion::euler({ turnVelocityP ,0,0 }));
 
 	/*SceneRendererManager::debugDrawBox(sk->getActorPosition(), Vector3(1, 2, 1), sk->getActorRotation());
 	SceneRendererManager::debugDrawLine(Vector3::zero, sk->getActorPosition());

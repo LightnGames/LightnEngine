@@ -17,16 +17,24 @@ struct Quaternion{
 	static Quaternion slerp(const Quaternion q1, const Quaternion& q2, float t);
 
 	//オイラー角からクォータニオンを生成
-	static Quaternion euler(const Vector3& euler);
+	static Quaternion euler(const Vector3& euler, bool valueIsRadian = false);
 
 	//ベクトルをクォータニオンで回転
 	static Vector3 rotVector(const Quaternion& q, const Vector3& v);
+
+	//directionを向く回転を作成
+	static Quaternion lookRotation(const Vector3& direction, const Vector3& up = Vector3::up);
 
 	//逆クォータニオン
 	Quaternion inverse() const;
 
 	//オイラー角度を取得
 	Vector3 toEulerAngle() const;
+
+	//戻り値はラジアン
+	float getRoll(bool reprojectAxis = true) const;
+	float getPitch(bool reprojectAxis = true) const;
+	float getYaw(bool reprojectAxis = true) const;
 
 	static const Quaternion identity;
 

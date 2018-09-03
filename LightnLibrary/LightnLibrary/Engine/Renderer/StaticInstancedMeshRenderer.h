@@ -7,6 +7,8 @@
 #include <Util/Singleton.h>
 #include <Renderer/Mesh/Mesh.h>
 
+struct Camera;
+
 struct StaticInstanceMeshData {
 	ComPtr<ID3D11ShaderResourceView> instanceMatrixSRV;
 	ComPtr<ID3D11Buffer> indtsnceDrawListBuffer;
@@ -26,13 +28,15 @@ public:
 
 	HRESULT initialize(ComPtr<ID3D11Device> device, uint32 maxDrawCount, const std::vector<uint32>& indexList);
 
-	void clearCullingBuffer(ComPtr<ID3D11DeviceContext> deviceContext);
+	void clearCullingBuffer(ComPtr<ID3D11DeviceContext> deviceContext, const Camera& camera);
+
+	void clearCullingBufferShadow(ComPtr<ID3D11DeviceContext> deviceContext, const Camera& camera);
 
 	RefPtr<StaticInstanceMeshData> getInstanceBuffers() const;
 
 private:
 
-	void calculateFrustumPlanes(Plane planes[6]);
+	void calculateFrustumPlanes(Plane planes[6], const Camera& camera);
 
 private:
 	

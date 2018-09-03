@@ -27,4 +27,8 @@ public:
 	float w;
 };
 
+// 単項演算子オーバーロード
+Vector4 operator + (const Vector4& v);
+Vector4 operator - (const Vector4& v);
+
 

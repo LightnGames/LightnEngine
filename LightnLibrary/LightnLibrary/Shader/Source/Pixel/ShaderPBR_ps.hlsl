@@ -20,7 +20,7 @@ float4 PS ( PS_INPUT input ) : SV_Target
 {
 
     //テクスチャをサンプル
-    float4 baseColor = texDiffuse.Sample(samLinear, input.Tex);
+    /*float4 baseColor = texDiffuse.Sample(samLinear, input.Tex);
     float3 normal = texNormal.Sample(samLinear, input.Tex);
     float roughness = texRoughness.Sample(samLinear, input.Tex).r;
     float metallic = texMetallic.Sample(samLinear, input.Tex);
@@ -68,8 +68,8 @@ float4 PS ( PS_INPUT input ) : SV_Target
 
     float4 finalColor = float4((cubeMapDiffuse/5.0+cubeMapSpecular)+directDiffuse + directSpecular, 1);
 	//finalColor=pow(finalColor,2.2);
-    //return float4(directDiffuse * cubeMapColor + directSpecular, 1);
+    //return float4(directDiffuse * cubeMapColor + directSpecular, 1);*/
 
 
-    return finalColor;
+    return float4(1,0,0,1);
 }

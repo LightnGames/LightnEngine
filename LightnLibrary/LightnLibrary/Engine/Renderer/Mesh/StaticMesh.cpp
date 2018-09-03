@@ -2,6 +2,7 @@
 #include <Renderer/RendererSettings.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererUtil.h>
+#include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/SceneRendererManager.h>
 
 StaticMesh::StaticMesh(const LocalMesh& meshes) :_meshes{ meshes } {
@@ -25,24 +26,7 @@ void StaticMesh::drawDepth(const DrawSettings & drawSettings, const Matrix4 & wo
 	ComPtr<ID3D11DeviceContext> deviceContext = drawSettings.deviceContext;
 
 	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(worldMatrix, drawSettings.camera);
-
-	//頂点バッファをセット
-	const UINT stride = sizeof(MeshVertex);
-	const UINT offset = 0;
-	deviceContext->IASetVertexBuffers(0, 1, _meshes.vertexBuffer.GetAddressOf(), &stride, &offset);
-
-	//マテリアルの数だけループ
-	for (UINT j = 0; j < _meshes.materialSlots.size(); ++j) {
-
-		const auto& material = _meshes.materialSlots[j];
-		deviceContext->VSSetShader(material->pVertexShader.Get(), NULL, 0);
-		deviceContext->IASetIndexBuffer(material->pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-		deviceContext->IASetInputLayout(material->pVertexLayout.Get());
-		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		deviceContext->UpdateSubresource(material->pConstantBuffer.Get(), 0, NULL, &constantBuffer, 0, 0);
-		deviceContext->VSSetConstantBuffers(0, 1, material->pConstantBuffer.GetAddressOf());
-		deviceContext->DrawIndexed(material->faceCount * 3, 0, 0);
-	}
+	drawMeshDepth(deviceContext, &constantBuffer, sizeof(MeshVertex));
 }
 
 void StaticMesh::drawMesh(ComPtr<ID3D11DeviceContext> deviceContext, const RefPtr<void>& constantBuffer, const UINT vertexBufferSize) {
@@ -88,12 +72,45 @@ void StaticMesh::drawMesh(ComPtr<ID3D11DeviceContext> deviceContext, const RefPt
 			deviceContext->PSSetShaderResources(k + globalTextureCount, 1, material->ppTextures[k].GetAddressOf());
 		}
 
+		deviceContext->RSSetState(GraphicsResourceManager::instance().rasterState(material->cullMode));
+
 		//テクスチャサンプラーをセット
 		deviceContext->PSSetSamplers(0, 1, material->pSamplerLiner.GetAddressOf());
 
 		//描画
 		deviceContext->DrawIndexed(material->faceCount * 3, 0, 0);
 
+	}
+}
+
+void StaticMesh::drawMeshDepth(ComPtr<ID3D11DeviceContext> deviceContext, const RefPtr<void>& constantBuffer, const UINT vertexBufferSize) {
+
+	//頂点バッファをセット
+	const UINT stride = vertexBufferSize;
+	const UINT offset = 0;
+	deviceContext->IASetVertexBuffers(0, 1, _meshes.vertexBuffer.GetAddressOf(), &stride, &offset);
+
+	//マテリアルの数だけループ
+	for (UINT j = 0; j < _meshes.materialSlots.size(); ++j) {
+
+		const auto& material = _meshes.materialSlots[j];
+
+		//アルファがMaskedならアルベドのアルファを参照する必要があるのでそのテクスチャをセット
+		if (material->alphaType == 1) {
+			deviceContext->PSSetShader(GraphicsResourceManager::instance().simpleMaskedDepthShader(), 0, 0);
+			deviceContext->PSSetShaderResources(0, 1, material->ppTextures[0].GetAddressOf());
+		}
+
+		deviceContext->RSSetState(GraphicsResourceManager::instance().rasterState(material->cullMode));
+		deviceContext->VSSetShader(material->pVertexShader.Get(), NULL, 0);
+		deviceContext->IASetIndexBuffer(material->pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+		deviceContext->IASetInputLayout(material->pVertexLayout.Get());
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		deviceContext->UpdateSubresource(material->pConstantBuffer.Get(), 0, NULL, constantBuffer.get(), 0, 0);
+		deviceContext->VSSetConstantBuffers(0, 1, material->pConstantBuffer.GetAddressOf());
+		deviceContext->DrawIndexed(material->faceCount * 3, 0, 0);
+
+		deviceContext->PSSetShader(0, 0, 0);
 	}
 }
 

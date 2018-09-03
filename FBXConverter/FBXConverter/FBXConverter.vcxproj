@@ -79,7 +79,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir)../\Library\FBX SDK\2018.1.1\include;$(SolutionDir)../\LightnLibrary\LightnLibrary\Engine;$(SolutionDir)../\LightnLibrary\LightnLibrary\Engine\Util;$(SolutionDir)../\Math\include;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)../\Library\FBX SDK\2018.1.1\lib\vs2015\x64\debug;$(SolutionDir)../Math\lib;$(LibraryPath)</LibraryPath>
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)_Intermdiate\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>libfbxsdk-mt.lib;d3d11.lib;Math_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libfbxsdk-md.lib;d3d11.lib;Math_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

@@ -12,23 +12,17 @@ struct VS_INPUT
     float2 Tex : TEXCOORD0;
 };
 
-struct PS_INPUT
-{
-    float4 Pos : SV_POSITION;
-    float2 Tex : TEXCOORD0;
-	float3 Eye : POSITION0;
-};
+#include "../ScreenQuad.hlsl"
 
-PS_INPUT VS(VS_INPUT input)
+PS_INPUT_SCREEN VS(VS_INPUT input)
 {
-    PS_INPUT output;
+    PS_INPUT_SCREEN output;
 
     //í∏ì_ç¿ïW
     float4 worldPos = mul(float4(input.Pos, 1), mtxWorld);
 	
 	output.Pos = float4(input.Pos, 1);
     output.Tex = input.Tex;
-    output.Eye = normalize(worldPos.xyz - cameraPos);
 
     return output;
 }

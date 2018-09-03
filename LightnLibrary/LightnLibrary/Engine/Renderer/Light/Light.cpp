@@ -64,18 +64,15 @@ void Light::draw(const DrawSettings & settings, RefPtr<LightComponent>& lightCom
 	//コンスタントバッファーを使うシェーダーにセット
 	deviceContext->VSSetConstantBuffers(0, 1, _matrixBuffer.GetAddressOf());
 
-	ID3D11ShaderResourceView* const srvs[3] = {
+	ID3D11ShaderResourceView* const srvs[4] = {
+		deferredBuffers->getDepthStencilResource().Get(),
 		deferredBuffers->getShaderResourceView(0),
 		deferredBuffers->getShaderResourceView(1),
-		deferredBuffers->getShaderResourceView(2)
+		deferredBuffers->getShaderResourceView(2),
 	};
 
 	//GBufferをセット
-	deviceContext->PSSetShaderResources(0, 3, srvs);
-
-	if (RendererSettings::skyBox.Get() != nullptr) {
-		deviceContext->PSSetShaderResources(3, 1, RendererSettings::skyBox.GetAddressOf());
-	}
+	deviceContext->PSSetShaderResources(0, 4, srvs);
 
 	//テクスチャサンプラーをセット
 	deviceContext->PSSetSamplers(0, 1, _sampleState.GetAddressOf());

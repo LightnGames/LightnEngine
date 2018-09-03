@@ -39,6 +39,8 @@ public:
 
 	RefPtr<Camera> camera();
 
+	const Camera& refCamera() const;
+
 private:
 
 	Camera _camera;

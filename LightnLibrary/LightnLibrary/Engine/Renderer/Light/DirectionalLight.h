@@ -6,6 +6,7 @@ struct DirectionalLightType {
 	Vector4 lightColor;
 	Matrix4 mtxViewProjInv;
 	Matrix4 mtxShadow;
+	Vector4 cameraPosition;
 };
 
 class DirectionalLight :public Light{

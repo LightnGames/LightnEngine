@@ -32,6 +32,8 @@ protected:
 	//メッシュを描画
 	void drawMesh(ComPtr<ID3D11DeviceContext> deviceContext, const RefPtr<void>& constantBuffer, const UINT vertexBufferSize);
 
+	void drawMeshDepth(ComPtr<ID3D11DeviceContext> deviceContext, const RefPtr<void>& constantBuffer, const UINT vertexBufferSize);
+
 protected:
 
 	//メッシュデータ

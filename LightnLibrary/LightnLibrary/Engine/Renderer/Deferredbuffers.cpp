@@ -129,7 +129,7 @@ void Deferredbuffers::setRenderTargets(ComPtr<ID3D11DeviceContext> context) {
 	
 	context->OMSetRenderTargets(BUFFER_COUNT, rtvs, _depthStencilView.Get());
 	context->RSSetViewports(1, &_viewport);
-	context->OMSetBlendState(0, 0, 0xffffffff);
+	context->OMSetBlendState(0, 0, D3D11_DEFAULT_SAMPLE_MASK);
 	context->OMSetDepthStencilState(_depthStencilState.Get(), 1);
 }
 
