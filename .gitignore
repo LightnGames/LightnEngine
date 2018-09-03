@@ -21,6 +21,7 @@ syntax:glob
 *.cso
 *.sbr
 Thumbs.db
+FBX_SDK/
 [Dd]ebug_Intermdiate*/
 [Rr]elease_Intermdiate*/
 [Tt]est[Rr]esults/
