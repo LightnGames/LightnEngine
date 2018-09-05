@@ -3,113 +3,93 @@
 #include "../Renderer/Mesh/Skeleton.h"
 #include <ThirdParty/ImGui/imgui.h>
 
-AnimationController::AnimationController(RefPtr<Avator> avator) :_avator{ avator }, _blendingTime{ 0.0f }, _blendTime{ 0.0f }{
+AnimationController::AnimationController(RefPtr<Avator> avator) :_avator{ avator }, _blendingTime{ 0.0f }, _blendTime{ 0.0f } {
 }
 
-AnimationController::~AnimationController(){
+AnimationController::~AnimationController() {
 }
 
-void AnimationController::addAnimationList(const Animation & animation){
+void AnimationController::addAnimationList(const Animation & animation) {
 	_playList[animation->getName()] = animation;
 }
 
-void AnimationController::addAnimationList(const std::string & name){
+void AnimationController::addAnimationList(const std::string & name) {
 	auto anim = std::make_shared<SkeltalAnimation>(name);
 	addAnimationList(anim);
 }
 
-void AnimationController::play(const std::string & name, float blendTime){
+void AnimationController::play(const std::string & name, float blendTime) {
 
-	if(_playList.count(name) == 0){
+	if (_playList.count(name) == 0) {
 		return;
 	}
 
-	//前回のアニメーションがあればフレームをリセット
-	if(_duringAnimation.lock() != nullptr){
-		_blendingAnimation = _playList[name];
-		_blendingAnimation.lock()->resetAnimation();
+	if (_duringAnimations.empty()) {
+		blendTime = 0.0f;
 	}
-	else{
-		_duringAnimation = _playList[name];
-	}
+
+	AnimTask task;
+	task.anim = _playList[name];
+	task.blendingTime = blendTime;
+	task.blendTime = blendTime;
+	_duringAnimations.emplace_back(std::move(task));
 
 	_blendingTime = blendTime;
 	_blendTime = blendTime;
 }
 
-void AnimationController::update(float deltaTime){
+void AnimationController::update(float deltaTime) {
 
-	auto anim = _duringAnimation.lock();
-	if(anim == nullptr){
-		return;
-	}
+	rootMotionVelocity.position = Vector3::zero;
+	rootMotionVelocity.rotation = Quaternion::identity;
+	rootMotionVelocity.scale = Vector3::one;
 
 	//アニメーションを全部計算してから再度取得しているのでメモリ効率極めて悪し
-	anim->update(deltaTime, rootMotionIndex, debugTime);
+	//anim->update(deltaTime, rootMotionIndex, debugTime);
+	for (auto itr = _duringAnimations.begin(); itr != _duringAnimations.end(); ++itr) {
 
-	Matrix4 mtxRootMotion = Matrix4::identity;
-	TransformQ rootMotionResult;
-	Vector3 rootMotionTranslate;
-	Quaternion rootMotionRotate;
+		auto anim = itr->anim;
 
-	if (applyRootMotion) {
-		const float yaw = anim->getFrameCache()[rootMotionIndex].rotation.getYaw();
-		rootMotionRotate = Quaternion::euler({ 0,yaw,0 }, true);
-		rootMotionTranslate = anim->getFrameCache()[rootMotionIndex].position;
-		rootMotionTranslate.y = 0;
-		mtxRootMotion = Matrix4::createWorldMatrix(rootMotionTranslate, rootMotionRotate, Vector3::one).inverse();
+		//各種アニメーション時間更新
+		anim->update(deltaTime, rootMotionIndex, debugTime);
+		itr->blendingTime -= 0.016666f;
+		
+		//不要になったアニメーションを破棄
+		if (itr->blendingTime <= 0) {
+			itr->blendingTime = 0.0f;
 
-		TransformQ rootMotionLinerFirst = anim->getRootMotionTransform(false);
-		TransformQ rootMotionLinerSecond = anim->getRootMotionTransform(true);
-		float yawRotate = rootMotionLinerFirst.rotation.getYaw() - rootMotionLinerSecond.rotation.getYaw();
-
-		//最終フレームと開始フレームをまたがった場合
-		if (anim->getPlaingFrame() - anim->getBeforePlaingFrame() <= 0) {
-
-			const auto& animBone = anim->getAnimationBones()[rootMotionIndex];
-			const int maxKeyIndex = anim->getMaxFrame() - 1;
-
-			const Vector3& startPos = animBone.keys[0].position;
-			const Vector3& endPos = animBone.keys[maxKeyIndex].position;
-
-			rootMotionLinerFirst.position += endPos - startPos;
-			rootMotionLinerFirst.position.y = 0;
-
-			const float startYaw = animBone.keys[0].rotation.getYaw();
-			const float endYaw = animBone.keys[maxKeyIndex].rotation.getYaw();
-			yawRotate += startYaw - endYaw;
+			if (itr != _duringAnimations.begin()) {
+				itr = _duringAnimations.erase(--itr);
+				continue;
+			}
 		}
 
-		rootMotionResult.position = rootMotionLinerFirst.position - rootMotionLinerSecond.position;
-		rootMotionResult.rotation = Quaternion::euler({ 0,yawRotate,0 }, true);
-	}
+		//ブレンド係数を計算
+		itr->blendFactor = itr->blendingTime == 0.0f ? 0.0f : (itr->blendingTime / itr->blendTime);
+		const float lerpValue = itr->blendFactor;
 
-	//ブレンド対象のアニメーションが存在する場合両方計算して合成
-	auto blendingAnim = _blendingAnimation.lock();
-	if(blendingAnim != nullptr){
-		
-		const float lerpValue = 1.0f - _blendingTime / _blendTime;
-		blendingAnim->update(deltaTime, rootMotionIndex, debugTime);
-
-		Matrix4 mtxRootMotionBlend = Matrix4::identity;
-		if (applyRootMotion) {
-			const float yaw = blendingAnim->getFrameCache()[rootMotionIndex].rotation.getYaw();
+		//RootMotionに使用するボーンの変化量を無効化するための値を計算
+		{
+			const float yaw = anim->getFrameCache()[rootMotionIndex].rotation.getYaw();
 			Quaternion blendRootMotionRotate = Quaternion::euler({ 0,yaw,0 }, true);
-			Vector3 blendRootMotionTranslate = blendingAnim->getFrameCache()[rootMotionIndex].position;
+			Vector3 blendRootMotionTranslate = anim->getFrameCache()[rootMotionIndex].position;
 			blendRootMotionTranslate.y = 0;
 
-			const Vector3 p = Vector3::lerp(rootMotionTranslate, blendRootMotionTranslate, lerpValue);
-			const Quaternion pq = Quaternion::slerp(rootMotionRotate, blendRootMotionRotate, lerpValue);
-			mtxRootMotionBlend = Matrix4::createWorldMatrix(p, pq, Vector3::one).inverse();
+			anim->rootMotionTranslate = blendRootMotionTranslate;
+			anim->rootMotionRotate = blendRootMotionRotate; 
+		}
+
+
+		//RootMotionの変化量として扱う値を計算
+		{
+			TransformQ blendRootMotionLinerFirst = anim->getRootMotionTransform(false);
+			TransformQ blendRootMotionLinerSecond = anim->getRootMotionTransform(true);
 
 			//最終フレームと開始フレームをまたがった場合
-			TransformQ blendRootMotionLinerFirst = blendingAnim->getRootMotionTransform(false);
-			TransformQ blendRootMotionLinerSecond = blendingAnim->getRootMotionTransform(true);
-
 			float yawRotate = blendRootMotionLinerFirst.rotation.getYaw() - blendRootMotionLinerSecond.rotation.getYaw();
-			if (blendingAnim->getPlaingFrame() - blendingAnim->getBeforePlaingFrame() <= 0) {
-				const auto& animBone = blendingAnim->getAnimationBones()[rootMotionIndex];
-				const int maxKeyIndex = blendingAnim->getMaxFrame() - 1;
+			if (anim->getPlaingFrame() - anim->getBeforePlaingFrame() <= 0) {
+				const auto& animBone = anim->getAnimationBones()[rootMotionIndex];
+				const int maxKeyIndex = anim->getMaxFrame() - 1;
 
 				const Vector3& startPos = animBone.keys[0].position;
 				const Vector3& endPos = animBone.keys[maxKeyIndex].position;
@@ -122,63 +102,55 @@ void AnimationController::update(float deltaTime){
 				yawRotate += startYaw - endYaw;
 			}
 
+			//現在のアニメーションの変化量
 			TransformQ blendRootMotionResult;
 			blendRootMotionResult.position = blendRootMotionLinerFirst.position - blendRootMotionLinerSecond.position;
 			blendRootMotionResult.rotation = Quaternion::euler({ 0,yawRotate,0 }, true);
-			
-			rootMotionResult.position = Vector3::lerp(rootMotionResult.position, blendRootMotionResult.position, lerpValue);
-			rootMotionResult.rotation = Quaternion::slerp(rootMotionResult.rotation, blendRootMotionResult.rotation, lerpValue);
+
+			//アニメーションごとの蓄積する
+			rootMotionVelocity.position = Vector3::lerp(blendRootMotionResult.position, rootMotionVelocity.position, lerpValue);
+			rootMotionVelocity.rotation = Quaternion::slerp(blendRootMotionResult.rotation, rootMotionVelocity.rotation, lerpValue);
 		}
+	}
 
-		for(int i = 0; i < _avator->getSize(); ++i){
+	for (int i = 0; i < _avator->getSize(); ++i) {
 
-			const TransformQ baseTransform = anim->getFrameCache()[i];
-			const TransformQ blendTransform = blendingAnim->getFrameCache()[i];
+		Vector3 lerpPosition;
+		Vector3 lerpScale;
+		Quaternion slerpRotation;
+
+		Vector3 rootMotionTranslate = Vector3::zero;
+		Quaternion rootMotionRotate = Quaternion::identity;
+
+		for (auto&& a : _duringAnimations) {
+
+			auto anim = a.anim;
+			TransformQ baseTransform = anim->getFrameCache()[i];
+			const float lerpValue = a.blendFactor;
 
 			//中間値で補完した各座標を取得
-			//しばらくは線形補完
-			const Vector3 lerpPosition = Vector3::lerp(baseTransform.position, blendTransform.position, lerpValue);
-			const Vector3 lerpScale = Vector3::lerp(baseTransform.scale, blendTransform.scale, lerpValue);
-			const Quaternion slerpRotation = Quaternion::slerp(baseTransform.rotation, blendTransform.rotation, lerpValue);
+			lerpPosition = Vector3::lerp(baseTransform.position, lerpPosition, lerpValue);
+			lerpScale = Vector3::lerp(baseTransform.scale, lerpScale, lerpValue);
+			slerpRotation = Quaternion::slerp(baseTransform.rotation, slerpRotation, lerpValue);
 
-			//行列に変換
-			const Matrix4 translate = Matrix4::translateXYZ(lerpPosition);
-			const Matrix4 scale = Matrix4::scaleXYZ(lerpScale);
-			const Matrix4 rotation = Matrix4::matrixFromQuaternion(slerpRotation);
-
-			//行列合成
-			const Matrix4 matrix = Matrix4::multiply(Matrix4::multiply(scale, rotation), translate);
-			( *_avator->animatedPose )[i].matrix = matrix.multiply(mtxRootMotionBlend);
+			//ルートモーションが有効な場合は対象ボーンの逆行列の重みを計算
+			if (applyRootMotion) {
+				rootMotionTranslate = Vector3::lerp(anim->rootMotionTranslate, rootMotionTranslate, lerpValue);
+				rootMotionRotate = Quaternion::slerp(anim->rootMotionRotate, rootMotionRotate, lerpValue);
+			}
 		}
 
-		//ブレンドタイム更新
-		_blendingTime -= 0.0166f;
+		//行列に変換
+		const Matrix4 translate = Matrix4::translateXYZ(lerpPosition);
+		const Matrix4 scale = Matrix4::scaleXYZ(lerpScale);
+		const Matrix4 rotation = Matrix4::matrixFromQuaternion(slerpRotation);
 
-		//
-		if (_blendingTime <= 0.0f) {
-			_duringAnimation = _blendingAnimation;
-			_blendingAnimation.reset();
-			_blendingTime = 0.0f;
-		}
+		//行列合成
+		const Matrix4 mtxRootMotionBlend = Matrix4::createWorldMatrix(rootMotionTranslate, rootMotionRotate, Vector3::one).inverse();
+		const Matrix4 matrix = Matrix4::multiply(Matrix4::multiply(scale, rotation), translate);
+		(*_avator->animatedPose)[i].matrix = matrix.multiply(mtxRootMotionBlend);
 
 	}
-	else {
-
-		//ブレンド対象がない際のアニメーション更新
-		for (int i = 0; i < _avator->getSize(); ++i) {
-			(*_avator->animatedPose)[i].matrix = anim->getAnimationMatrix(i).multiply(mtxRootMotion);
-		}
-	}
-
-
-	rootMotionVelocity = rootMotionResult;
-	//rootMotionTranslate = Vector3::zero;
-
-	ImGui::Begin("aaaaa");
-	float yyy = rootMotionResult.rotation.getYaw()*(180.0f / M_PI);
-	ImGui::SliderFloat("ZZZ ", &rootMotionVelocity.position.x, - 100, 100);
-	ImGui::End();
-
 }
 
 void AnimationController::setRootMotionBone(const std::string & boneName) {

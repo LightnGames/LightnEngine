@@ -19,7 +19,7 @@ struct ShadowResource {
 	ComPtr<ID3D11SamplerState> _shadowSampler;
 	D3D11_VIEWPORT shadowVp;
 
-	ShadowResource(uint32 size, float scale = 50.0f, float nearZ = 0.1f, float farZ = 500.0f) :
+	ShadowResource(uint32 size, float scale = 70.0f, float nearZ = 0.1f, float farZ = 500.0f) :
 		shadowMapWidth{ size },
 		shadowMapHeight{ size },
 		scale{ scale },

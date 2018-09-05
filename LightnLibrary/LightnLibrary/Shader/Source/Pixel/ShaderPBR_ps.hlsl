@@ -5,7 +5,7 @@ Texture2D texRoughness : register(t3);
 Texture2D texMetallic : register(t4);
 SamplerState samLinear : register(s0);
 
-#include "PhysicallyBasedRendering.hlsl"
+#include "../PhysicallyBasedRendering.hlsl"
 
 struct PS_INPUT {
 	float4 Pos : SV_POSITION;

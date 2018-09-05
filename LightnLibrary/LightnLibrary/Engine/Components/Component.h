@@ -33,10 +33,13 @@ public:
 	Vector3 upVector() const;
 
 	Vector3 getWorldPosition() const;
+	Vector3 getLocalPosition() const;
 	Quaternion getWorldRotation() const;
 	Quaternion getLocalRotation() const;
 	Vector3 getLocalScale() const;
 	Matrix4 getWorldMatrix() const;
+
+	RefPtr<Actor> parent();
 
 protected:
 

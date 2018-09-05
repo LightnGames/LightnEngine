@@ -16,6 +16,7 @@
 #include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/RendererUtil.h>
 #include <Components/CameraComponent.h>
+#include <Actor/Actor.h>
 #include "PostEffect/PostProcess.h"
 #include "GraphicsBuffers.h"
 #include "PostEffect/SSAO.h"
@@ -81,7 +82,9 @@ HRESULT GameRenderer::createGameWindow(const HINSTANCE & hInst, WNDPROC lpfnWndP
 
 struct WorldConstant {
 	Vector4 time;
+	Vector4 playerPos;
 };
+
 ComPtr<ID3D11Buffer> worldConstant;
 HRESULT GameRenderer::initDirect3D() {
 
@@ -153,6 +156,7 @@ void GameRenderer::draw() {
 	WorldConstant world;
 	world.time.x = time;
 	world.time.y = std::pow(time, 2);
+	world.playerPos = mainCamera->parent()->getActorPosition();
 
 	_deviceContext->UpdateSubresource(worldConstant.Get(), 0, 0, &world, 0, 0);
 	_deviceContext->VSSetConstantBuffers(2, 1, worldConstant.GetAddressOf());

@@ -45,15 +45,16 @@ float3 PrefilterEnvMap(float Roughness, float3 R)
         }
     }
 
+    PrefilteredColor /= TotalWeight;
     PrefilteredColor = pow(PrefilteredColor, 2.2f);
-    return PrefilteredColor / TotalWeight;
+    return PrefilteredColor;
 }
 
 float3 CubemapDiffuse(float3 N)
 {
 
     float3 PrefilteredColor = 0;
-    const uint NumSamples = 8;
+    const uint NumSamples = 16;
 
     int maxMipLevels, width, height;
     cubeMap.GetDimensions(0, width, height, maxMipLevels);
@@ -62,14 +63,14 @@ float3 CubemapDiffuse(float3 N)
     {
 
         float3 Xi = float3(Hammersley(i, NumSamples), 0);
-		//Xi += N;
         Xi = lerp(N, Xi, 0.5);
 
         PrefilteredColor += cubeMap.SampleLevel(samLinear, Xi, 0).rgb;
     }
 
+    PrefilteredColor /= NumSamples;
     PrefilteredColor = pow(PrefilteredColor, 2.2f);
-    return PrefilteredColor / NumSamples;
+    return PrefilteredColor;
 
 }
 
@@ -155,9 +156,9 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
     cubeMap.GetDimensions(0, width, height, maxMipLevels);
 
     //キューブマップテクスチャをサンプル
-    float3 cubeMapDiffuse = diffuseColor * CubemapDiffuse(normal);
+    float3 cubeMapDiffuse = CubemapDiffuse(normal);
     float3 cubeMapSpecular = ApproximateSpecularIBL(specularColor, roughness, normal, eyeDir);
-	//return float4(cubeMapDiffuse,1);
+    //return float4(cubeMapDiffuse * lightIntensity.r, 1);
 
     float3 skyColor = diffuseColor * lightColor.xyz;
     cubeMapDiffuse *= skyColor;

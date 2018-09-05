@@ -96,6 +96,9 @@ void SkeltalAnimation::update(float deltaTime, int rootMotionIndex, float overri
 	//どのフレーム間か調べる
 	int firstFrame = static_cast<int>(std::floorf(_plaingFrame));
 	int secondFrame = static_cast<int>(std::ceilf(_plaingFrame));
+
+	const int blendFrame = firstFrame - _maxFrame + loopBlend;
+	//loopBlendFactor = (blendFrame > 0) ? (blendFrame / static_cast<float>(loopBlend + 1)) : 0.0f;
 	
 	//フレームの中間値(0.0f~1.0f)
 	const float lerpValue = _plaingFrame - firstFrame;
@@ -118,16 +121,14 @@ void SkeltalAnimation::update(float deltaTime, int rootMotionIndex, float overri
 		}
 
 		//ループアニメーションの繋ぎ補完
-		const int blendFrame = firstFrame - _maxFrame + loopBlend;
-		if (blendFrame > 0) {
+		/*if (blendFrame > 0) {
 			const TransformQ& startTrans = _animationBones[i][0];
 			const float blendAlpha = blendFrame / static_cast<float>(loopBlend + 1);
 			
 			lerpPosition = Vector3::lerp(lerpPosition, startTrans.position, blendAlpha);
 			lerpScale = Vector3::lerp(lerpScale, startTrans.scale, blendAlpha);
-			//補完方向が右回りと左回りで異なるとぐちゃる
 			slerpRotation = Quaternion::slerp(slerpRotation, startTrans.rotation, blendAlpha);
-		}
+		}*/
 
 		//行列に変換
 		const Matrix4 translate = Matrix4::translateXYZ(lerpPosition);

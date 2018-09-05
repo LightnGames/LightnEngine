@@ -60,7 +60,11 @@ Vector3 Component::upVector() const
 }
 
 Vector3 Component::getWorldPosition() const {
-	return Quaternion::rotVector(getWorldRotation(), _localTransform.position) + _parentActor->getActorPosition();
+	return Quaternion::rotVector(_parentActor->getActorRotation(), _localTransform.position) + _parentActor->getActorPosition();
+}
+
+Vector3 Component::getLocalPosition() const {
+	return _localTransform.position;
 }
 
 Quaternion Component::getWorldRotation() const {
@@ -78,4 +82,8 @@ Vector3 Component::getLocalScale() const {
 Matrix4 Component::getWorldMatrix() const {
 	Matrix4 localMatrix = Matrix4::createWorldMatrix(_localTransform.position, _localTransform.rotation, _localTransform.scale);
 	return Matrix4::multiply(localMatrix, _parentActor->getActorMatrix());
+}
+
+RefPtr<Actor> Component::parent() {
+	return _parentActor;
 }

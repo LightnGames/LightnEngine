@@ -8,7 +8,7 @@ SamplerState samLinear : register(s0);
 #include "../Gbuffer.hlsl"
 #include "../DeferredGeometry.hlsl"
 
-
+[earlydepthstencil]
 PS_OUTPUT PS(PS_INPUT input) : SV_Target
 {
     PS_OUTPUT output;
@@ -18,17 +18,18 @@ PS_OUTPUT PS(PS_INPUT input) : SV_Target
     float3 normal = texNormal.Sample(samLinear, input.Tex);
     float roughness = texRoughness.Sample(samLinear, input.Tex).r;
     float metallic = texMetallic.Sample(samLinear, input.Tex);
-    roughness = 1;
-    metallic = 0;
+    //roughness = 0.5f;
+    //metallic = 0;
 
-    //baseColor.xyz += float3(0.5f, 0.5f, 0.5f);
-    baseColor.xyz = lerp(float3(0.7f, 0.7f, 0.5f), baseColor.xyz, baseColor.a);
+    //baseColor.xyz = float3(1.0f, 1.0f, 1.0f);
+    baseColor.xyz = lerp(float3(0.3f, 0.3f, 0.2f), baseColor.xyz, baseColor.a);
+    //baseColor.a = 1;
 
 	//ノーマルマップをワールドノーマルに適用
     normal = (normal * 2.0f) - 1.0f;
     normal = (normal.x * input.Tangent) + (normal.y * input.Binormal) + (normal.z * input.Normal);
     normal = normalize(normal);
-    //normal = input.Normal;
+    normal = lerp(input.Normal, normal, baseColor.a);
 
     //roughness = 1;
     output.albedo = baseColor;

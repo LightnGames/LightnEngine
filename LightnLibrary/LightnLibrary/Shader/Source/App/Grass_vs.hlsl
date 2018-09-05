@@ -22,6 +22,7 @@ cbuffer MeshDrawOffset : register(b1)
 cbuffer WorldBuff : register(b2)
 {
     float4 time;
+    float4 playerPos;
 }
 
 struct VS_INPUT_INSTANCE
@@ -46,6 +47,11 @@ PS_INPUT VS(VS_INPUT_INSTANCE input)
     float heightAlpha = worldPos.y / 5.0f;
     worldPos.z += sin(time.x + worldPos.z) * heightAlpha;
     worldPos.x += cos(time.x + worldPos.x) * heightAlpha * 0.5f;
+
+    float l = length(worldPos.xyz - playerPos.xyz);
+    float3 velocity = (worldPos.xyz - playerPos.xyz) / l;
+    l = 1 - saturate((l - 1)*0.5f);
+    worldPos.xz += velocity.xz * l * worldPos.y;
 
     output.Pos = worldPos;
     output.Pos = mul(output.Pos, mtxView);

@@ -25,7 +25,7 @@ float LightComponent::getIntensity() const {
 }
 
 uint32 LightComponent::getShadowSize() const {
-	return uint32();
+	return _shadowSize;
 }
 
 bool LightComponent::isEnableShadow() const {

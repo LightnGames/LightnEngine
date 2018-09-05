@@ -20,20 +20,17 @@
 
 RefPtr<SkyboxActor> sky;
 RefPtr<SkeletalMeshActor> sk;
-RefPtr<SkeletalMeshActor> sk2;
 RefPtr<DirectionalLightActor> dirLight;
 
 Scene::Scene() {
 
 	sky = makeChild<SkyboxActor>();
 	sk = makeChild<SkeletalMeshActor>();
-	//sk2 = makeChild<SkeletalMeshActor>();
 	dirLight = makeChild<DirectionalLightActor>();
 
 	sk->_camera = sk->addComponent<CameraComponent>();
 	CameraComponent::mainCamera = sk->_camera;
 
-	sk->_camera->setWorldPosition({ 0.7f, 2.6f, -6.3f });
 	sk->_camera->setWorldRotation(Quaternion::euler({ 0, 0, 0 }));
 
 	//マテリアルデータ
@@ -54,6 +51,7 @@ Scene::Scene() {
 	sk->setActorPosition({ 15,0.1f,0 });
 	//sk2->setActorRotation(Quaternion::euler({ 15,0.1f,5 }));
 	sk->setActorScale({ 0.015f,0.015f,0.015f });
+	sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({0,90,0}));
 
 	auto& anim = sk->_animationComponent->_animationController;
 
@@ -195,7 +193,7 @@ Scene::Scene() {
 			spotLight->setActorPosition(position);
 			spotLight->setActorRotation(rotation);
 
-			spotLight->_lightComponent->light.color = Vector3(1, 1, 1)*intensity;
+			spotLight->_lightComponent->light.color = Vector3(1, 1, 1)*intensity*5;
 			spotLight->_lightComponent->light.attenuationEnd = range;
 		}
 	}
@@ -275,7 +273,8 @@ void Scene::update(float deltaTime)
 	Vector3 moveVelocity = Quaternion::rotVector(sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler({ 0,-90,0 }), rootMotionVelocity);
 	if (velocity.length() > 0) {
 		Quaternion inpuRotate = Quaternion::lookRotation(velocity.normalize());
-		Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*Quaternion::euler({ 0,90,0 }), 0.2f);
+		Quaternion cameraRotateYaw = Quaternion::euler({ 0,sk->_camera->getWorldRotation().getYaw(),0 }, true);
+		Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*cameraRotateYaw*Quaternion::euler({ 0,90,0 }), 0.2f);
 		sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);
 
 		//moveVelocity = Quaternion::rotVector(sk->getActorRotation()*inpuRotate, rootMotionVelocity);
@@ -285,10 +284,16 @@ void Scene::update(float deltaTime)
 	//sk->_skeletalMeshComponent->setLocalRotation(sk->_skeletalMeshComponent->getLocalRotation()*sk->_animationComponent->_animationController->rootMotionVelocity.rotation);
 	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0,90,0 }));
 
+	moveVelocity.y = 0;
 	moveVelocity *= sk->getActorScale().x;
 	sk->setActorPosition(sk->getActorPosition() + moveVelocity);
-	sk->setActorRotation(Quaternion::euler({ 0,turnVelocity,0 }));
-	sk->_camera->setLocalRotation(Quaternion::euler({ turnVelocityP ,0,0 }));
+	//sk->setActorRotation(Quaternion::euler({ 0,turnVelocity,0 }));
+	Quaternion rotate = Quaternion::euler({ turnVelocityP ,turnVelocity,0 });
+	float cameraLength = 6;
+	Vector3 cameraOffset = Quaternion::rotVector(rotate, Vector3::forward);
+	sk->_camera->setLocalRotation(rotate);
+	sk->_camera->setLocalPosition(-cameraOffset * cameraLength + Vector3(0.0f, 2.6f, 0));
+
 
 	/*SceneRendererManager::debugDrawBox(sk->getActorPosition(), Vector3(1, 2, 1), sk->getActorRotation());
 	SceneRendererManager::debugDrawLine(Vector3::zero, sk->getActorPosition());

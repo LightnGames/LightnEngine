@@ -9,6 +9,7 @@ void SkeletalMeshActor::start() {
 void SkeletalMeshActor::setUpTask() {
 	_skeletalMeshComponent = addComponent<SkeletalMeshComponent>();
 	_animationComponent = addComponent<AnimationControllerComponent>();
+
 }
 
 void SkeletalMeshActor::setUpSkeletalMesh(const std::string & filePath, const std::vector<std::string>& matFiles)

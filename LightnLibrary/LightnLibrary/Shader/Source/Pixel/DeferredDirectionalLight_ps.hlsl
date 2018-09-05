@@ -34,7 +34,7 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
     normal = DecodeNormal(normal);
 
     baseColor.xyz = pow(baseColor.xyz, 2.2f);
-    roughness = pow(roughness, 2.2f);
+    roughness = pow(saturate(roughness + 0.5f), 2.2f);
 
 	//clip(length(normal)-0.1);
 

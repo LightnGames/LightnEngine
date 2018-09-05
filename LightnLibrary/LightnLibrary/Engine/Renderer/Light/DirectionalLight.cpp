@@ -36,7 +36,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 	ImGui::Begin("DirectionalLight");
 	static float pitchDir = 40.0;
 	static float yawDir = 40.0;
-	static Vector3 lightColor = Vector3::one;
+	static Vector3 lightColor = Vector3(1, 0.9f, 0.9f);
 	static float lightIntensity = 5.0f;
 
 	ImGui::ColorEdit3("Color", &lightColor.x);
@@ -46,7 +46,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 	ImGui::End();
 
 	Matrix4 viewOffset;
-	viewOffset = Matrix4::translateXYZ(Quaternion::rotVector(settings.camera->rotation, Vector3::forward*30));
+	viewOffset = Matrix4::translateXYZ(Quaternion::rotVector(settings.camera->rotation, Vector3::forward*40));
 
 	DirectionalLightType lightBuffer;
 	ID3D11RenderTargetView* beforeViews = 0;
@@ -86,7 +86,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 		Camera lightCamera;
 		lightCamera.position = camera->position + Vector3::up * 10;
 		lightCamera.rotation = Quaternion::euler({ pitchDir,yawDir,0 });
-		const Matrix4 mtxView =Matrix4::matrixFromQuaternion(lightCamera.rotation).multiply(Matrix4::translateXYZ(lightCamera.position)).multiply(viewOffset);
+		const Matrix4 mtxView = Matrix4::matrixFromQuaternion(lightCamera.rotation).multiply(Matrix4::translateXYZ(lightCamera.position)).multiply(viewOffset);
 		lightCamera.mtxView = mtxView.inverse();
 		lightCamera.mtxProj = Matrix4::orthographicProjectionLH(scale, scale, nearZ, farZ, 0.1f);
 		lightSetting.camera = &lightCamera;

@@ -5,11 +5,19 @@
 #include <memory>
 #include <Util/RefPtr.h>
 #include <LMath.h>
+#include <list>
 
 class SkeltalAnimation;
 struct Avator;
 
 using Animation = std::shared_ptr<SkeltalAnimation>;
+
+struct AnimTask {
+	Animation anim;
+	float blendingTime;
+	float blendTime;
+	float blendFactor;
+};
 
 class AnimationController{
 
@@ -41,6 +49,7 @@ private:
 
 	std::unordered_map<std::string, Animation> _playList;
 
+	std::list<AnimTask> _duringAnimations;
 	std::weak_ptr<SkeltalAnimation> _duringAnimation;
 	std::weak_ptr<SkeltalAnimation> _blendingAnimation;
 
