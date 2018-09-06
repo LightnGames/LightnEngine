@@ -215,10 +215,6 @@ void GameRenderer::draw() {
 	const auto& spheres = _sceneRendererManager->debugSpheres();
 	_debugGeometryRenderer->draw(spheres, boxs, lines, *drawSettings);
 
-	ImGui::Begin("Winds");
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-	ImGui::End();
-
 	//デバッグウィンドウを描画
 	ImguiWindow::render();
 

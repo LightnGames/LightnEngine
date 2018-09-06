@@ -42,7 +42,7 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 	ImGui::ColorEdit3("Color", &lightColor.x);
 	ImGui::SliderFloat("Pitch", &pitchDir, 0.0f, 360.0f);
 	ImGui::SliderFloat("Yaw", &yawDir, 0.0f, 360.0f);
-	ImGui::SliderFloat("Intensity", &lightIntensity, 0.0f, 100.0f);
+	ImGui::SliderFloat("Intensity", &lightIntensity, 0.0f, 20.0f);
 	ImGui::End();
 
 	Matrix4 viewOffset;
@@ -100,9 +100,9 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 			sm->drawDepth(lightSetting);
 		}
 
-		ImGui::Begin("shadow");
+		/*ImGui::Begin("shadow");
 		ImGui::Image(depthSRV, { 200,200 });
-		ImGui::End();
+		ImGui::End();*/
 
 		//シャドウデプスの描画が終わったので設定を元に戻す
 		GameRenderer::instance().setOrthoScreenVertex();
