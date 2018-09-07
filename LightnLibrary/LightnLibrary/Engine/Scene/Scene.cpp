@@ -34,14 +34,6 @@ Scene::Scene() {
 	sk->_camera->setWorldRotation(Quaternion::euler({ 0, 0, 0 }));
 
 	//マテリアルデータ
-	std::vector<std::string> lp287mat;
-	lp287mat.push_back("M_LP287_Hair.mat");
-	lp287mat.push_back("M_LP287_LegBelt.mat");
-	lp287mat.push_back("M_LP287_BeltPelvis.mat");
-	lp287mat.push_back("M_LP287_Skin.mat");
-	lp287mat.push_back("M_LP287_Pants.mat");
-	lp287mat.push_back("M_LP287_Jacet.mat");
-
 	std::vector<std::string> heromat;
 	heromat.push_back("M_Hero.mat");
 	heromat.push_back("M_Hero.mat");
@@ -63,23 +55,6 @@ Scene::Scene() {
 	anim->applyRootMotion = true;
 	anim->setRootMotionBone("Bip001 Pelvis");
 
-	std::vector<std::string> zombieMat;
-	zombieMat.push_back("SkeltalTest.mat");
-	zombieMat.push_back("SkeltalTest.mat");
-	/*zombieMat.push_back("SkeltalTest.mat");
-	zombieMat.push_back("SkeltalTest.mat");*/
-	//sk->setUpSkeletalMesh("LP287/LP287.mesh", lp287mat);
-	//sk->setActorPosition({ 15,0,0 });
-	//sk->setActorScale({ 0.015f,0.015f,0.015f });
-
-	//sk->_animationComponent->_animationController->addAnimationList("Resources/LP287/ARRun.anim");
-	//sk->_animationComponent->_animationController->addAnimationList("Resources/LP287/ARIdle.anim");
-	//sk->_animationComponent->_animationController->play("ARIdle");
-
-	//_skeletalMesh = GraphicsResourceManager::instance().loadRenderableObject("Zombie.FBX", zombieMat).cast<SkeletalMesh>();
-
-	//return;
-
 	struct MeshNameAndMaterials {
 		std::string objectName;
 		std::vector<std::string> matFiles;
@@ -94,20 +69,20 @@ Scene::Scene() {
 
 	assert(!fin.fail());
 
-	int32 objectCount;
+	uint32 objectCount;
 	fin.read(reinterpret_cast<char*>(&objectCount), 4);
 
-	for (int i = 0; i < objectCount; ++i) {
+	for (uint32 i = 0; i < objectCount; ++i) {
 		
 		char objectName[64] = {};
-		int32 materialCount;
+		uint32 materialCount;
 		std::vector<std::string> materialNames;
 		std::string append;
 
 		fin.read(reinterpret_cast<char*>(objectName), 64);
 		fin.read(reinterpret_cast<char*>(&materialCount), 4);
 
-		for (int j = 0; j < materialCount; ++j) {
+		for (uint32 j = 0; j < materialCount; ++j) {
 			char materialName[32] = {};
 			fin.read(reinterpret_cast<char*>(materialName), 32);
 			materialNames.emplace_back(std::string(materialName) + ".mat");
@@ -122,7 +97,7 @@ Scene::Scene() {
 		fin.read(reinterpret_cast<char*>(&rotation), 16);
 		fin.read(reinterpret_cast<char*>(&scale), 12);
 
-		std::string keyName(objectName + append);
+		const std::string keyName(objectName + append);
 
 		if (instanceMatrices.count(keyName) > 0) {
 			MeshNameAndMaterials& key = instanceMatrices[keyName];
@@ -147,7 +122,7 @@ Scene::Scene() {
 
 		auto mesh = makeChild<StaticInstanceMeshActor>();
 		mesh->_staticInstanceMeshComponent->setUpMesh(ms.second.objectName,
-			ms.second.matFiles, m, indexList.size(), maxDrawCount);
+			ms.second.matFiles, m,static_cast<uint32>(indexList.size()), maxDrawCount);
 
 		for (auto&& m : mesh->_staticInstanceMeshComponent->meshInfo()->materialSlots) {
 			indexList.push_back(m->faceCount * 3);
@@ -184,7 +159,7 @@ Scene::Scene() {
 			pointLight->setActorPosition(position);
 			pointLight->setActorRotation(rotation);
 
-			pointLight->_lightComponent->light.color = Vector3(1, 1, 1)*intensity;
+			pointLight->_lightComponent->light.color = Vector3(1, 1, 1)*intensity*5;
 			pointLight->_lightComponent->light.attenuationEnd = range;
 		}
 
@@ -256,8 +231,8 @@ void Scene::update(float deltaTime)
 	}
 
 	if ((Vector3::length(velocity) < 0.01f) && walkAnim) {
-		sk->_animationComponent->play("Hero_idle", 0.2f);
-		//sk->_animationComponent->play("Hero_StandHalfTurnRight");
+		//sk->_animationComponent->play("Hero_idle", 0.2f);
+		sk->_animationComponent->play("Hero_StandHalfTurnRight");
 		walkAnim = false;
 	}
 
@@ -267,10 +242,11 @@ void Scene::update(float deltaTime)
 		walkAnim = true;
 	}
 
-	Vector3 rootMotionVelocity = sk->_animationComponent->_animationController->rootMotionVelocity.position;
-	rootMotionVelocity.y = 0;
+	TransformQ rootMotionVelocity = sk->_animationComponent->_animationController->rootMotionVelocity;
+	rootMotionVelocity.position.y = 0;
+
 	//回転にルートモーションを適用してしまうと90度補正しないとZを正面に向かない
-	Vector3 moveVelocity = Quaternion::rotVector(sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler({ 0,-90,0 }), rootMotionVelocity);
+	Vector3 moveVelocity = Quaternion::rotVector(sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler({ 0,-90,0 }), rootMotionVelocity.position);
 	if (velocity.length() > 0) {
 		Quaternion inpuRotate = Quaternion::lookRotation(velocity.normalize());
 		Quaternion cameraRotateYaw = Quaternion::euler({ 0,sk->_camera->getWorldRotation().getYaw(),0 }, true);
@@ -284,10 +260,11 @@ void Scene::update(float deltaTime)
 	//sk->_skeletalMeshComponent->setLocalRotation(sk->_skeletalMeshComponent->getLocalRotation()*sk->_animationComponent->_animationController->rootMotionVelocity.rotation);
 	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0,90,0 }));
 
+	sk->_skeletalMeshComponent->addLocalRotation(rootMotionVelocity.rotation);
+	
 	moveVelocity.y = 0;
 	moveVelocity *= sk->getActorScale().x;
 	sk->setActorPosition(sk->getActorPosition() + moveVelocity);
-	//sk->setActorRotation(Quaternion::euler({ 0,turnVelocity,0 }));
 	Quaternion rotate = Quaternion::euler({ turnVelocityP ,turnVelocity,0 });
 	float cameraLength = 6;
 	Vector3 cameraOffset = Quaternion::rotVector(rotate, Vector3::forward);

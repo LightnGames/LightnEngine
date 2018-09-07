@@ -19,8 +19,6 @@ struct AnimationBone{
 	}
 };
 
-#define LOOP_BLEND_RANGE 0.1f
-
 class SkeltalAnimation{
 
 public:

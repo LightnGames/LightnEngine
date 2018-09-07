@@ -10,10 +10,10 @@
 class SkeltalAnimation;
 struct Avator;
 
-using Animation = std::shared_ptr<SkeltalAnimation>;
+using Animation = std::unique_ptr<SkeltalAnimation>;
 
 struct AnimTask {
-	Animation anim;
+	RefPtr<SkeltalAnimation> anim;
 	float blendingTime;
 	float blendTime;
 	float blendFactor;
@@ -29,7 +29,7 @@ public:
 	~AnimationController();
 
 	//アニメーションリストに追加
-	void addAnimationList(const Animation& animation);
+	void addAnimationList(Animation animation);
 	void addAnimationList(const std::string& name);
 
 	//アニメーションを再生
@@ -50,8 +50,8 @@ private:
 	std::unordered_map<std::string, Animation> _playList;
 
 	std::list<AnimTask> _duringAnimations;
-	std::weak_ptr<SkeltalAnimation> _duringAnimation;
-	std::weak_ptr<SkeltalAnimation> _blendingAnimation;
+	RefPtr<SkeltalAnimation> _duringAnimation;
+	RefPtr<SkeltalAnimation> _blendingAnimation;
 
 	float _blendingTime;
 	float _blendTime;

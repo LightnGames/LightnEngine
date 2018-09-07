@@ -1,6 +1,6 @@
 #include "AnimationController.h"
 #include "SkeltalAnimation.h"
-#include "../Renderer/Mesh/Skeleton.h"
+#include <Renderer/Mesh/Skeleton.h>
 #include <ThirdParty/ImGui/imgui.h>
 
 AnimationController::AnimationController(RefPtr<Avator> avator) :_avator{ avator }, _blendingTime{ 0.0f }, _blendTime{ 0.0f } {
@@ -9,13 +9,13 @@ AnimationController::AnimationController(RefPtr<Avator> avator) :_avator{ avator
 AnimationController::~AnimationController() {
 }
 
-void AnimationController::addAnimationList(const Animation & animation) {
-	_playList[animation->getName()] = animation;
+void AnimationController::addAnimationList(Animation animation) {
+	_playList[animation->getName()] = std::move(animation);
 }
 
 void AnimationController::addAnimationList(const std::string & name) {
-	auto anim = std::make_shared<SkeltalAnimation>(name);
-	addAnimationList(anim);
+	auto anim = std::make_unique<SkeltalAnimation>(name);
+	addAnimationList(std::move(anim));
 }
 
 void AnimationController::play(const std::string & name, float blendTime) {
@@ -30,7 +30,7 @@ void AnimationController::play(const std::string & name, float blendTime) {
 	}
 
 	AnimTask task;
-	task.anim = _playList[name];
+	task.anim = _playList[name].get();
 	task.blendingTime = blendTime;
 	task.blendTime = blendTime;
 	_duringAnimations.emplace_back(std::move(task));
@@ -56,7 +56,7 @@ void AnimationController::update(float deltaTime) {
 		//各種アニメーション時間更新
 		anim->update(deltaTime, rootMotionIndex, debugTime);
 		blendingTime -= 0.016666f;
-		blendingTime = std::fmax(blendingTime, 0);
+		blendingTime = std::fmaxf(blendingTime, 0);
 
 		//ブレンド係数を計算
 		blendFactor = (blendingTime < FLT_EPSILON) ? 0.0f : (blendingTime / blendTime);
@@ -96,7 +96,7 @@ void AnimationController::update(float deltaTime) {
 
 	Matrix4 mtxRootMotionBlend = Matrix4::identity;
 
-	for (int i = 0; i < _avator->getSize(); ++i) {
+	for (uint32 i = 0; i < _avator->getSize(); ++i) {
 
 		Vector3 lerpPosition;
 		Vector3 lerpScale;
@@ -105,7 +105,7 @@ void AnimationController::update(float deltaTime) {
 		for (auto&& a : _duringAnimations) {
 
 			auto anim = a.anim;
-			TransformQ baseTransform = anim->getFrameCache()[i];
+			const TransformQ& baseTransform = anim->getFrameCache()[i];
 			const float lerpValue = a.blendFactor;
 
 			//中間値で補完した各座標を取得
@@ -135,7 +135,7 @@ void AnimationController::update(float deltaTime) {
 	}
 
 	//ルートモーションの移動を無効化
-	for (int i = 0; i < _avator->getSize(); ++i) {
+	for (uint32 i = 0; i < _avator->getSize(); ++i) {
 		const auto& matrix = (*_avator->animatedPose)[i].matrix;
 		(*_avator->animatedPose)[i].matrix = matrix.multiply(mtxRootMotionBlend);
 	}
@@ -152,7 +152,7 @@ void AnimationController::update(float deltaTime) {
 }
 
 void AnimationController::setRootMotionBone(const std::string & boneName) {
-	for (int i = 0; i < _avator->getSize(); ++i) {
+	for (uint32 i = 0; i < _avator->getSize(); ++i) {
 		if (_avator->bindPose->boneMatrices[i].name == boneName) {
 			rootMotionIndex = i;
 		}

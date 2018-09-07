@@ -20,10 +20,10 @@ SkeltalAnimation::~SkeltalAnimation(){
 void SkeltalAnimation::load(const std::string& fileName){
 
 	//ファイル名から拡張子を除いて固有識別子にする
-	int path_i = fileName.find_last_of("/") + 1;
+	uint32 path_i = static_cast<uint32>(fileName.find_last_of("/") + 1);
 	_name = fileName.substr(path_i);
 
-	path_i = _name.find_last_of(".");
+	path_i = static_cast<uint32>(_name.find_last_of("."));
 	_name = _name.substr(0, path_i);
 
 	//  ios::in は読み込み専用  ios::binary はバイナリ形式
@@ -34,11 +34,11 @@ void SkeltalAnimation::load(const std::string& fileName){
 	}
 
 	//ボーンサイズ
-	int boneSize = 0;
+	uint32 boneSize = 0;
 	fin.read(reinterpret_cast<char*>( &boneSize ), sizeof(int));
 
 	//キーサイズ
-	int keySize = 0;
+	uint32 keySize = 0;
 	fin.read(reinterpret_cast<char*>( &keySize ), sizeof(int));
 
 	//最大フレーム数
@@ -89,16 +89,11 @@ void SkeltalAnimation::update(float deltaTime, int rootMotionIndex, float overri
 		_plaingFrame -= _maxFrame - 1;
 	}
 
-	const uint32 loopBlend = clamp(_maxFrame * LOOP_BLEND_RANGE + 4, 0, _maxFrame);
-
 	_rootMotionTransformSecond = _rootMotionTransform;
 
 	//どのフレーム間か調べる
-	int firstFrame = static_cast<int>(std::floorf(_plaingFrame));
-	int secondFrame = static_cast<int>(std::ceilf(_plaingFrame));
-
-	const int blendFrame = firstFrame - _maxFrame + loopBlend;
-	//loopBlendFactor = (blendFrame > 0) ? (blendFrame / static_cast<float>(loopBlend + 1)) : 0.0f;
+	const uint32 firstFrame = static_cast<uint32>(std::floorf(_plaingFrame));
+	const uint32 secondFrame = static_cast<uint32>(std::ceilf(_plaingFrame));
 	
 	//フレームの中間値(0.0f~1.0f)
 	const float lerpValue = _plaingFrame - firstFrame;
@@ -110,9 +105,9 @@ void SkeltalAnimation::update(float deltaTime, int rootMotionIndex, float overri
 		const TransformQ secondKey = _animationBones[i][secondFrame];
 
 		//中間値で補完した各座標を取得
-		Vector3 lerpPosition = Vector3::lerp(firstkey.position, secondKey.position, lerpValue);
-		Vector3 lerpScale = Vector3::lerp(firstkey.scale, secondKey.scale, lerpValue);
-		Quaternion slerpRotation = Quaternion::slerp(firstkey.rotation, secondKey.rotation, lerpValue);
+		const Vector3 lerpPosition = Vector3::lerp(firstkey.position, secondKey.position, lerpValue);
+		const Vector3 lerpScale = Vector3::lerp(firstkey.scale, secondKey.scale, lerpValue);
+		const Quaternion slerpRotation = Quaternion::slerp(firstkey.rotation, secondKey.rotation, lerpValue);
 
 		if (i == rootMotionIndex) {
 			_rootMotionTransform.position = lerpPosition;

@@ -26,6 +26,10 @@ void Component::setLocalRotation(const Quaternion & rotation){
 	_localTransform.rotation = rotation;
 }
 
+void Component::addLocalRotation(const Quaternion & rotation) {
+	_localTransform.rotation = _localTransform.rotation* rotation;
+}
+
 void Component::setWorldPosition(const Vector3 & position) {
 	_localTransform.position = position - _parentActor->getActorPosition();
 }

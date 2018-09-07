@@ -16,7 +16,7 @@ void SkeletalMesh::draw(const DrawSettings& drawSettings, const Matrix4& worldMa
 
 
 	//ボーン行列をセット
-	for (UINT k = 0; k < _avator->getSize(); ++k) {
+	for (uint32 k = 0; k < _avator->getSize(); ++k) {
 		const Matrix4 mat = getPlayingAnimPoseMatrix(k);
 		constantBuffer.bone[k] = Matrix4::transpose(mat);
 		//constantBuffer.bone[k] = Matrix4::identity;

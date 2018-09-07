@@ -3,7 +3,8 @@
 #include <vector>
 #include <string>
 #include <Matrix4.h>
-#include "../../Util/RefPtr.h"
+#include <Util/RefPtr.h>
+#include <Util/Type.h>
 
 //ƒ{[ƒ“\‘¢‘Ì
 struct Bone{
@@ -31,7 +32,7 @@ struct Avator{
 
 	~Avator() {}
 
-	int getSize() const{
-		return bindPose->boneMatrices.size();
+	uint32 getSize() const {
+		return static_cast<uint32>(bindPose->boneMatrices.size());
 	}
 };

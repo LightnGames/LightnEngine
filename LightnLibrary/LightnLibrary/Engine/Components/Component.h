@@ -23,6 +23,8 @@ public:
 	void setLocalPosition(const Vector3& position);
 	void setLocalRotation(const Quaternion& rotation);
 
+	void addLocalRotation(const Quaternion& rotation);
+
 	void setWorldPosition(const Vector3& position);
 	void setWorldRotation(const Quaternion& rotation);
 	void setLocalScale(const Vector3& scale);
