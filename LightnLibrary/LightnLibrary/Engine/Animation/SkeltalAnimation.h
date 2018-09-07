@@ -59,9 +59,6 @@ public:
 
 	//アニメーションのフレームキャッシュを取得
 	const std::vector<TransformQ>& getFrameCache() const;
-	
-	Vector3 rootMotionTranslate;
-	Quaternion rootMotionRotate;
 
 private:
 

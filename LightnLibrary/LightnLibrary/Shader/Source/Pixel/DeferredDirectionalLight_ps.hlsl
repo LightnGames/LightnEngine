@@ -33,8 +33,11 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
 	metallic = RT2Value.g;
     normal = DecodeNormal(normal);
 
+    //スペキュラエイリアシング防止。。。TAAが実装されたら消す
+    roughness = max(roughness, 0.5f);
+
     baseColor.xyz = pow(baseColor.xyz, 2.2f);
-    roughness = pow(saturate(roughness + 0.5f), 2.2f);
+    roughness = pow(saturate(roughness), 2.2f);
 
 	//clip(length(normal)-0.1);
 

@@ -35,9 +35,9 @@ void DirectionalLight::draw(const DrawSettings& settings, RefPtr<LightComponent>
 
 	ImGui::Begin("DirectionalLight");
 	static float pitchDir = 40.0;
-	static float yawDir = 40.0;
-	static Vector3 lightColor = Vector3(1, 0.9f, 0.9f);
-	static float lightIntensity = 5.0f;
+	static float yawDir = 45.0;
+	static Vector3 lightColor = Vector3(1, 0.75f, 0.6f);
+	static float lightIntensity = 4.5f;
 
 	ImGui::ColorEdit3("Color", &lightColor.x);
 	ImGui::SliderFloat("Pitch", &pitchDir, 0.0f, 360.0f);

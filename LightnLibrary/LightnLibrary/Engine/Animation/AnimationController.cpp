@@ -24,6 +24,7 @@ void AnimationController::play(const std::string & name, float blendTime) {
 		return;
 	}
 
+	//初めてアニメーションが再生されるときはブレンドを強制的に0(即時再生)
 	if (_duringAnimations.empty()) {
 		blendTime = 0.0f;
 	}
@@ -45,40 +46,20 @@ void AnimationController::update(float deltaTime) {
 	rootMotionVelocity.scale = Vector3::one;
 
 	//アニメーションを全部計算してから再度取得しているのでメモリ効率極めて悪し
-	//anim->update(deltaTime, rootMotionIndex, debugTime);
-	for (auto itr = _duringAnimations.begin(); itr != _duringAnimations.end(); ++itr) {
+	for (auto&& animTask : _duringAnimations) {
 
-		auto anim = itr->anim;
+		auto anim = animTask.anim;
+		float& blendingTime = animTask.blendingTime;
+		float& blendTime = animTask.blendTime;
+		float& blendFactor = animTask.blendFactor;
 
 		//各種アニメーション時間更新
 		anim->update(deltaTime, rootMotionIndex, debugTime);
-		itr->blendingTime -= 0.016666f;
-		
-		//不要になったアニメーションを破棄
-		if (itr->blendingTime <= 0) {
-			itr->blendingTime = 0.0f;
-
-			if (itr != _duringAnimations.begin()) {
-				itr = _duringAnimations.erase(--itr);
-				continue;
-			}
-		}
+		blendingTime -= 0.016666f;
+		blendingTime = std::fmax(blendingTime, 0);
 
 		//ブレンド係数を計算
-		itr->blendFactor = itr->blendingTime == 0.0f ? 0.0f : (itr->blendingTime / itr->blendTime);
-		const float lerpValue = itr->blendFactor;
-
-		//RootMotionに使用するボーンの変化量を無効化するための値を計算
-		{
-			const float yaw = anim->getFrameCache()[rootMotionIndex].rotation.getYaw();
-			Quaternion blendRootMotionRotate = Quaternion::euler({ 0,yaw,0 }, true);
-			Vector3 blendRootMotionTranslate = anim->getFrameCache()[rootMotionIndex].position;
-			blendRootMotionTranslate.y = 0;
-
-			anim->rootMotionTranslate = blendRootMotionTranslate;
-			anim->rootMotionRotate = blendRootMotionRotate; 
-		}
-
+		blendFactor = (blendingTime < FLT_EPSILON) ? 0.0f : (blendingTime / blendTime);
 
 		//RootMotionの変化量として扱う値を計算
 		{
@@ -108,19 +89,18 @@ void AnimationController::update(float deltaTime) {
 			blendRootMotionResult.rotation = Quaternion::euler({ 0,yawRotate,0 }, true);
 
 			//アニメーションごとの蓄積する
-			rootMotionVelocity.position = Vector3::lerp(blendRootMotionResult.position, rootMotionVelocity.position, lerpValue);
-			rootMotionVelocity.rotation = Quaternion::slerp(blendRootMotionResult.rotation, rootMotionVelocity.rotation, lerpValue);
+			rootMotionVelocity.position = Vector3::lerp(blendRootMotionResult.position, rootMotionVelocity.position, blendFactor);
+			rootMotionVelocity.rotation = Quaternion::slerp(blendRootMotionResult.rotation, rootMotionVelocity.rotation, blendFactor);
 		}
 	}
+
+	Matrix4 mtxRootMotionBlend = Matrix4::identity;
 
 	for (int i = 0; i < _avator->getSize(); ++i) {
 
 		Vector3 lerpPosition;
 		Vector3 lerpScale;
 		Quaternion slerpRotation;
-
-		Vector3 rootMotionTranslate = Vector3::zero;
-		Quaternion rootMotionRotate = Quaternion::identity;
 
 		for (auto&& a : _duringAnimations) {
 
@@ -132,12 +112,15 @@ void AnimationController::update(float deltaTime) {
 			lerpPosition = Vector3::lerp(baseTransform.position, lerpPosition, lerpValue);
 			lerpScale = Vector3::lerp(baseTransform.scale, lerpScale, lerpValue);
 			slerpRotation = Quaternion::slerp(baseTransform.rotation, slerpRotation, lerpValue);
+		}
 
-			//ルートモーションが有効な場合は対象ボーンの逆行列の重みを計算
-			if (applyRootMotion) {
-				rootMotionTranslate = Vector3::lerp(anim->rootMotionTranslate, rootMotionTranslate, lerpValue);
-				rootMotionRotate = Quaternion::slerp(anim->rootMotionRotate, rootMotionRotate, lerpValue);
-			}
+		//ルートモーション分の移動量を無効化する逆行列を計算
+		if (i == rootMotionIndex) {
+			Vector3 pp = lerpPosition;
+			pp.y = 0;
+			const float yaw = slerpRotation.getYaw();
+			Quaternion pr = Quaternion::euler({ 0,yaw,0 }, true);
+			mtxRootMotionBlend = Matrix4::createWorldMatrix(pp, pr, Vector3::one).inverse();
 		}
 
 		//行列に変換
@@ -146,10 +129,25 @@ void AnimationController::update(float deltaTime) {
 		const Matrix4 rotation = Matrix4::matrixFromQuaternion(slerpRotation);
 
 		//行列合成
-		const Matrix4 mtxRootMotionBlend = Matrix4::createWorldMatrix(rootMotionTranslate, rootMotionRotate, Vector3::one).inverse();
 		const Matrix4 matrix = Matrix4::multiply(Matrix4::multiply(scale, rotation), translate);
-		(*_avator->animatedPose)[i].matrix = matrix.multiply(mtxRootMotionBlend);
+		(*_avator->animatedPose)[i].matrix = matrix;
 
+	}
+
+	//ルートモーションの移動を無効化
+	for (int i = 0; i < _avator->getSize(); ++i) {
+		const auto& matrix = (*_avator->animatedPose)[i].matrix;
+		(*_avator->animatedPose)[i].matrix = matrix.multiply(mtxRootMotionBlend);
+	}
+
+	//再生が終了したアニメーションを削除
+	for (auto itr = _duringAnimations.begin(); itr != _duringAnimations.end(); ++itr) {
+
+		//アニメーションリストの一番最初のアニメーションは削除しない(再生中なので)
+		if ((itr->blendingTime < FLT_EPSILON)&& (itr != _duringAnimations.begin())) {
+			itr = _duringAnimations.erase(--itr);
+			continue;
+		}
 	}
 }
 

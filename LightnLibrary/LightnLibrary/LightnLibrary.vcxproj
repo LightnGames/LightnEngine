@@ -84,7 +84,7 @@
     <OutDir>$(SolutionDir)LightnLibrary\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)LightnLibrary\Shader\Source;$(SolutionDir)../Library\DirectXTex\include;$(IncludePath);C:\Users\Dunois\Documents\VisualStudio Projects\LightnEngine\LightnLibrary\LightnLibrary\Engine;C:\Users\Dunois\Documents\VisualStudio Projects\LightnEngine\Math\include</IncludePath>
+    <IncludePath>$(SolutionDir)../Library\DirectXTex\include;$(IncludePath);$(SolutionDir)LightnLibrary\Shader\Source;$(SolutionDir)LightnLibrary\Engine;$(SolutionDir)../Math\include</IncludePath>
     <LibraryPath>$(SolutionDir)../Library\DirectXTex\lib;$(SolutionDir)../Math\lib;$(LibraryPath)</LibraryPath>
     <IntDir>$(Platform)\$(Configuration)_Intermdiate\</IntDir>
     <OutDir>$(SolutionDir)LightnLibrary\</OutDir>

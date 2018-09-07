@@ -19,16 +19,16 @@ PS_OUTPUT PS ( PS_INPUT input ) : SV_Target
     float roughness = texRoughness.Sample(samLinear, input.Tex).r;
     float metallic = texMetallic.Sample(samLinear, input.Tex).r;
 
-    //roughness = 0;
-    //metallic = 1;
+    //roughness = 1;
+    //metallic = 0;
 
 	//ノーマルマップをワールドノーマルに適用
     normal = (normal * 2.0f) - 1.0f;
     normal = (normal.x * input.Tangent) + (normal.y * input.Binormal) + (normal.z * input.Normal);
     normal = normalize(normal);
     //normal = input.Normal;
-
-    //roughness = 1;
+    //baseColor = float4(1, 1, 1, 1);
+    
     output.albedo = baseColor;
     output.normal = float4(EncodeNormal(normal), 1);
 	output.rme = float4(roughness,metallic,0,0);

@@ -20,6 +20,7 @@ syntax:glob
 *.zip
 *.cso
 *.sbr
+*.iobj
 Thumbs.db
 FBX_SDK/
 [Dd]ebug_Intermdiate*/

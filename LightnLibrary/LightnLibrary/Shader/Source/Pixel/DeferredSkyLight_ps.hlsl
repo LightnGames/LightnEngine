@@ -23,7 +23,7 @@ float3 PrefilterEnvMap(float Roughness, float3 R)
     float3 V = R;
 
     float3 PrefilteredColor = 0;
-    const uint NumSamples = 16;
+    const uint NumSamples = 8;
 
     int maxMipLevels, width, height;
     cubeMap.GetDimensions(0, width, height, maxMipLevels);
@@ -54,27 +54,17 @@ float3 CubemapDiffuse(float3 N)
 {
 
     float3 PrefilteredColor = 0;
-    const uint NumSamples = 16;
 
     int maxMipLevels, width, height;
     cubeMap.GetDimensions(0, width, height, maxMipLevels);
-
-    for (uint i = 0; i < NumSamples; i++)
-    {
-
-        float3 Xi = float3(Hammersley(i, NumSamples), 0);
-        Xi = lerp(N, Xi, 0.5);
-
-        PrefilteredColor += cubeMap.SampleLevel(samLinear, Xi, 0).rgb;
-    }
-
-    PrefilteredColor /= NumSamples;
+    PrefilteredColor += cubeMap.SampleLevel(samLinear, N, maxMipLevels).rgb;
     PrefilteredColor = pow(PrefilteredColor, 2.2f);
     return PrefilteredColor;
 
 }
 
 //キューブマップから環境色を参照
+//ここは将来的にプリコンピュートする
 float2 IntegrateBRDF(float Roughness, float NoV)
 {
 
@@ -86,7 +76,7 @@ float2 IntegrateBRDF(float Roughness, float NoV)
     float A = 0;
     float B = 0;
 
-    const uint NumSamples = 16;
+    const uint NumSamples = 8;
     for (uint i = 0; i < NumSamples; i++)
     {
         float2 Xi = Hammersley(i, NumSamples);
@@ -99,7 +89,6 @@ float2 IntegrateBRDF(float Roughness, float NoV)
 
         if (NoL > 0)
         {
-
             float G = G_Smith(Roughness, NoV, NoL);
             float G_Vis = G * VoH / (NoH * NoV);
 

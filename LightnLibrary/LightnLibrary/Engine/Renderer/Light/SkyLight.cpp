@@ -16,11 +16,11 @@ void SkyLight::draw(const DrawSettings & settings, RefPtr<LightComponent>& light
 
 	ImGui::Begin("SkyLight");
 	static Vector3 lightColor = Vector3::one;
-	static float diffuseIntensity = 0.9f;
+	static float diffuseIntensity = 1.5f;
 	static float roughnessIntensity = 0.25f;
 
 	ImGui::ColorEdit3("LightColor", &lightColor.x);
-	ImGui::SliderFloat("Diffuse Intensity", &diffuseIntensity, 0.0f, 1.0f);
+	ImGui::SliderFloat("Diffuse Intensity", &diffuseIntensity, 0.0f, 3.0f);
 	ImGui::SliderFloat("Roughness Intensity", &roughnessIntensity, 0.0f, 1.0f);
 	ImGui::End();
 
