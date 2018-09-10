@@ -256,7 +256,7 @@ void Scene::update(float deltaTime)
 		walkAnim = false;
 	}
 
-	if (std::abs(turnAmount) < 0.03f) {
+	if (std::abs(turnAmount) < 0.3f) {
 		if ((Vector3::length(velocity) > 0.01f) && !walkAnim) {
 			sk->_animationComponent->play("Hero_Run", 0.2f);
 			blendAnim->setBlendSpace(0);
@@ -283,8 +283,8 @@ void Scene::update(float deltaTime)
 	Vector3 moveVelocity = Quaternion::rotVector(sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler({ 0,-90,0 }), rootMotionVelocity.position);
 	if (velocity.length() > 0) {
 		Quaternion inpuRotate = Quaternion::lookRotation(velocity.normalize());
-		Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*cameraRotateYaw*Quaternion::euler({ 0,90,0 }), 0.2f);
-		//sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);
+		Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*cameraRotateYaw*Quaternion::euler({ 0,90,0 }), 0.1f);
+		sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);
 
 		//moveVelocity = Quaternion::rotVector(sk->getActorRotation()*inpuRotate, rootMotionVelocity);
 	}
@@ -293,7 +293,7 @@ void Scene::update(float deltaTime)
 	//sk->_skeletalMeshComponent->setLocalRotation(sk->_skeletalMeshComponent->getLocalRotation()*sk->_animationComponent->_animationController->rootMotionVelocity.rotation);
 	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0,90,0 }));
 
-	sk->_skeletalMeshComponent->addLocalRotation(rootMotionVelocity.rotation);
+	//sk->_skeletalMeshComponent->addLocalRotation(rootMotionVelocity.rotation);
 	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::identity);
 
 

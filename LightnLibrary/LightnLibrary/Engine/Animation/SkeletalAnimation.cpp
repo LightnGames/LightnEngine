@@ -129,7 +129,7 @@ void SkeletalAnimation::computeBones(int32 rootMotionIndex) {
 	}
 
 
-	/*Matrix4 mtxRootMotionBlend = getRootMotionMatrixInverse(rootMotionIndex);
+	Matrix4 mtxRootMotionBlend = getRootMotionMatrixInverse(rootMotionIndex);
 	for (auto&& c : _frameCache) {
 		c.position = Matrix4::transform(c.position, mtxRootMotionBlend);
 		c.rotation = mtxRootMotionBlend.rotation()*c.rotation;
@@ -137,7 +137,7 @@ void SkeletalAnimation::computeBones(int32 rootMotionIndex) {
 		c.scale.x *= rootMotionScale.x;
 		c.scale.y *= rootMotionScale.y;
 		c.scale.z *= rootMotionScale.z;
-	}*/
+	}
 }
 
 void SkeletalAnimation::resetAnimation() {

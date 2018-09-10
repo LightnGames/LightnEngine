@@ -76,7 +76,11 @@ void BlendSpace1D::computeBones(int32 rootMotionIndex){
 		_lerpValue = (_blendSpace - firstAnimTask.second) / blendSpaceRange;
 	}
 
+	//ブレンドアニメーション更新
 	_firstAnim->computeBones(rootMotionIndex);
+	if (firstAnimationIndex != secondAnimationIndex) {
+		_secondAnim->computeBones(rootMotionIndex);
+	}
 
 	const auto& firstFrameCaches = _firstAnim->getFrameCache();
 	const auto& secondFrameCaches = _secondAnim->getFrameCache();
@@ -88,7 +92,7 @@ void BlendSpace1D::computeBones(int32 rootMotionIndex){
 
 		//中間値で補完した各座標を取得
 		const Vector3 lerpPosition = Vector3::lerp(firstkey.position, secondKey.position, _lerpValue);
-		const Vector3 lerpScale = Vector3::lerp(firstkey.scale, secondKey.scale, 0);
+		const Vector3 lerpScale = Vector3::lerp(firstkey.scale, secondKey.scale, _lerpValue);
 		const Quaternion slerpRotation = Quaternion::slerp(firstkey.rotation, secondKey.rotation, _lerpValue);
 		
 
