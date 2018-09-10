@@ -14,3 +14,4 @@ const float M_PIDIV4 = 0.785398163f;
 float radianFromDegree(const float degree);
 
 float clamp(float value, float min, float max);
+float lerp(float value, float min, float max);

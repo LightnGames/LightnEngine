@@ -212,9 +212,6 @@
     <ClCompile Include="Engine\Actor\StaticMeshActor.cpp">
       <Filter>ソース ファイル\Actor</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Animation\SkeltalAnimation.cpp">
-      <Filter>ソース ファイル\Animation</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Animation\AnimationController.cpp">
       <Filter>ソース ファイル\Animation</Filter>
     </ClCompile>
@@ -377,6 +374,12 @@
     <ClCompile Include="Engine\Renderer\PostEffect\PostProcess.cpp">
       <Filter>ソース ファイル\Renderer\PostEffect</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Animation\BlendSpace1D.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Animation\SkeletalAnimation.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Util\ComPtr.h">
@@ -449,9 +452,6 @@
       <Filter>ヘッダー ファイル\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Animation\AnimationManager.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Animation\SkeltalAnimation.h">
       <Filter>ヘッダー ファイル\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Actor\Actor.h">
@@ -606,6 +606,15 @@
     </ClInclude>
     <ClInclude Include="Engine\Renderer\PostEffect\PostProcess.h">
       <Filter>ヘッダー ファイル\Renderer\PostEffect</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Animation\AnimationBase.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Animation\BlendSpace1D.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Animation\SkeletalAnimation.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

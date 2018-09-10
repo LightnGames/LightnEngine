@@ -31,4 +31,6 @@ public:
 Vector4 operator + (const Vector4& v);
 Vector4 operator - (const Vector4& v);
 
+Vector4& operator *= (Vector4& v, float s);
+
 

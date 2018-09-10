@@ -17,6 +17,8 @@
 
 #include <unordered_map>
 #include <ThirdParty/ImGui/imgui.h>
+#include <Animation/SkeletalAnimation.h>
+#include <Animation/BlendSpace1D.h>
 
 RefPtr<SkyboxActor> sky;
 RefPtr<SkeletalMeshActor> sk;
@@ -47,13 +49,21 @@ Scene::Scene() {
 
 	auto& anim = sk->_animationComponent->_animationController;
 
-	anim->addAnimationList("Resources/Hero/Hero_idle.anim");
-	anim->addAnimationList("Resources/Hero/Hero_Run.anim");
-	anim->addAnimationList("Resources/Hero/Hero_StandHalfTurnRight.anim");
-	anim->play("Hero_idle");
+	anim->addAnimationList<SkeletalAnimation>("Resources/Hero/Hero_idle.anim");
+	anim->addAnimationList<SkeletalAnimation>("Resources/Hero/Hero_Run.anim");
+	anim->addAnimationList<SkeletalAnimation>("Resources/Hero/Hero_StandHalfTurnRight.anim");
+
+	auto blend = anim->addAnimationList<BlendSpace1D>("MovementBlend");
+	blend->addBlendAnimation("Resources/Hero/Hero_idle.anim", 0.0f);
+	blend->addBlendAnimation("Resources/Hero/Hero_StandHalfTurnLeft.anim", -1.0f);
+	blend->addBlendAnimation("Resources/Hero/Hero_StandHalfTurnRight.anim", 1.0f);
+	blend->setUpBlendSpace();
+	blend->setPlayRate(1.0f);
 
 	anim->applyRootMotion = true;
 	anim->setRootMotionBone("Bip001 Pelvis");
+
+	anim->play("MovementBlend");
 
 	struct MeshNameAndMaterials {
 		std::string objectName;
@@ -230,28 +240,51 @@ void Scene::update(float deltaTime)
 		//sk->_animationComponent->play("Hero_idle", 0.2f);
 	}
 
+	Quaternion cameraRotateYaw = Quaternion::euler({ 0, sk->_camera->getWorldRotation().getYaw(), 0 }, true);
+	Vector3 differenceInputRotate = Quaternion::rotVector(sk->_skeletalMeshComponent->getLocalRotation().inverse()*cameraRotateYaw, velocity.normalize());
+	//differenceInputRotate = velocity.normalize();
+	float turnAmount = std::atan2(differenceInputRotate.z, -differenceInputRotate.x);
+	//turnAmount += (std::atan2(velocity.z, -velocity.x)- turnAmount)/2.0f;
+	//turnAmount = std::atan2(velocity.z, -velocity.x);
+	auto blendAnim = sk->_animationComponent->_animationController->getAnimation<BlendSpace1D>("MovementBlend");
+
 	if ((Vector3::length(velocity) < 0.01f) && walkAnim) {
+
+		sk->_animationComponent->play("MovementBlend", 0.2f);
 		//sk->_animationComponent->play("Hero_idle", 0.2f);
-		sk->_animationComponent->play("Hero_StandHalfTurnRight");
+		//sk->_animationComponent->play("Hero_StandHalfTurnRight");
 		walkAnim = false;
 	}
 
+	if (std::abs(turnAmount) < 0.03f) {
+		if ((Vector3::length(velocity) > 0.01f) && !walkAnim) {
+			sk->_animationComponent->play("Hero_Run", 0.2f);
+			blendAnim->setBlendSpace(0);
+			walkAnim = true;
+		}
 
-	if ((Vector3::length(velocity) > 0.01f) && !walkAnim) {
-		sk->_animationComponent->play("Hero_Run", 0.2f);
-		walkAnim = true;
 	}
 
-	TransformQ rootMotionVelocity = sk->_animationComponent->_animationController->rootMotionVelocity;
-	rootMotionVelocity.position.y = 0;
+	if (Vector3::length(velocity) < 0.01f) {
+		turnAmount = 0;
+	}
 
+	blendAnim->setBlendSpace(lerp(0.1f, blendAnim->getBlendSpace(), turnAmount * 2));
+
+	float f = blendAnim->getBlendSpace();
+	ImGui::Begin("anim blend");
+	ImGui::SliderFloat("Value", &f, -2, 2);
+	ImGui::End();
+
+	TransformQ rootMotionVelocity = sk->_animationComponent->_animationController->rootMotionVelocity;
+
+	
 	//回転にルートモーションを適用してしまうと90度補正しないとZを正面に向かない
 	Vector3 moveVelocity = Quaternion::rotVector(sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler({ 0,-90,0 }), rootMotionVelocity.position);
 	if (velocity.length() > 0) {
 		Quaternion inpuRotate = Quaternion::lookRotation(velocity.normalize());
-		Quaternion cameraRotateYaw = Quaternion::euler({ 0,sk->_camera->getWorldRotation().getYaw(),0 }, true);
 		Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*cameraRotateYaw*Quaternion::euler({ 0,90,0 }), 0.2f);
-		sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);
+		//sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);
 
 		//moveVelocity = Quaternion::rotVector(sk->getActorRotation()*inpuRotate, rootMotionVelocity);
 	}
@@ -261,7 +294,9 @@ void Scene::update(float deltaTime)
 	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler({ 0,90,0 }));
 
 	sk->_skeletalMeshComponent->addLocalRotation(rootMotionVelocity.rotation);
-	
+	//sk->_skeletalMeshComponent->setLocalRotation(Quaternion::identity);
+
+
 	moveVelocity.y = 0;
 	moveVelocity *= sk->getActorScale().x;
 	sk->setActorPosition(sk->getActorPosition() + moveVelocity);

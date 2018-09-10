@@ -14,7 +14,7 @@ struct Quaternion{
 	static float dot(const Quaternion& q1, const Quaternion& q2);
 
 	//クォータニオンを球面線形補完する
-	static Quaternion slerp(const Quaternion q1, const Quaternion& q2, float t);
+	static Quaternion slerp(const Quaternion q1, const Quaternion& q2, float t, bool nearRoute = true);
 
 	//オイラー角からクォータニオンを生成
 	static Quaternion euler(const Vector3& euler, bool valueIsRadian = false);

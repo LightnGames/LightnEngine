@@ -604,7 +604,8 @@
     <ClCompile Include="Engine\Actor\StaticMeshActor.cpp" />
     <ClCompile Include="Engine\Animation\AnimationController.cpp" />
     <ClCompile Include="Engine\Animation\AnimationManager.cpp" />
-    <ClCompile Include="Engine\Animation\SkeltalAnimation.cpp" />
+    <ClCompile Include="Engine\Animation\BlendSpace1D.cpp" />
+    <ClCompile Include="Engine\Animation\SkeletalAnimation.cpp" />
     <ClCompile Include="Engine\Collider\AABB.cpp" />
     <ClCompile Include="Engine\Components\AnimationControllerComponenth.cpp" />
     <ClCompile Include="Engine\Components\CameraComponent.cpp" />
@@ -663,9 +664,11 @@
     <ClInclude Include="Engine\Actor\SpotLightActor.h" />
     <ClInclude Include="Engine\Actor\StaticInstanceMeshActor.h" />
     <ClInclude Include="Engine\Actor\StaticMeshActor.h" />
+    <ClInclude Include="Engine\Animation\AnimationBase.h" />
     <ClInclude Include="Engine\Animation\AnimationController.h" />
     <ClInclude Include="Engine\Animation\AnimationManager.h" />
-    <ClInclude Include="Engine\Animation\SkeltalAnimation.h" />
+    <ClInclude Include="Engine\Animation\BlendSpace1D.h" />
+    <ClInclude Include="Engine\Animation\SkeletalAnimation.h" />
     <ClInclude Include="Engine\Collider\AABB.h" />
     <ClInclude Include="Engine\Components\AnimationControllerComponenth.h" />
     <ClInclude Include="Engine\Components\CameraComponent.h" />

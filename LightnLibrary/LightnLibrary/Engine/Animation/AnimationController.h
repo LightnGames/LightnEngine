@@ -7,13 +7,11 @@
 #include <LMath.h>
 #include <list>
 
-class SkeltalAnimation;
+class AnimationBase;
 struct Avator;
 
-using Animation = std::unique_ptr<SkeltalAnimation>;
-
 struct AnimTask {
-	RefPtr<SkeltalAnimation> anim;
+	RefPtr<AnimationBase> anim;
 	float blendingTime;
 	float blendTime;
 	float blendFactor;
@@ -29,8 +27,16 @@ public:
 	~AnimationController();
 
 	//アニメーションリストに追加
-	void addAnimationList(Animation animation);
-	void addAnimationList(const std::string& name);
+	void addAnimationList(std::unique_ptr<AnimationBase> animation);
+
+	template<class T>
+	RefPtr<T> addAnimationList(const std::string& name) {
+		auto anim = new T();
+		anim->load(name);
+		addAnimationList(std::move(std::unique_ptr<T>(anim)));
+
+		return anim;
+	}
 
 	//アニメーションを再生
 	void play(const std::string& name, float blendTime = 0.6f);
@@ -45,13 +51,18 @@ public:
 
 	void setRootMotionBone(const std::string& boneName);
 
+	template<class T>
+	RefPtr<T> getAnimation(const std::string& name) {
+		return static_cast<T*>(_playList[name].get());
+	}
+
 private:
 
-	std::unordered_map<std::string, Animation> _playList;
+	std::unordered_map<std::string, std::unique_ptr<AnimationBase>> _playList;
 
 	std::list<AnimTask> _duringAnimations;
-	RefPtr<SkeltalAnimation> _duringAnimation;
-	RefPtr<SkeltalAnimation> _blendingAnimation;
+	RefPtr<AnimationBase> _duringAnimation;
+	RefPtr<AnimationBase> _blendingAnimation;
 
 	float _blendingTime;
 	float _blendTime;

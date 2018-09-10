@@ -302,9 +302,9 @@ Vector3 Matrix4::translate() const{
 
 Vector3 Matrix4::scale() const{
 	Vector3 result;
-	result.x = Vector3::length(Vector3(m[0][0], m[0][1], m[0][2]));
-	result.y = Vector3::length(Vector3(m[1][0], m[1][1], m[1][2]));
-	result.z = Vector3::length(Vector3(m[2][0], m[2][1], m[2][2]));
+	result.x = Vector3(m[0][0], m[0][1], m[0][2]).length();
+	result.y = Vector3(m[1][0], m[1][1], m[1][2]).length();
+	result.z = Vector3(m[2][0], m[2][1], m[2][2]).length();
 	return result;
 }
 

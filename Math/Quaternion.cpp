@@ -17,10 +17,10 @@ Quaternion::Quaternion(const Vector3 & axis, float angle){
 	w = std::cos(angle / 2.0f);
 }
 
-Quaternion Quaternion::slerp(const Quaternion q1, const Quaternion & q2,float t){
+Quaternion Quaternion::slerp(const Quaternion q1, const Quaternion & q2, float t, bool nearRoute){
 	float cos = dot(q1, q2);
 	Quaternion t2 = q2;
-	if(cos < 0.0f){
+	if ((cos < 0.0f) && nearRoute) {
 		cos = -cos;
 		t2 = -q2;
 	}
@@ -114,15 +114,16 @@ float Quaternion::dot(const Quaternion & q1, const Quaternion & q2){
 
 Quaternion Quaternion::inverse() const {
 
-	const float fNorm = w * w + x * x + y * y + z * z;
+	Quaternion result;
 
-	//不正なクォータニオン
-	if (fNorm == 0.0f) {
-		return Quaternion::identity;
-	}
+	const float lengthSq = x * x + y * y + z * z + w * w;
 
-	const float fInvNorm = 1.0f / fNorm;
-	return Quaternion(w*fInvNorm, -x * fInvNorm, -y * fInvNorm, -z * fInvNorm);
+	result.x = -x / lengthSq;
+	result.y = -y / lengthSq;
+	result.z = -z / lengthSq;
+	result.w = w / lengthSq;
+
+	return result;
 }
 
 Vector3 Quaternion::toEulerAngle() const {

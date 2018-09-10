@@ -1,21 +1,17 @@
 #include "AnimationController.h"
-#include "SkeltalAnimation.h"
+#include "AnimationBase.h"
 #include <Renderer/Mesh/Skeleton.h>
 #include <ThirdParty/ImGui/imgui.h>
 
-AnimationController::AnimationController(RefPtr<Avator> avator) :_avator{ avator }, _blendingTime{ 0.0f }, _blendTime{ 0.0f } {
+AnimationController::AnimationController(RefPtr<Avator> avator) 
+	:_avator{ avator }, _blendingTime{ 0.0f }, _blendTime{ 0.0f } {
 }
 
 AnimationController::~AnimationController() {
 }
 
-void AnimationController::addAnimationList(Animation animation) {
+void AnimationController::addAnimationList(std::unique_ptr<AnimationBase> animation) {
 	_playList[animation->getName()] = std::move(animation);
-}
-
-void AnimationController::addAnimationList(const std::string & name) {
-	auto anim = std::make_unique<SkeltalAnimation>(name);
-	addAnimationList(std::move(anim));
 }
 
 void AnimationController::play(const std::string & name, float blendTime) {
@@ -54,48 +50,30 @@ void AnimationController::update(float deltaTime) {
 		float& blendFactor = animTask.blendFactor;
 
 		//各種アニメーション時間更新
-		anim->update(deltaTime, rootMotionIndex, debugTime);
+		anim->updateTimer(deltaTime, debugTime);
+		anim->computeBones(rootMotionIndex);
 		blendingTime -= 0.016666f;
 		blendingTime = std::fmaxf(blendingTime, 0);
+
+		if (!applyRootMotion) {
+			continue;
+		}
 
 		//ブレンド係数を計算
 		blendFactor = (blendingTime < FLT_EPSILON) ? 0.0f : (blendingTime / blendTime);
 
 		//RootMotionの変化量として扱う値を計算
 		{
-			TransformQ blendRootMotionLinerFirst = anim->getRootMotionTransform(false);
-			TransformQ blendRootMotionLinerSecond = anim->getRootMotionTransform(true);
-
-			//最終フレームと開始フレームをまたがった場合
-			float yawRotate = blendRootMotionLinerFirst.rotation.getYaw() - blendRootMotionLinerSecond.rotation.getYaw();
-			if (anim->getPlaingFrame() - anim->getBeforePlaingFrame() <= 0) {
-				const auto& animBone = anim->getAnimationBones()[rootMotionIndex];
-				const int maxKeyIndex = anim->getMaxFrame() - 1;
-
-				const Vector3& startPos = animBone.keys[0].position;
-				const Vector3& endPos = animBone.keys[maxKeyIndex].position;
-
-				blendRootMotionLinerFirst.position += endPos - startPos;
-				blendRootMotionLinerFirst.position.y = 0;
-
-				const float startYaw = animBone.keys[0].rotation.getYaw();
-				const float endYaw = animBone.keys[maxKeyIndex].rotation.getYaw();
-				yawRotate += startYaw - endYaw;
-			}
-
-			//現在のアニメーションの変化量
-			TransformQ blendRootMotionResult;
-			blendRootMotionResult.position = blendRootMotionLinerFirst.position - blendRootMotionLinerSecond.position;
-			blendRootMotionResult.rotation = Quaternion::euler({ 0,yawRotate,0 }, true);
+			TransformQ blendRootMotionLinerFirst = anim->getRootMotionTransform(rootMotionIndex);
 
 			//アニメーションごとの蓄積する
-			rootMotionVelocity.position = Vector3::lerp(blendRootMotionResult.position, rootMotionVelocity.position, blendFactor);
-			rootMotionVelocity.rotation = Quaternion::slerp(blendRootMotionResult.rotation, rootMotionVelocity.rotation, blendFactor);
+			rootMotionVelocity.position = Vector3::lerp(blendRootMotionLinerFirst.position, rootMotionVelocity.position, blendFactor);
+			rootMotionVelocity.rotation = Quaternion::slerp(blendRootMotionLinerFirst.rotation, rootMotionVelocity.rotation, blendFactor);
 		}
 	}
 
 	Matrix4 mtxRootMotionBlend = Matrix4::identity;
-
+	float blend=0;
 	for (uint32 i = 0; i < _avator->getSize(); ++i) {
 
 		Vector3 lerpPosition;
@@ -107,20 +85,12 @@ void AnimationController::update(float deltaTime) {
 			auto anim = a.anim;
 			const TransformQ& baseTransform = anim->getFrameCache()[i];
 			const float lerpValue = a.blendFactor;
+			blend = lerpValue;
 
 			//中間値で補完した各座標を取得
 			lerpPosition = Vector3::lerp(baseTransform.position, lerpPosition, lerpValue);
 			lerpScale = Vector3::lerp(baseTransform.scale, lerpScale, lerpValue);
 			slerpRotation = Quaternion::slerp(baseTransform.rotation, slerpRotation, lerpValue);
-		}
-
-		//ルートモーション分の移動量を無効化する逆行列を計算
-		if (i == rootMotionIndex) {
-			Vector3 pp = lerpPosition;
-			pp.y = 0;
-			const float yaw = slerpRotation.getYaw();
-			Quaternion pr = Quaternion::euler({ 0,yaw,0 }, true);
-			mtxRootMotionBlend = Matrix4::createWorldMatrix(pp, pr, Vector3::one).inverse();
 		}
 
 		//行列に変換
@@ -134,11 +104,10 @@ void AnimationController::update(float deltaTime) {
 
 	}
 
-	//ルートモーションの移動を無効化
-	for (uint32 i = 0; i < _avator->getSize(); ++i) {
-		const auto& matrix = (*_avator->animatedPose)[i].matrix;
-		(*_avator->animatedPose)[i].matrix = matrix.multiply(mtxRootMotionBlend);
-	}
+	float f = _duringAnimations.size();
+	ImGui::Begin("anim blend");
+	ImGui::SliderFloat("Value", &blend, -2, 2);
+	ImGui::End();
 
 	//再生が終了したアニメーションを削除
 	for (auto itr = _duringAnimations.begin(); itr != _duringAnimations.end(); ++itr) {

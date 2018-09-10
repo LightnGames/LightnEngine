@@ -9,7 +9,7 @@
 #include <Renderer/Mesh/Mesh.h>
 #include <Loader/MeshLoader.h>
 #include <Renderer/Mesh/SkeletalMesh.h>
-#include <Animation/SkeltalAnimation.h>
+#include <Animation/SkeletalAnimation.h>
 #include <Util/Type.h>
 #include <cassert>
 
@@ -161,21 +161,6 @@ std::unique_ptr<Skeleton> loadSkeleton() {
 				bone.name = clusterName;
 				bone.matrix = Matrix4::multiply(castFromFbxMatrix(mat), Matrix4::multiply(Matrix4::rotateY(180), mtxScale));
 				bones[boneIndex] = bone;
-			}
-
-			continue;
-
-			//Šù‘¶ƒ{[ƒ“‚Æ‚¢‚¸‚ê‚àˆê’v‚µ‚È‚¢ê‡V‹K’Ç‰Á‚·‚é
-			if (boneIndex >= skeleton->boneMatrices.size()) {
-
-				FbxAMatrix mat;
-				cluster->GetTransformLinkMatrix(mat);
-
-				Bone bone;
-				bone.name = clusterName;
-				bone.matrix = Matrix4::multiply(castFromFbxMatrix(mat), Matrix4::multiply(Matrix4::rotateY(180), mtxScale));
-
-				skeleton->boneMatrices.emplace_back(bone);
 			}
 		}
 	}
@@ -390,10 +375,6 @@ HRESULT loadLocalMesh(const int index) {
 				break;
 			}
 			boneIndex++;
-		}
-
-		if (boneIndex == 1) {
-			int fuu = 0;
 		}
 
 		const int numIndex = cluster->GetControlPointIndicesCount();
@@ -736,7 +717,7 @@ void loadAnim(const std::string& meshFilePath){
 int main(int argc, char *argv[]){
 	
 	//argc = 2;
-	//argv[1] = "C:/Users/Dunois/Documents/VisualStudio Projects/LightnEngine/LightnLibrary/LightnLibrary/Resources/Hero/Hero_Run.fbx";
+	//argv[1] = "C:/Users/Dunois/Documents/VisualStudio Projects/LightnEngine/LightnLibrary/LightnLibrary/Resources/Hero/Hero_idle.fbx";
 	if(argc > 1){
 		for(int i = 1; i<argc; i++){
 
