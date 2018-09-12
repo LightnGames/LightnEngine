@@ -13,3 +13,7 @@ float lerp(float value, float min, float max){
 	value = clamp(value, 0.0f, 1.0f);
 	return (min * (1.0f - value)) + (max * (value));
 }
+
+bool approximately(float a, float b) {
+	return std::fabs(a - b) < FLT_EPSILON;
+}

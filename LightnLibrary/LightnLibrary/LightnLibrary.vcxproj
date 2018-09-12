@@ -111,6 +111,9 @@
     <Link>
       <AdditionalDependencies>d3d11.lib;d3dCompiler.lib;DirectXTex_Debug.lib;Math_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(MSBuildToolsPath)\msbuild" "$(SolutionDir)../Math\Math.vcxproj" /p:configuration=debug</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -153,6 +156,9 @@
     <FxCompile>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
+    <PreBuildEvent>
+      <Command>"$(MSBuildToolsPath)\msbuild" "$(SolutionDir)../Math\Math.vcxproj" /p:configuration=debug</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <FxCompile Include="Shader\Source\App\Grass_ps.hlsl">
@@ -605,6 +611,7 @@
     <ClCompile Include="Engine\Animation\AnimationController.cpp" />
     <ClCompile Include="Engine\Animation\AnimationManager.cpp" />
     <ClCompile Include="Engine\Animation\BlendSpace1D.cpp" />
+    <ClCompile Include="Engine\Animation\BlendSpace2D.cpp" />
     <ClCompile Include="Engine\Animation\SkeletalAnimation.cpp" />
     <ClCompile Include="Engine\Collider\AABB.cpp" />
     <ClCompile Include="Engine\Components\AnimationControllerComponenth.cpp" />
@@ -668,6 +675,7 @@
     <ClInclude Include="Engine\Animation\AnimationController.h" />
     <ClInclude Include="Engine\Animation\AnimationManager.h" />
     <ClInclude Include="Engine\Animation\BlendSpace1D.h" />
+    <ClInclude Include="Engine\Animation\BlendSpace2D.h" />
     <ClInclude Include="Engine\Animation\SkeletalAnimation.h" />
     <ClInclude Include="Engine\Collider\AABB.h" />
     <ClInclude Include="Engine\Components\AnimationControllerComponenth.h" />

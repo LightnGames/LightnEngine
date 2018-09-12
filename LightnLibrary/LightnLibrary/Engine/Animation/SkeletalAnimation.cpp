@@ -70,6 +70,8 @@ void SkeletalAnimation::load(const std::string & fileName) {
 
 void SkeletalAnimation::updateTimer(float deltaTime, float overrideFrame) {
 
+	_rootMotionTransformSecond = _rootMotionTransform;
+
 	//フレーム更新
 	//逆再生には未対応
 	_beforePlaingFrame = _plaingFrame;
@@ -86,8 +88,6 @@ void SkeletalAnimation::updateTimer(float deltaTime, float overrideFrame) {
 }
 
 void SkeletalAnimation::computeBones(int32 rootMotionIndex) {
-
-	_rootMotionTransformSecond = _rootMotionTransform;
 
 	//どのフレーム間か調べる
 	const uint32 firstFrame = static_cast<uint32>(std::floorf(_plaingFrame));
@@ -128,15 +128,14 @@ void SkeletalAnimation::computeBones(int32 rootMotionIndex) {
 		_frameCache[i] = std::move(transformCache);
 	}
 
+	if (rootMotionIndex == -1) {
+		return;
+	}
 
 	Matrix4 mtxRootMotionBlend = getRootMotionMatrixInverse(rootMotionIndex);
 	for (auto&& c : _frameCache) {
 		c.position = Matrix4::transform(c.position, mtxRootMotionBlend);
 		c.rotation = mtxRootMotionBlend.rotation()*c.rotation;
-		const Vector3& rootMotionScale = mtxRootMotionBlend.scale();
-		c.scale.x *= rootMotionScale.x;
-		c.scale.y *= rootMotionScale.y;
-		c.scale.z *= rootMotionScale.z;
 	}
 }
 

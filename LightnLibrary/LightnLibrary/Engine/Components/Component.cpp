@@ -27,7 +27,7 @@ void Component::setLocalRotation(const Quaternion & rotation){
 }
 
 void Component::addLocalRotation(const Quaternion & rotation) {
-	_localTransform.rotation = _localTransform.rotation* rotation;
+	_localTransform.rotation *= rotation;
 }
 
 void Component::setWorldPosition(const Vector3 & position) {

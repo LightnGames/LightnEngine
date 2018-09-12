@@ -15,3 +15,4 @@ float radianFromDegree(const float degree);
 
 float clamp(float value, float min, float max);
 float lerp(float value, float min, float max);
+bool approximately(float a, float b);

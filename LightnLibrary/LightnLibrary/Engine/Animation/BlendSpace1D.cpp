@@ -37,7 +37,6 @@ void BlendSpace1D::setUpBlendSpace(){
 }
 
 void BlendSpace1D::updateTimer(float deltaTime, float overrideFrame){
-
 	for (auto&& a : _anims){
 		a.first.updateTimer(deltaTime, overrideFrame);
 	}
@@ -78,9 +77,10 @@ void BlendSpace1D::computeBones(int32 rootMotionIndex){
 
 	//ブレンドアニメーション更新
 	_firstAnim->computeBones(rootMotionIndex);
-	if (firstAnimationIndex != secondAnimationIndex) {
+	if ((firstAnimationIndex != secondAnimationIndex)) {
 		_secondAnim->computeBones(rootMotionIndex);
 	}
+
 
 	const auto& firstFrameCaches = _firstAnim->getFrameCache();
 	const auto& secondFrameCaches = _secondAnim->getFrameCache();
@@ -128,7 +128,7 @@ TransformQ BlendSpace1D::getRootMotionTransform(uint32 rootMotionIndex) const{
 	result.scale = Vector3::lerp(firstTransform.scale, secondTransform.scale, _lerpValue);
 	result.rotation = Quaternion::slerp(firstTransform.rotation, secondTransform.rotation, _lerpValue);
 
-	return std::move(result);
+	return result;
 }
 
 std::string BlendSpace1D::getName() const{

@@ -380,6 +380,9 @@
     <ClCompile Include="Engine\Animation\SkeletalAnimation.cpp">
       <Filter>ソース ファイル\Animation</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Animation\BlendSpace2D.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Util\ComPtr.h">
@@ -614,6 +617,9 @@
       <Filter>ヘッダー ファイル\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Animation\SkeletalAnimation.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Animation\BlendSpace2D.h">
       <Filter>ヘッダー ファイル\Animation</Filter>
     </ClInclude>
   </ItemGroup>

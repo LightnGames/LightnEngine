@@ -315,9 +315,11 @@ Matrix4 Matrix4::inverse() const {
 Matrix4 Matrix4::matrixFromQuaternion(const Quaternion& q){
 	Matrix4 result = Matrix4::identity;
 
-	const float x = q.x;
-	const float y = q.y;
-	const float z = q.z;
+	Vector3 v(q.x, q.y, q.z);
+	v.normalize();
+	const float x = v.x;
+	const float y = v.y;
+	const float z = v.z;
 	const float w = q.w;
 
 	result.m[0][0] = 1.0f - 2.0f * y * y - 2.0f * z * z;

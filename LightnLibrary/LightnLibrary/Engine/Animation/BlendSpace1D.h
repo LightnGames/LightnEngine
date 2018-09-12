@@ -47,6 +47,7 @@ public:
 	void setBlendSpace(float value) { _blendSpace = value; }
 	float getBlendSpace() const { return _blendSpace; }
 
+
 private:
 
 	std::vector<BlendSpace1DTask> _anims;

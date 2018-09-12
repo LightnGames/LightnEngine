@@ -18,16 +18,17 @@ Quaternion::Quaternion(const Vector3 & axis, float angle){
 }
 
 Quaternion Quaternion::slerp(const Quaternion q1, const Quaternion & q2, float t, bool nearRoute){
+	t = clamp(t, 0, 1);
 	float cos = dot(q1, q2);
 	Quaternion t2 = q2;
-	if ((cos < 0.0f) && nearRoute) {
+	if (cos < 0.0f) {
 		cos = -cos;
 		t2 = -q2;
 	}
 
 	float k0 = 1.0f - t;
 	float k1 = t;
-	if(( 1.0f - cos ) > 0.001f){
+	if(( 1.0f - cos ) > 1.192092896e-07F){
 		float theta = (float)std::acos(cos);
 		k0 = (float)( std::sin(theta*k0) / std::sin(theta) );
 		k1 = (float)( std::sin(theta*k1) / std::sin(theta) );
