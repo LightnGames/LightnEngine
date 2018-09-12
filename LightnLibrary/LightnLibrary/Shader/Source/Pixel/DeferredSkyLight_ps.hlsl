@@ -46,19 +46,18 @@ float3 PrefilterEnvMap(float Roughness, float3 R)
     }
 
     PrefilteredColor /= TotalWeight;
-    PrefilteredColor = pow(PrefilteredColor, 2.2f);
+    PrefilteredColor = pow(abs(PrefilteredColor), 2.2f);
     return PrefilteredColor;
 }
 
 float3 CubemapDiffuse(float3 N)
 {
 
-    float3 PrefilteredColor = 0;
-
     int maxMipLevels, width, height;
     cubeMap.GetDimensions(0, width, height, maxMipLevels);
-    PrefilteredColor += cubeMap.SampleLevel(samLinear, N, maxMipLevels).rgb;
-    PrefilteredColor = pow(PrefilteredColor, 2.2f);
+
+    float3 PrefilteredColor = cubeMap.SampleLevel(samLinear, N, maxMipLevels).rgb;
+    PrefilteredColor = pow(abs(PrefilteredColor), 2.2f);
     return PrefilteredColor;
 
 }
@@ -113,6 +112,7 @@ float3 ApproximateSpecularIBL(float3 SpecularColor, float Roughness, float3 N, f
     return PrefilteredColor * (SpecularColor * EnvBRDF.x + EnvBRDF.y);
 }
 
+[earlydepthstencil]
 float4 PS(PS_INPUT_SCREEN input) : SV_Target
 {
     float4 baseColor;
@@ -129,8 +129,8 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
 	metallic = RT2Value.g;
     normal = DecodeNormal(normal);
 
-    baseColor.xyz = pow(baseColor.xyz, 2.2f);
-    roughness = pow(roughness, 2.2f);
+    baseColor.xyz = pow(abs(baseColor.xyz), 2.2f);
+    roughness = pow(abs(roughness), 2.2f);
     //roughness = 0;
 
 	//メタリックの値からテクスチャカラー

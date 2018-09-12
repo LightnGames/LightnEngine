@@ -9,15 +9,15 @@ SamplerState samLinear : register(s0);
 #include "../DeferredGeometry.hlsl"
 
 [earlydepthstencil]
-PS_OUTPUT PS(PS_INPUT input) : SV_Target
+PS_OUTPUT PS(PS_INPUT input)
 {
     PS_OUTPUT output;
 
     //テクスチャをサンプル
     float4 baseColor = texDiffuse.Sample(samLinear, input.Tex);
-    float3 normal = texNormal.Sample(samLinear, input.Tex);
+    float3 normal = texNormal.Sample(samLinear, input.Tex).xyz;
     float roughness = texRoughness.Sample(samLinear, input.Tex).r;
-    float metallic = texMetallic.Sample(samLinear, input.Tex);
+    float metallic = texMetallic.Sample(samLinear, input.Tex).r;
     //roughness = 0.5f;
     //metallic = 0;
 

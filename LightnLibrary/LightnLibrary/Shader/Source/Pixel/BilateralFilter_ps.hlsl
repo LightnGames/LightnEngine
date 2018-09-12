@@ -26,7 +26,7 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
 
     uint sampleCount = SampleCount.x;
 
-    for (int i = 0; i < sampleCount; ++i)
+    for (uint i = 0; i < sampleCount; ++i)
     {
         int offsetIndex = i - (sampleCount - 1) / 2;
         float offsetScale = offsetIndex * pixScale;

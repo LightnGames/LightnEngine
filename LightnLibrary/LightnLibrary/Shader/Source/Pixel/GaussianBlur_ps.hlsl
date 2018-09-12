@@ -23,14 +23,14 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
 
     uint sampleCount = SampleCount.x;
 
-    for (int i = 0; i < sampleCount; ++i)
+    for (uint i = 0; i < sampleCount; ++i)
     {
         int offsetIndex = i - (sampleCount - 1) / 2;
         float offsetScale = offsetIndex * pixScale;
         float2 offset = float2(offsetScale * horizontal, offsetScale * vertical);
         float4 color = ColorTexture.Sample(samLinear, input.Tex + offset) * Offset[abs(offsetIndex)].x;
-        float knee = softThreadHold * threadHold;
-        float soft = pow(min(knee * 2.0f, max(0, color - threadHold + knee)), 2.0f) / (4 * knee * 0.00001f);
+        //float knee = softThreadHold * threadHold;
+        //float soft = pow(min(knee * 2.0f, max(0, color - threadHold + knee)), 2.0f) / (4 * knee * 0.00001f);
 
         result += color;
     }

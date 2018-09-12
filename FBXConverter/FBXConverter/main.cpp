@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <unordered_map>
 #include <Renderer/Mesh/Mesh.h>
-#include <Loader/MeshLoader.h>
+#include <IO/MeshLoader.h>
 #include <Renderer/Mesh/SkeletalMesh.h>
 #include <Animation/SkeletalAnimation.h>
 #include <Util/Type.h>
@@ -20,8 +20,8 @@ fbxsdk::FbxScene* scene;
 fbxsdk::FbxImporter* importer;
 
 bool animationLoop = true;
-int indexOffset = 0;
-int materialOffset = 0;
+uint32 indexOffset = 0;
+uint32 materialOffset = 0;
 std::vector<MeshVertex> publicVertex;
 std::vector<SKVertex> publicSKVertex;
 std::unordered_map<std::string, std::vector<int>> _nIndex;
@@ -36,7 +36,7 @@ bool isSkeletalMesh() {
 
 Vector3 CastFromFbxVector(const FbxVector4& fbxV){
 
-	return Vector3(fbxV[0], fbxV[1], fbxV[2]);
+	return Vector3(static_cast<float>(fbxV[0]), static_cast<float>(fbxV[1]), static_cast<float>(fbxV[2]));
 }
 
 Matrix4 castFromFbxMatrix(const fbxsdk::FbxMatrix & matrix) {
@@ -45,14 +45,14 @@ Matrix4 castFromFbxMatrix(const fbxsdk::FbxMatrix & matrix) {
 	//FBXMatrixから変換
 	for (int x = 0; x < 4; x++) {
 		for (int y = 0; y < 4; y++) {
-			result.m[y][x] = matrix.Get(y, x);
+			result.m[y][x] = static_cast<float>(matrix.Get(y, x));
 		}
 	}
 	return result;
 }
 
 Quaternion CastFromFbxQuaternion(const FbxQuaternion& fbxQ){
-	return Quaternion(fbxQ[0], fbxQ[1], fbxQ[2], fbxQ[3]);
+	return Quaternion(static_cast<float>(fbxQ[0]), static_cast<float>(fbxQ[1]), static_cast<float>(fbxQ[2]), static_cast<float>(fbxQ[3]));
 }
 
 bool checkAttribute(const fbxsdk::FbxNode * node, const FbxNodeAttribute::EType type){
@@ -132,7 +132,7 @@ std::unique_ptr<Skeleton> loadSkeleton() {
 
 		//スケールを単位化する行列を作成
 		const FbxDouble3 fScale = mesh->GetNode()->LclScaling.Get();
-		const Matrix4 mtxScale = Matrix4::scaleXYZ(1 / fScale[0], 1 / fScale[1], 1 / fScale[2]);
+		const Matrix4 mtxScale = Matrix4::scaleXYZ(static_cast<float>(1 / fScale[0]), static_cast<float>(1 / fScale[1]), static_cast<float>(1 / fScale[2]));
 
 		//ボーンを取得
 		FbxSkin* pSkinInfo = static_cast<FbxSkin*>(mesh->GetDeformer(0));
@@ -270,8 +270,7 @@ HRESULT loadLocalMesh(const int index) {
 	const FbxDouble3 translate = mesh->GetNode()->LclTranslation.Get();
 
 	//fbxsdkは右手座標系なので左手座標系に直す&メッシュのスケールを単位化
-	const Matrix4 scaleZ = Matrix4::scaleXYZ(1 / fScale[0], 1 / fScale[1], -1 / fScale[2]);
-	const Matrix4 scale = Matrix4::scaleXYZ(1 / fScale[0], 1 / fScale[1], 1 / fScale[2]);
+	const Matrix4 scaleZ = Matrix4::scaleXYZ(static_cast<float>(1 / fScale[0]), static_cast<float>(1 / fScale[1]), static_cast<float>(-1 / fScale[2]));
 	Matrix4 inv = castFromFbxMatrix(meshTransform);
 	inv = Matrix4::multiply(inv, Matrix4::rotateX(180));
 
@@ -329,7 +328,7 @@ HRESULT loadLocalMesh(const int index) {
 	}
 
 	materialOffset += materialCount;
-	indexOffset += vertices.size();
+	indexOffset += static_cast<uint32>(vertices.size());
 
 	//スケルタルメッシュでなければ頂点バッファを生成して終了
 	if (!isSkeletalMesh()) {
@@ -393,7 +392,7 @@ HRESULT loadLocalMesh(const int index) {
 					//ボーンのウェイトが割り当てられていないなら割り当て
 					if (0.0f == skVertices[v].boneWeight[k]) {
 						skVertices[v].boneIndex[k] = boneIndex;
-						skVertices[v].boneWeight[k] = pWeight[j];
+						skVertices[v].boneWeight[k] = static_cast<float>(pWeight[j]);
 
 						break;
 					}
@@ -411,7 +410,7 @@ HRESULT loadLocalMesh(const int index) {
 
 						if (pWeight[j] > minWeight) {
 							skVertices[v].boneIndex[minIndex] = boneIndex;
-							skVertices[v].boneWeight[minIndex] += pWeight[j];
+							skVertices[v].boneWeight[minIndex] += static_cast<float>(pWeight[j]);
 						}
 					}
 				}
@@ -453,13 +452,13 @@ void writeMaterialData(std::ofstream& fout, const char* meshType) {
 	fout.write(reinterpret_cast<const char*>(meshType), 2);
 
 	//マテリアル数
-	const int mCount = _nIndex.size();
+	const uint32 mCount = static_cast<uint32>(_nIndex.size());
 	fout.write(reinterpret_cast<const char*>(&mCount), 4);
 
 	for (auto&& m : _nIndex) {
 
 		//マテリアル名前とポリゴン数
-		const int fCount = m.second.size() / 3;
+		const uint32 fCount = static_cast<uint32>(m.second.size() / 3);
 
 		char materialName[32] = {};
 		memcpy(materialName, m.first.c_str(), m.first.length());
@@ -467,7 +466,7 @@ void writeMaterialData(std::ofstream& fout, const char* meshType) {
 		fout.write(reinterpret_cast<const char*>(&fCount), 4);
 
 		//インデックスの数とデータ本体
-		const int indexSize = m.second.size();
+		const uint32 indexSize = static_cast<uint32>(m.second.size());
 		fout.write(reinterpret_cast<const char*>(&indexSize), 4);
 		fout.write(reinterpret_cast<const char*>(m.second.data()), indexSize * sizeof(int));
 	}
@@ -535,7 +534,7 @@ void loadMesh(const std::string& meshFilePath) {
 		writeMaterialData(fout, "SM");
 
 		//頂点バッファサイズとデータ本体
-		binSize = sizeof(MeshVertex)*publicVertex.size();
+		binSize = static_cast<uint32>(sizeof(MeshVertex)*publicVertex.size());
 		vertexPtr = reinterpret_cast<char*>(publicVertex.data());
 
 		//メッシュのAABB境界を計算
@@ -546,7 +545,7 @@ void loadMesh(const std::string& meshFilePath) {
 		writeMaterialData(fout, "SK");
 
 		//頂点バッファサイズとデータ本体
-		binSize = sizeof(SKVertex)*publicSKVertex.size();
+		binSize = static_cast<uint32>(sizeof(SKVertex)*publicSKVertex.size());
 		vertexPtr = reinterpret_cast<char*>(publicSKVertex.data());
 
 		//メッシュのAABB境界を計算
@@ -569,7 +568,7 @@ void loadMesh(const std::string& meshFilePath) {
 	if (_type == MeshType::Skeletal) {
 
 		//スケルトン情報を書き込み
-		uint32 skeletonSize = _skeleton->boneMatrices.size();
+		auto skeletonSize = _skeleton->boneMatrices.size();
 		fout.write(reinterpret_cast<char*>(&skeletonSize), 4);
 		for (auto&& s : _skeleton->boneMatrices) {
 
@@ -624,14 +623,14 @@ void loadAnim(const std::string& meshFilePath){
 	assert(curve != nullptr&&"アニメーションカーブが見つかりません");
 
 	//キーフレームの間隔からアニメーションフレームレートを割り出す
-	const int keyCount = curve->KeyGetCount();
-	const int maxKeyIndex = keyCount - 1;
-	double keyFramerate = curve->KeyGetTime(maxKeyIndex).GetSecondDouble();
+	const uint32 keyCount = curve->KeyGetCount();
+	const uint32 maxKeyIndex = keyCount - 1;
+	float keyFramerate = static_cast<float>(curve->KeyGetTime(maxKeyIndex).GetSecondDouble());
 	keyFramerate /= maxKeyIndex;
 	keyFramerate = 1 / keyFramerate;
 
 	//アニメーションフレームレートを30fpsに強制した最大数に変換
-	const int keyCountPer30fps = keyCount * 30.0f / keyFramerate - 1;
+	const uint32 keyCountPer30fps = static_cast<uint32>(keyCount * 30 / keyFramerate - 1);
 
 	//FbxTime::EMode mode = FbxTime::ConvertFrameRateToTimeMode(keyFramerate);
 
@@ -650,7 +649,7 @@ void loadAnim(const std::string& meshFilePath){
 		count++;
 		std::cout << "変換中　" << childlen.size() << " / " << count << std::endl;
 
-		for(int i = 0; i < keyCountPer30fps; ++i){
+		for(uint32 i = 0; i < keyCountPer30fps; ++i){
 
 			//キーフレームを30fpsに変換
 			FbxTime period;
@@ -678,7 +677,7 @@ void loadAnim(const std::string& meshFilePath){
 	}
 
 	end = std::chrono::system_clock::now();  // 計測終了時間
-	double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
+	auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count();
 	loadTime += elapsed;
 
 	std::ofstream fout;
@@ -690,15 +689,15 @@ void loadAnim(const std::string& meshFilePath){
 	//  ios::addにすると追記になる
 
 	//最初にボーン数を書き込み
-	int boneSize = _animationBones.size();
+	uint32 boneSize = static_cast<uint32>(_animationBones.size());
 	fout.write(reinterpret_cast<char*>( &boneSize ), sizeof(int));
 
 	//ボーンのキーフレームの数を書き込み
-	int keySize = _animationBones[0].keys.size();
+	uint32 keySize = static_cast<uint32>(_animationBones[0].keys.size());
 	fout.write(reinterpret_cast<char*>( &keySize ), sizeof(int));
 
 	//30fps時のフレーム数
-	int keySizePer30fps = keyCountPer30fps;
+	uint32 keySizePer30fps = keyCountPer30fps;
 	fout.write(reinterpret_cast<char*>( &keySizePer30fps ), sizeof(int));
 
 	//各ボーンに存在するキーフレームを書き込み
@@ -736,7 +735,7 @@ int main(int argc, char *argv[]){
 
 			//メッシュパスを取得
 			std::string fullpath(fileName.c_str(), strlen(fileName.c_str()));
-			int path_i = fullpath.find_last_of(".") + 1;
+			auto path_i = fullpath.find_last_of(".") + 1;
 			std::string meshFilePath = fullpath.substr(0, path_i);
 
 			//マネージャーとインポーター生成

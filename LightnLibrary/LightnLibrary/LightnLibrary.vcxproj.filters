@@ -19,17 +19,8 @@
     <Filter Include="ソース ファイル\Animation">
       <UniqueIdentifier>{0b4d49c9-aad9-4b60-b167-5f5e2e4a7dd9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\Components">
-      <UniqueIdentifier>{5d108863-78a1-4ba7-9045-2a38fb3ebdd2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Loader">
-      <UniqueIdentifier>{940581c6-04cf-452e-8d09-062af8db88e1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\Renderer">
       <UniqueIdentifier>{6d016ba4-07e6-4d4b-847c-2c8fe5a247db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Renderer\Mesh">
-      <UniqueIdentifier>{2afd67e7-c3d3-445a-970a-1cb310fbfb88}</UniqueIdentifier>
     </Filter>
     <Filter Include="ソース ファイル\Util">
       <UniqueIdentifier>{271f44a5-299c-414f-921d-4e4bf0ef7c62}</UniqueIdentifier>
@@ -39,15 +30,6 @@
     </Filter>
     <Filter Include="ヘッダー ファイル\Renderer">
       <UniqueIdentifier>{1a2493a1-4388-4d92-969d-06c8bc81028e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Renderer\Mesh">
-      <UniqueIdentifier>{5c67bbb7-e285-4b63-a8a0-bf9bab420e0b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Components">
-      <UniqueIdentifier>{d9826c53-2caa-4dba-8a03-b15348638fa6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Loader">
-      <UniqueIdentifier>{c72e2118-62ea-465d-b78b-53fb15c77714}</UniqueIdentifier>
     </Filter>
     <Filter Include="ヘッダー ファイル\Actor">
       <UniqueIdentifier>{8f2c3d23-ce57-4a63-b3e0-aa9fead6f7e0}</UniqueIdentifier>
@@ -73,18 +55,6 @@
     <Filter Include="ヘッダー ファイル\ThirdParty">
       <UniqueIdentifier>{29ea77d8-db00-4fb7-9a2e-20742527dd8a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ソース ファイル\ThirdParty\ImGui">
-      <UniqueIdentifier>{9e76f269-2840-44ae-ba4c-8f2d7327cfd7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\ThirdParty\ImGui">
-      <UniqueIdentifier>{60eab168-cbb7-44fa-97b8-27353a2da6c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Renderer\Light">
-      <UniqueIdentifier>{8b9191b5-aa03-44c5-94ef-445549367461}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ヘッダー ファイル\Renderer\Light">
-      <UniqueIdentifier>{c45ad576-ebfa-49c2-a482-edf7baa7a300}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ヘッダー ファイル\Collider">
       <UniqueIdentifier>{376e6aba-ce13-4f12-ac72-b08c23f67151}</UniqueIdentifier>
     </Filter>
@@ -100,14 +70,44 @@
     <Filter Include="リソース ファイル\Pixel">
       <UniqueIdentifier>{e2a4415d-d5b2-46d6-a32e-5b566fa81fc7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ヘッダー ファイル\Renderer\PostEffect">
-      <UniqueIdentifier>{6c0119b4-e3e9-4caa-a7da-c9db5b409dd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ソース ファイル\Renderer\PostEffect">
-      <UniqueIdentifier>{62a7efe7-e436-4bd7-a473-5450ef342108}</UniqueIdentifier>
-    </Filter>
     <Filter Include="リソース ファイル\App">
       <UniqueIdentifier>{4536287a-1ce3-4a46-91dc-1ba540a49dcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Renderer\Mesh">
+      <UniqueIdentifier>{49ce3217-36fa-4595-a6b8-929af4cec3e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Renderer\Light">
+      <UniqueIdentifier>{847a5a3a-abe8-4e58-ad91-bd8ffc5acfa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Renderer\PostEffect">
+      <UniqueIdentifier>{16ca6965-0126-4b6f-af72-4d82a23ec37a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\ThirdParty\ImGui">
+      <UniqueIdentifier>{6a980ce1-8041-4b20-865d-c8cd95c56791}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Component">
+      <UniqueIdentifier>{d9826c53-2caa-4dba-8a03-b15348638fa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Component">
+      <UniqueIdentifier>{5d108863-78a1-4ba7-9045-2a38fb3ebdd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Renderer\Mesh">
+      <UniqueIdentifier>{43707b38-7017-4af9-b56c-24605437a320}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Renderer\Light">
+      <UniqueIdentifier>{d619d56d-6cb8-46b3-b64b-efd7448d7e29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Renderer\PostEffect">
+      <UniqueIdentifier>{f1ea01ce-db44-45c8-8ed8-3c2bc21cf2f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\ThirdParty\ImGui">
+      <UniqueIdentifier>{fe53a1ab-03b0-4ff6-85be-f9d800d676ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\IO">
+      <UniqueIdentifier>{335ed4d3-d877-4fc3-bb98-89335f711820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\IO">
+      <UniqueIdentifier>{0b5744d2-1a7f-4f8d-9de0-3e314f086cd7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -200,427 +200,242 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Engine\Actor\Actor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\SkeletalMeshActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\SkyboxActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\StaticMeshActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Animation\AnimationController.cpp">
-      <Filter>ソース ファイル\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Animation\AnimationManager.cpp">
-      <Filter>ソース ファイル\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\StaticMeshComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\AnimationControllerComponenth.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\Component.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\SkeletalMeshComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Loader\MeshLoader.cpp">
-      <Filter>ソース ファイル\Loader</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\GameRenderer.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\GraphicsResourceManager.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\RendererSettings.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\RendererUtil.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\SceneRendererManager.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Mesh\SkeletalMesh.cpp">
-      <Filter>ソース ファイル\Renderer\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Mesh\StaticMesh.cpp">
-      <Filter>ソース ファイル\Renderer\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Util\Input.cpp">
-      <Filter>ソース ファイル\Util</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Task\GameTask.cpp">
-      <Filter>ソース ファイル\Task</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Task\GameTaskManager.cpp">
-      <Filter>ソース ファイル\Task</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Scene\Scene.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Scene\SceneManager.cpp">
-      <Filter>ソース ファイル\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\GameEngine.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\CameraComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ThirdParty\imgui_impl_dx11.cpp">
-      <Filter>ソース ファイル\ThirdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ThirdParty\ImGui\imgui.cpp">
-      <Filter>ソース ファイル\ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ThirdParty\ImGui\imgui_demo.cpp">
-      <Filter>ソース ファイル\ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ThirdParty\ImGui\imgui_draw.cpp">
-      <Filter>ソース ファイル\ThirdParty\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\ThirdParty\imgui_impl_win32.cpp">
-      <Filter>ソース ファイル\ThirdParty</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Deferredbuffers.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\DirectionalLightComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\LightComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Light\DirectionalLight.cpp">
-      <Filter>ソース ファイル\Renderer\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Light\Light.cpp">
-      <Filter>ソース ファイル\Renderer\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\DirectionalLightActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\OrthoScreen.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Light\SkyLight.cpp">
-      <Filter>ソース ファイル\Renderer\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\SkyLightComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Light\PointLight.cpp">
-      <Filter>ソース ファイル\Renderer\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\PointLightComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\PointLightActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Light\SpotLight.cpp">
-      <Filter>ソース ファイル\Renderer\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\SpotLightComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\SpotLightActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\ImguiWindow.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Mesh\DebugGeometry.cpp">
-      <Filter>ソース ファイル\Renderer\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Collider\AABB.cpp">
-      <Filter>ソース ファイル\Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Components\StaticInstanceMeshComponent.cpp">
-      <Filter>ソース ファイル\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Mesh\StaticInstanceMesh.cpp">
-      <Filter>ソース ファイル\Renderer\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\StaticInstancedMeshRenderer.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Actor\StaticInstanceMeshActor.cpp">
-      <Filter>ソース ファイル\Actor</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\TileBasedLightCulling.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\Mesh\SkyBox.cpp">
-      <Filter>ソース ファイル\Renderer\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\GraphicsBuffers.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\PostEffect\SSAO.cpp">
-      <Filter>ソース ファイル\Renderer\PostEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Renderer\PostEffect\PostProcess.cpp">
-      <Filter>ソース ファイル\Renderer\PostEffect</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Animation\BlendSpace1D.cpp">
-      <Filter>ソース ファイル\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Animation\SkeletalAnimation.cpp">
-      <Filter>ソース ファイル\Animation</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Animation\BlendSpace2D.cpp">
-      <Filter>ソース ファイル\Animation</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Engine\Util\ComPtr.h">
-      <Filter>ヘッダー ファイル\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Util\Input.h">
-      <Filter>ヘッダー ファイル\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Util\RefPtr.h">
-      <Filter>ヘッダー ファイル\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Util\Singleton.h">
-      <Filter>ヘッダー ファイル\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\DrawSettings.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\GameRenderer.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\GraphicsResourceManager.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\RenderableEntity.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\RenderableObject.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\RendererSettings.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\RendererUtil.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\SceneRendererManager.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\Mesh.h">
-      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\SkeletalMesh.h">
-      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\Skeleton.h">
-      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\StaticMesh.h">
-      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Loader\BinaryLoader.h">
-      <Filter>ヘッダー ファイル\Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Loader\MeshLoader.h">
-      <Filter>ヘッダー ファイル\Loader</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\AnimationControllerComponenth.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\Component.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\SkeletalMeshComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\StaticMeshComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Animation\AnimationController.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Animation\AnimationManager.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\Actor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\SkeletalMeshActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\SkyboxActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\StaticMeshActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Scene\Scene.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Scene\SceneManager.h">
-      <Filter>ヘッダー ファイル\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Task\GameTask.h">
-      <Filter>ヘッダー ファイル\Task</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Task\GameTaskManager.h">
-      <Filter>ヘッダー ファイル\Task</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\GameEngine.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Util\Type.h">
-      <Filter>ヘッダー ファイル\Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\CameraComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\imgui_impl_dx11.h">
-      <Filter>ヘッダー ファイル\ThirdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\ImGui\imconfig.h">
-      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\ImGui\imgui.h">
-      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\ImGui\imgui_internal.h">
-      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\ImGui\stb_rect_pack.h">
-      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\ImGui\stb_textedit.h">
-      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\ImGui\stb_truetype.h">
-      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\ThirdParty\imgui_impl_win32.h">
-      <Filter>ヘッダー ファイル\ThirdParty</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\ImguiWindow.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Deferredbuffers.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\DirectionalLightComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\LightComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Light\DirectionalLight.h">
-      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Light\Light.h">
-      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\LightEntity.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\DirectionalLightActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\OrthoScreen.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Light\SkyLight.h">
-      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\SkyLightComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Light\PointLight.h">
-      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\PointLightComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\PointLightActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Light\SpotLight.h">
-      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\SpotLightComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\SpotLightActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\DebugGeometry.h">
-      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Collider\AABB.h">
-      <Filter>ヘッダー ファイル\Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\StaticInstancedMeshRenderer.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Components\StaticInstanceMeshComponent.h">
-      <Filter>ヘッダー ファイル\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\StaticInstanceMesh.h">
-      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Actor\StaticInstanceMeshActor.h">
-      <Filter>ヘッダー ファイル\Actor</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Renderer\TileBasedLightCulling.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Shader\Source\ShaderDefines.h">
       <Filter>リソース ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\Light\LightTypes.h">
-      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    <ClInclude Include="Include\Actor\Actor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\Mesh\SkyBox.h">
+    <ClInclude Include="Include\Actor\DirectionalLightActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Actor\PointLightActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Actor\SkeletalMeshActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Actor\SkyboxActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Actor\SpotLightActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Actor\StaticInstanceMeshActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Actor\StaticMeshActor.h">
+      <Filter>ヘッダー ファイル\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Animation\AnimationBase.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Animation\AnimationController.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Animation\AnimationManager.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Animation\BlendSpace1D.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Animation\BlendSpace2D.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Animation\SkeletalAnimation.h">
+      <Filter>ヘッダー ファイル\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Collider\AABB.h">
+      <Filter>ヘッダー ファイル\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\AnimationControllerComponenth.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\CameraComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\Component.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\DirectionalLightComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\LightComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\PointLightComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\SkeletalMeshComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\SkyLightComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\SpotLightComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\StaticInstanceMeshComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Component\StaticMeshComponent.h">
+      <Filter>ヘッダー ファイル\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Camera.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Deferredbuffers.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\DrawSettings.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\GameRenderer.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\GraphicsBuffers.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\GraphicsResourceManager.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\ImguiWindow.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\LightEntity.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\OrthoScreen.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\RenderableEntity.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\RenderableObject.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\RendererSettings.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\RendererUtil.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\SceneRendererManager.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\StaticInstancedMeshRenderer.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\TileBasedLightCulling.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Mesh\DebugGeometry.h">
       <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\Camera.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
+    <ClInclude Include="Include\Renderer\Mesh\Mesh.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\GraphicsBuffers.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
+    <ClInclude Include="Include\Renderer\Mesh\SkeletalMesh.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\PostEffect\SSAO.h">
+    <ClInclude Include="Include\Renderer\Mesh\Skeleton.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Mesh\SkyBox.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Mesh\StaticInstanceMesh.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Mesh\StaticMesh.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Light\DirectionalLight.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Light\Light.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Light\LightTypes.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Light\PointLight.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Light\SkyLight.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Light\SpotLight.h">
+      <Filter>ヘッダー ファイル\Renderer\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\PostEffect\PostProcess.h">
       <Filter>ヘッダー ファイル\Renderer\PostEffect</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Renderer\PostEffect\PostProcess.h">
+    <ClInclude Include="Include\Renderer\PostEffect\SSAO.h">
       <Filter>ヘッダー ファイル\Renderer\PostEffect</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Animation\AnimationBase.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
+    <ClInclude Include="Include\Scene\Scene.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Animation\BlendSpace1D.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
+    <ClInclude Include="Include\Scene\SceneManager.h">
+      <Filter>ヘッダー ファイル\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Animation\SkeletalAnimation.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
+    <ClInclude Include="Include\Task\GameTask.h">
+      <Filter>ヘッダー ファイル\Task</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Animation\BlendSpace2D.h">
-      <Filter>ヘッダー ファイル\Animation</Filter>
+    <ClInclude Include="Include\Task\GameTaskManager.h">
+      <Filter>ヘッダー ファイル\Task</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\imgui_impl_dx11.h">
+      <Filter>ヘッダー ファイル\ThirdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\imgui_impl_win32.h">
+      <Filter>ヘッダー ファイル\ThirdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\ImGui\imconfig.h">
+      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\ImGui\imgui.h">
+      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\ImGui\imgui_internal.h">
+      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\ImGui\stb_rect_pack.h">
+      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\ImGui\stb_textedit.h">
+      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ThirdParty\ImGui\stb_truetype.h">
+      <Filter>ヘッダー ファイル\ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Util\ComPtr.h">
+      <Filter>ヘッダー ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Util\Input.h">
+      <Filter>ヘッダー ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Util\RefPtr.h">
+      <Filter>ヘッダー ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Util\Singleton.h">
+      <Filter>ヘッダー ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Util\Type.h">
+      <Filter>ヘッダー ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Util\Util.h">
+      <Filter>ヘッダー ファイル\Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\GameEngine.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\IO\BinaryLoader.h">
+      <Filter>ヘッダー ファイル\IO</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\IO\MeshLoader.h">
+      <Filter>ヘッダー ファイル\IO</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -630,5 +445,190 @@
     <None Include="Shader\Source\PhysicallyBasedRendering.hlsl">
       <Filter>リソース ファイル</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Actor\Actor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\DirectionalLightActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\PointLightActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\SkeletalMeshActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\SkyboxActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\SpotLightActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\StaticInstanceMeshActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Actor\StaticMeshActor.cpp">
+      <Filter>ソース ファイル\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Animation\AnimationController.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Animation\AnimationManager.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Animation\BlendSpace1D.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Animation\BlendSpace2D.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Animation\SkeletalAnimation.cpp">
+      <Filter>ソース ファイル\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Collider\AABB.cpp">
+      <Filter>ソース ファイル\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\AnimationControllerComponenth.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\CameraComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\Component.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\DirectionalLightComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\LightComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\PointLightComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\SkeletalMeshComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\SkyLightComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\SpotLightComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\StaticInstanceMeshComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Component\StaticMeshComponent.cpp">
+      <Filter>ソース ファイル\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Deferredbuffers.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\GameRenderer.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\GraphicsBuffers.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\GraphicsResourceManager.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\ImguiWindow.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\OrthoScreen.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RendererSettings.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\RendererUtil.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\SceneRendererManager.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\StaticInstancedMeshRenderer.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\TileBasedLightCulling.cpp">
+      <Filter>ソース ファイル\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Mesh\DebugGeometry.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Mesh\SkeletalMesh.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Mesh\SkyBox.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Mesh\StaticInstanceMesh.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Mesh\StaticMesh.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Light\DirectionalLight.cpp">
+      <Filter>ソース ファイル\Renderer\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Light\Light.cpp">
+      <Filter>ソース ファイル\Renderer\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Light\PointLight.cpp">
+      <Filter>ソース ファイル\Renderer\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Light\SkyLight.cpp">
+      <Filter>ソース ファイル\Renderer\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Light\SpotLight.cpp">
+      <Filter>ソース ファイル\Renderer\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\PostEffect\PostProcess.cpp">
+      <Filter>ソース ファイル\Renderer\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\PostEffect\SSAO.cpp">
+      <Filter>ソース ファイル\Renderer\PostEffect</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\Scene.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Scene\SceneManager.cpp">
+      <Filter>ソース ファイル\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Task\GameTask.cpp">
+      <Filter>ソース ファイル\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Task\GameTaskManager.cpp">
+      <Filter>ソース ファイル\Task</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\imgui_impl_dx11.cpp">
+      <Filter>ソース ファイル\ThirdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\imgui_impl_win32.cpp">
+      <Filter>ソース ファイル\ThirdParty</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\ImGui\imgui.cpp">
+      <Filter>ソース ファイル\ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\ImGui\imgui_demo.cpp">
+      <Filter>ソース ファイル\ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ThirdParty\ImGui\imgui_draw.cpp">
+      <Filter>ソース ファイル\ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Util\Input.cpp">
+      <Filter>ソース ファイル\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameEngine.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\IO\MeshLoader.cpp">
+      <Filter>ソース ファイル\IO</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

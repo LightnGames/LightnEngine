@@ -1,5 +1,11 @@
-#include <iostream>
+#include <Windows.h>
+#include <GameEngine.h>
 
-void main() {
-	system("pause");
+int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR szStr, int iCmdShow) {
+
+	GameEngine* engine = new GameEngine();
+	engine->initialize(hInst);
+	engine->run();
+
+	return 0;
 }

@@ -63,10 +63,11 @@ void CS(uint3 dispatchId : SV_GroupID, uint3 groupId : SV_GroupThreadID)
         return;
     }
 
-    for (int i = 0; i < 4; ++i)
+    uint i = 0;
+    for (i = 0; i < 4; ++i)
     {
         int d = i;
-        float3 N = planes[d].normal;
+        float3 N = planes[d].normal.xyz;
         float3 P = GetPositivePoint(meshInfo, N);
         //P = PositionFromMatrix(meshInfo.mtxWorld);
         float3 PA = P - planes[d].position.xyz;
@@ -82,7 +83,7 @@ void CS(uint3 dispatchId : SV_GroupID, uint3 groupId : SV_GroupThreadID)
     uint originalValue;
     instanceMatrixBuffer.Append(meshInfo.mtxWorld);
 
-    for (int i = 0; i < materialCount; ++i)
+    for (i = 0; i < materialCount; ++i)
     {
         instanceDrawListBuffer.InterlockedAdd(((drawListOffset + i) * 20) + 4, 1, originalValue);
     }

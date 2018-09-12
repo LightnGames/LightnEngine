@@ -41,12 +41,12 @@ Quaternion Quaternion::euler(const Vector3 & euler, bool valueIsRadian) {
 	const Vector3 rad = valueIsRadian ? euler : (euler * M_PI / 180);
 	Quaternion q;
 
-	double cy = cos(rad.z * 0.5);
-	double sy = sin(rad.z * 0.5);
-	double cr = cos(rad.x * 0.5);
-	double sr = sin(rad.x * 0.5);
-	double cp = cos(rad.y * 0.5);
-	double sp = sin(rad.y * 0.5);
+	float cy = cos(rad.z * 0.5f);
+	float sy = sin(rad.z * 0.5f);
+	float cr = cos(rad.x * 0.5f);
+	float sr = sin(rad.x * 0.5f);
+	float cp = cos(rad.y * 0.5f);
+	float sp = sin(rad.y * 0.5f);
 
 	q.w = cy * cr * cp + sy * sr * sp;
 	q.x = cy * sr * cp - sy * cr * sp;
@@ -131,22 +131,22 @@ Vector3 Quaternion::toEulerAngle() const {
 
 	Vector3 result;
 	// roll (x-axis rotation)
-	double sinr = +2.0 * (w * x + y * z);
-	double cosr = +1.0 - 2.0 * (x * x + y * y);
+	float sinr = +2.0f * (w * x + y * z);
+	float cosr = +1.0f - 2.0f * (x * x + y * y);
 	result.x = atan2(sinr, cosr);
 
 	// pitch (y-axis rotation)
-	double sinp = +2.0 * (w * y - z * x);
-	if (fabs(sinp) >= 1) {
-		result.y = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+	float sinp = +2.0f * (w * y - z * x);
+	if (fabs(sinp) >= 1.0f) {
+		result.y = copysign(M_PI / 2.0f, sinp); // use 90 degrees if out of range
 	}
 	else {
 		result.y = asin(sinp);
 	}
 
 	// yaw (z-axis rotation)
-	double siny = +2.0 * (w * z + x * y);
-	double cosy = +1.0 - 2.0 * (y * y + z * z);
+	float siny = +2.0f * (w * z + x * y);
+	float cosy = +1.0f - 2.0f * (y * y + z * z);
 	result.z = atan2(siny, cosy);
 
 	return result;

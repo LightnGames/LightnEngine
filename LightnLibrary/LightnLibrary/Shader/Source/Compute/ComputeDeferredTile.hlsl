@@ -78,8 +78,8 @@ SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
     data.roughness = roughnessMetallic.r;
     data.metallic = roughnessMetallic.g;
 
-    data.albedo = pow(data.albedo, 2.2f);
-    data.roughness = pow(data.roughness, 2.2f);
+    data.albedo = pow(abs(data.albedo), 2.2f);
+    data.roughness = pow(abs(data.roughness), 2.2f);
 
     data.normal = DecodeNormal(data.normal);
 
@@ -148,12 +148,12 @@ void CS(uint3 groupId : SV_GroupID,
     GroupMemoryBarrierWithGroupSync();
     float pix = position.z;
 
-    if (pix > sMaxZ)
+    if (pix > asfloat(sMaxZ))
     {
         InterlockedMax(sMaxZ, asuint(pix));
     }
 
-    if (pix < sMinZ)
+    if (pix < asfloat(sMinZ))
     {
         InterlockedMin(sMinZ, asuint(pix));
     }
@@ -194,7 +194,8 @@ void CS(uint3 groupId : SV_GroupID,
     }
 
     //6平面と交差しているポイントライトを集める
-    for (uint lightIndex = groupIndex; lightIndex < totalPointLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
+    uint lightIndex = 0;
+    for (lightIndex = groupIndex; lightIndex < totalPointLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
     {
         PointLight light = pointLights[lightIndex];
                 
@@ -219,7 +220,7 @@ void CS(uint3 groupId : SV_GroupID,
     }
 
     //6平面と交差しているスポットライトを集める
-    for (uint lightIndex = groupIndex; lightIndex < totalSpotLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
+    for (lightIndex = groupIndex; lightIndex < totalSpotLights; lightIndex += COMPUTE_SHADER_TILE_GROUP_SIZE)
     {
         SpotLight light = spotLights[lightIndex];
                 
@@ -267,7 +268,7 @@ void CS(uint3 groupId : SV_GroupID,
         eyeDirection.xy = (viewPosition.xy * 2.0f) - 1.0f;
         eyeDirection.z = viewPosition.z;
         eyeDirection = normalize(eyeDirection);
-        eyeDirection = mul(float4(eyeDirection, 1), cameraRotate);
+        eyeDirection = mul(float4(eyeDirection, 1), cameraRotate).xyz;
 
         //lit += float4(numSpotLights, 0, 0, 1.0f);
 
@@ -280,7 +281,7 @@ void CS(uint3 groupId : SV_GroupID,
                 float lightDistance = length(light.positionView - viewPosition);
                 float3 L = normalize(light.positionView - viewPosition);
 
-                L = mul(float4(L, 1), cameraRotate);
+                L = mul(float4(L, 1), cameraRotate).xyz;
                 L = normalize(L);
 
                 float dotNL = saturate(dot(normal, L));
@@ -315,7 +316,7 @@ void CS(uint3 groupId : SV_GroupID,
                 float lightDistance = length(light.positionView - viewPosition);
                 float3 L = normalize(light.positionView - viewPosition);
 
-                L = mul(float4(L, 1), cameraRotate);
+                L = mul(float4(L, 1), cameraRotate).xyz;
                 L = normalize(L);
 
                 float dotNL = saturate(dot(normal, L));

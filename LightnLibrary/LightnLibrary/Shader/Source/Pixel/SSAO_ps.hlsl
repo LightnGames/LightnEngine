@@ -45,6 +45,7 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
     float NormalBias = 0.0f;
     float d = 0.0f;
 
+    [unroll]
     for (int i = 0; i < SSAO_SAMPLE_COUNT; ++i)
     {
         float2 offset = samples[i];

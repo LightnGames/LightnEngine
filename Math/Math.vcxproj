@@ -75,7 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(MSBuildProjectDirectory)\lib</OutDir>
+    <OutDir>$(MSBuildProjectDirectory)\lib\</OutDir>
     <TargetExt>.lib</TargetExt>
     <IntDir>$(Platform)\$(Configuration)_Intermdiate\</IntDir>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>
@@ -85,7 +85,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(MSBuildProjectDirectory)\lib</OutDir>
+    <OutDir>$(MSBuildProjectDirectory)\lib\</OutDir>
     <TargetExt>.lib</TargetExt>
     <IntDir>$(Platform)\$(Configuration)_Intermdiate\</IntDir>
     <TargetName>$(ProjectName)_$(Configuration)</TargetName>

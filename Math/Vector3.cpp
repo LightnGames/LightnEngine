@@ -8,16 +8,6 @@ const Vector3 Vector3::forward { 0.0f, 0.0f, 1.0f };
 const Vector3 Vector3::zero{ 0.0f, 0.0f, 0.0f };
 const Vector3 Vector3::one{ 1.0f, 1.0f, 1.0f };
 
-char * Vector3::toString() const{
-	char str[3];
-
-	str[0] = x;
-	str[1] = y;
-	str[2] = z;
-
-	return str;
-}
-
 Vector3 Vector3::cross(const Vector3 & v1, const Vector3 & v2){
 
 	Vector3 result = {

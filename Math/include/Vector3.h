@@ -12,8 +12,6 @@ struct Vector3{
 	Vector3(const float xyz) :x{ xyz }, y{ xyz }, z{ xyz }{
 	}
 
-	char* toString() const;
-
 	//äOêœ
 	static Vector3 cross(const Vector3& v1, const Vector3& v2);
 

@@ -1,8 +1,10 @@
 #include "../ShaderDefines.h"
 #include "../TileBasedCullingInclude.hlsl"
 
+#define BLOOM_SAMPLE 4
+
 Texture2D HDRSource : register(t0);
-texture2D GaussianDownSamples[4] : register(t1);
+texture2D GaussianDownSamples[BLOOM_SAMPLE] : register(t1);
 Texture2D DepthTex : register(t5);
 Texture2D Normal : register(t6);
 Texture2D SSAO : register(t7);
@@ -49,11 +51,15 @@ float4 PS(PS_INPUT input) : SV_Target
 
     //ブルーム適用
     float4 bloom = 0;
-    bloom += FetchColor(GaussianDownSamples[0], input.Tex);
-    bloom += FetchColor(GaussianDownSamples[1], input.Tex);
-    bloom += FetchColor(GaussianDownSamples[2], input.Tex);
-    bloom += FetchColor(GaussianDownSamples[3], input.Tex);
-    bloom /= 4.0f;
+
+    [unroll]
+    for (uint i = 0; i < BLOOM_SAMPLE; i++)
+    {
+        Texture2D tex = GaussianDownSamples[i];
+        bloom += FetchColor(tex, input.Tex);
+    }
+
+    bloom /= BLOOM_SAMPLE;
 
     bloom.a = 1.0f;
     texColor += bloom;
@@ -63,7 +69,7 @@ float4 PS(PS_INPUT input) : SV_Target
     float ExposureBias = 2.0f;
     float3 color = Uncharted2Tonemap(ExposureBias * texColor.xyz);
     //color = texColor.xyz;
-    float3 retColor = pow(color, 1 / 2.2);
+    float3 retColor = pow(abs(color), 1 / 2.2);
 
     float ssao = SSAO.Sample(samLinear, input.Tex).r;
     retColor.xyz = lerp(retColor.xyz, float3(0, 0, 0), ssao*0.6f);

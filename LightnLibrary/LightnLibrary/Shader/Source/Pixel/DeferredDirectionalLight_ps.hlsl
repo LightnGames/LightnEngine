@@ -16,6 +16,7 @@ cbuffer DirectionalLightInput : register(b0){
     float4 cameraPosition;
 };
 
+[earlydepthstencil]
 float4 PS(PS_INPUT_SCREEN input) : SV_Target
 {
     //return float4(input.Tex, 0, 1);
@@ -36,8 +37,8 @@ float4 PS(PS_INPUT_SCREEN input) : SV_Target
     //スペキュラエイリアシング防止。。。TAAが実装されたら消す
     roughness = max(roughness, 0.5f);
 
-    baseColor.xyz = pow(baseColor.xyz, 2.2f);
-    roughness = pow(saturate(roughness), 2.2f);
+    baseColor.xyz = pow(abs(baseColor.xyz), 2.2f);
+    roughness = pow(abs(roughness), 2.2f);
 
 	//clip(length(normal)-0.1);
 
