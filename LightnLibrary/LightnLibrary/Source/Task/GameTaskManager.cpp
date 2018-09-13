@@ -11,5 +11,7 @@ void GameTaskManager::initialize(const RefPtr<GameTask>& rootTask) {
 }
 
 void GameTaskManager::updateTasks(float deltaTime) {
-	_sceneTask->update(deltaTime);
+	if (_sceneTask.get() != nullptr) {
+		_sceneTask->update(deltaTime);
+	}
 }

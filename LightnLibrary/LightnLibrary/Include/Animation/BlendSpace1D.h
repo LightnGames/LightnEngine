@@ -44,7 +44,14 @@ public:
 	//アニメーションのフレームキャッシュを取得
 	const std::vector<TransformQ>& getFrameCache() const override;
 
-	void setBlendSpace(float value) { _blendSpace = value; }
+	void setBlendSpace(float value, float animationTime = 0.0f) {
+		if (approximately(animationTime, 0.0f)) {
+			_blendSpace = value;
+		}
+		else {
+			_blendSpace = lerp(animationTime, _blendSpace, value);
+		}
+	}
 	float getBlendSpace() const { return _blendSpace; }
 
 

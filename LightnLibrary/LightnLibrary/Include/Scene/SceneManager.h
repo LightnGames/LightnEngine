@@ -1,10 +1,9 @@
 #pragma once
 
+#include <Task/GameTaskManager.h>
 #include <Util/Singleton.h>
 #include <memory>
-
-class Scene;
-class GameTaskManager;
+#include <Scene/Scene.h>
 
 class SceneManager :public Singleton<SceneManager>{
 
@@ -17,6 +16,14 @@ public:
 	void initialize();
 
 	void updateScene(float deltaTime);
+
+	template<class T>
+	RefPtr<T> createScene() {
+		_scene = std::make_unique<T>();
+		_scene->start();
+		_gameTaskManager->initialize(_scene.get());
+		return (T*)_scene.get();
+	}
 
 private:
 

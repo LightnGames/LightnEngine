@@ -39,7 +39,16 @@ public:
 	//アニメーションのフレームキャッシュを取得
 	const std::vector<TransformQ>& getFrameCache() const override;
 
-	void setBlendSpace(float valueX, float valueY) { _blendSpaceX = valueX; _blendSpaceY = valueY; }
+	void setBlendSpace(float valueX, float valueY, float animationTime = 0.0f) {
+		if (approximately(animationTime, 0.0f)) {
+			_blendSpaceX = valueX;
+			_blendSpaceY = valueY;
+		}
+		else {
+			_blendSpaceX = lerp(animationTime, _blendSpaceX, valueX);
+			_blendSpaceY = lerp(animationTime, _blendSpaceY, valueY);
+		}
+	}
 	Vector2 getBlendSpace() const { return Vector2(_blendSpaceX, _blendSpaceY); }
 
 private:

@@ -18,6 +18,7 @@ struct Quaternion{
 
 	//オイラー角からクォータニオンを生成
 	static Quaternion euler(const Vector3& euler, bool valueIsRadian = false);
+	static Quaternion euler(float pitch, float yaw, float roll, bool valueIsRadian = false);
 
 	//ベクトルをクォータニオンで回転
 	static Vector3 rotVector(const Quaternion& q, const Vector3& v);

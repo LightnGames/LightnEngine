@@ -21,6 +21,8 @@ public:
 
 	void updateGame();
 
+	RefPtr<SceneManager> getSceneManager() { return _sceneManager.get(); }
+
 private:
 
 	std::unique_ptr<GameRenderer> _gameRenderer;

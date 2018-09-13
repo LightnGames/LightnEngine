@@ -44,17 +44,17 @@ public:
 	//アニメーションを更新
 	void update(float deltaTime);
 
-	float debugTime = -1.0f;
-	bool applyRootMotion = false;
-	int rootMotionIndex = 0;
-	TransformQ rootMotionVelocity;
-
 	void setRootMotionBone(const std::string& boneName);
 
 	template<class T>
 	RefPtr<T> getAnimation(const std::string& name) {
 		return static_cast<T*>(_playList[name].get());
 	}
+
+	TransformQ getRootMotionVelocity() const { return rootMotionVelocity; }
+
+	float debugTime = -1.0f;
+	bool applyRootMotion = false;
 
 private:
 
@@ -66,7 +66,9 @@ private:
 
 	float _blendingTime;
 	float _blendTime;
+	uint32 rootMotionIndex = 0;
 
 	RefPtr<Avator> _avator;
+	TransformQ rootMotionVelocity;
 
 };

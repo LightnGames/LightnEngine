@@ -7,9 +7,14 @@ class Scene :public GameTask{
 public:
 
 	Scene();
-
-	virtual void update(float deltaTime);
-
 	~Scene();
+
+	virtual void start() override {};
+
+	virtual void update(float deltaTime) override;
+
+protected:
+
+	void loadSceneAsset(const std::string& fileName);
 
 };

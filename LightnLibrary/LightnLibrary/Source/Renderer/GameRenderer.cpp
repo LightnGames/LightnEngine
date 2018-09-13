@@ -20,6 +20,7 @@
 #include <Renderer/PostEffect/PostProcess.h>
 #include <Renderer/GraphicsBuffers.h>
 #include <Renderer/PostEffect/SSAO.h>
+#include <cassert>
 
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
@@ -140,6 +141,8 @@ void GameRenderer::draw() {
 
 	//カメラ情報をセットアップ
 	auto& mainCamera = CameraComponent::mainCamera;
+
+	assert(mainCamera.get() != nullptr&&"カメラがシーンに存在しません");
 	drawSettings->camera = mainCamera->camera();
 	drawSettings->camera->mtxView = mainCamera->cameraMatrix().inverse();
 	drawSettings->camera->position = mainCamera->getWorldPosition();

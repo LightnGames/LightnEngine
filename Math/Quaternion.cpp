@@ -37,16 +37,21 @@ Quaternion Quaternion::slerp(const Quaternion q1, const Quaternion & q2, float t
 }
 
 Quaternion Quaternion::euler(const Vector3 & euler, bool valueIsRadian) {
+	return Quaternion::euler(euler.x, euler.y, euler.z, valueIsRadian);
+}
 
-	const Vector3 rad = valueIsRadian ? euler : (euler * M_PI / 180);
+Quaternion Quaternion::euler(float pitch, float yaw, float roll, bool valueIsRadian) {
+	pitch = valueIsRadian ? pitch : (pitch * M_PI / 180.0f);
+	yaw   = valueIsRadian ? yaw   : (yaw   * M_PI / 180.0f);
+	roll  = valueIsRadian ? roll  : (roll  * M_PI / 180.0f);
 	Quaternion q;
 
-	float cy = cos(rad.z * 0.5f);
-	float sy = sin(rad.z * 0.5f);
-	float cr = cos(rad.x * 0.5f);
-	float sr = sin(rad.x * 0.5f);
-	float cp = cos(rad.y * 0.5f);
-	float sp = sin(rad.y * 0.5f);
+	float cy = cos(roll * 0.5f);
+	float sy = sin(roll * 0.5f);
+	float cr = cos(pitch * 0.5f);
+	float sr = sin(pitch * 0.5f);
+	float cp = cos(yaw * 0.5f);
+	float sp = sin(yaw * 0.5f);
 
 	q.w = cy * cr * cp + sy * sr * sp;
 	q.x = cy * sr * cp - sy * cr * sp;
