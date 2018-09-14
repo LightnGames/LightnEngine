@@ -37,9 +37,9 @@ public:
 		heromat.push_back("M_Hero_Crossbow.mat");
 
 		sk->setUpSkeletalMesh("Hero/Hero.mesh", heromat);
-		sk->setActorPosition({ 15, 0.1f, 0 });
+		sk->setActorPosition({ 15, 0.2f, 0 });
 		sk->setActorScale({ 0.015f, 0.015f, 0.015f });
-		sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler( 0, 90, 0 ));
+		sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler(0, 90, 0));
 
 		auto& anim = sk->_animationComponent->_animationController;
 		auto blend = anim->addAnimationList<BlendSpace2D>("MovementBlend");
@@ -111,9 +111,10 @@ public:
 		const Quaternion cameraRotateYaw = Quaternion::euler( 0, sk->_camera->getWorldRotation().getYaw(), 0 , true);
 		const Vector3 differenceInputLocalRotate = Quaternion::rotVector(skLocalRotateInverse*cameraRotateYaw, inputVelocity);
 		const Vector3 differenceInputRotateWorld = Quaternion::rotVector(skLocalRotateInverse*Quaternion::euler( 0, 90, 0 )*cameraRotateYaw, inputVelocity);
-		
+		auto& anim = sk->_animationComponent->_animationController;
+
 		float turnAmount = std::atan2(differenceInputLocalRotate.z, -differenceInputLocalRotate.x);
-		auto blendAnim = sk->_animationComponent->_animationController->getAnimation<BlendSpace2D>("MovementBlend");
+		auto blendAnim = anim->getAnimation<BlendSpace2D>("MovementBlend");
 
 		if (inputVelocity.length() < 0.01f) {
 			turnAmount = 0;
@@ -122,7 +123,7 @@ public:
 		blendAnim->setBlendSpace(turnAmount, differenceInputRotateWorld.z, 0.2f);
 
 		//回転にルートモーションを適用してしまうと90度補正しないとZを正面に向かない
-		const TransformQ rootMotionVelocity = sk->_animationComponent->_animationController->getRootMotionVelocity();
+		const TransformQ rootMotionVelocity = anim->getRootMotionVelocity();
 		const Quaternion forwardRotate = sk->_skeletalMeshComponent->getWorldRotation()*Quaternion::euler( 0, -90, 0 );
 		const Vector3 moveVelocity = Quaternion::rotVector(forwardRotate, rootMotionVelocity.position)*sk->getActorScale().x;
 

@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App", "App\App.vcxproj", "{
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math", "..\Math\Math.vcxproj", "{E6D9A99E-B33F-42FE-B22E-B9319BC6C795}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FBXConverter", "..\FBXConverter\FBXConverter\FBXConverter.vcxproj", "{EC33B6E8-E35A-4263-8CA5-529A6FFB45E5}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LightnLibrary", "..\LightnLibrary\LightnLibrary\LightnLibrary.vcxproj", "{49FF0BAB-5AB6-46EF-A442-4D1878DE9E88}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{E6D9A99E-B33F-42FE-B22E-B9319BC6C795}.Debug|x64.Build.0 = Debug|x64
 		{E6D9A99E-B33F-42FE-B22E-B9319BC6C795}.Release|x64.ActiveCfg = Release|x64
 		{E6D9A99E-B33F-42FE-B22E-B9319BC6C795}.Release|x64.Build.0 = Release|x64
-		{EC33B6E8-E35A-4263-8CA5-529A6FFB45E5}.Debug|x64.ActiveCfg = Debug|x64
-		{EC33B6E8-E35A-4263-8CA5-529A6FFB45E5}.Debug|x64.Build.0 = Debug|x64
-		{EC33B6E8-E35A-4263-8CA5-529A6FFB45E5}.Release|x64.ActiveCfg = Release|x64
-		{EC33B6E8-E35A-4263-8CA5-529A6FFB45E5}.Release|x64.Build.0 = Release|x64
 		{49FF0BAB-5AB6-46EF-A442-4D1878DE9E88}.Debug|x64.ActiveCfg = Debug|x64
 		{49FF0BAB-5AB6-46EF-A442-4D1878DE9E88}.Debug|x64.Build.0 = Debug|x64
 		{49FF0BAB-5AB6-46EF-A442-4D1878DE9E88}.Release|x64.ActiveCfg = Release|x64
