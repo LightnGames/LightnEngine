@@ -22,7 +22,7 @@ void StaticInstanceMeshComponent::setUpMesh(
 	uint32 meshDrawOffset,
 	uint32 matrixBufferOffset) {
 
-	_staticInstanceMesh = GraphicsResourceManager::instance().loadStaticInstanceMesh(filePath, matFiles, matrices, meshDrawOffset, matrixBufferOffset);
+	_staticInstanceMesh = GraphicsResourceManager::instance().loadStaticInstanceMesh<StaticInstanceMesh>(filePath, matFiles, matrices, meshDrawOffset, matrixBufferOffset);
 }
 
 void StaticInstanceMeshComponent::draw(const DrawSettings & drawSettings)
@@ -39,4 +39,8 @@ void StaticInstanceMeshComponent::drawDepth(const DrawSettings & drawSettings)
 
 RefPtr<const LocalMesh> StaticInstanceMeshComponent::meshInfo() const {
 	return _staticInstanceMesh->meshInfo();
+}
+
+void TerrainComponent::setUpMesh(const std::string & filePath, const std::vector<std::string>& matFiles, const std::vector<Matrix4>& matrices, uint32 meshDrawOffset, uint32 matrixBufferOffset) {
+	_staticInstanceMesh = GraphicsResourceManager::instance().loadStaticInstanceMesh<TerrainMesh>(filePath, matFiles, matrices, meshDrawOffset, matrixBufferOffset).cast<StaticInstanceMesh>();
 }

@@ -24,7 +24,13 @@ public:
 
 	RefPtr<const LocalMesh> meshInfo() const;
 
-private:
+protected:
 
 	RefPtr<StaticInstanceMesh> _staticInstanceMesh;
+};
+
+class TerrainComponent :public StaticInstanceMeshComponent {
+public:
+	virtual void setUpMesh(const std::string& filePath, const std::vector<std::string>& matFiles,
+		const std::vector<Matrix4>& matrices, uint32 meshDrawOffset, uint32 matrixBufferOffset) override;
 };

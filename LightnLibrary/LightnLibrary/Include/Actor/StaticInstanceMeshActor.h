@@ -20,3 +20,13 @@ public:
 	RefPtr<StaticInstanceMeshComponent> _staticInstanceMeshComponent;
 
 };
+
+class TerrainActor :public StaticInstanceMeshActor {
+
+public:
+
+	void setUpTask() override {
+		_staticInstanceMeshComponent = addComponent<TerrainComponent>().cast<StaticInstanceMeshComponent>();
+	}
+
+};

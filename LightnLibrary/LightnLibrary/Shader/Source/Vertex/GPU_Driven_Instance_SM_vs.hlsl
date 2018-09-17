@@ -1,5 +1,8 @@
 StructuredBuffer<matrix> instanceMatrices : register(t0);
 
+#include "../DeferredGeometry.hlsl"
+
+
 cbuffer ConstBuff : register(b0)
 {
     matrix mtxProj;
@@ -16,29 +19,7 @@ cbuffer MeshDrawOffset : register(b1)
     uint padding3;
 }
 
-//頂点ごとのデータ
-struct VS_INPUT
-{
-    float3 Pos : POSITION;
-    float2 Tex : TEXCOORD0;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Binormal : BINORMAL;
-    uint InstanceId : SV_InstanceID;
-};
-
-
-struct PS_INPUT
-{
-    float4 Pos : SV_POSITION;
-    float2 Tex : TEXCOORD0;
-    float3 Normal : NORMAL;
-    float3 Tangent : TANGENT;
-    float3 Binormal : BINORMAL;
-    float3 Eye : POSITION0;
-};
-
-PS_INPUT VS(VS_INPUT input)
+PS_INPUT VS(VS_INSTANCED_INPUT input)
 {
     PS_INPUT output;
 

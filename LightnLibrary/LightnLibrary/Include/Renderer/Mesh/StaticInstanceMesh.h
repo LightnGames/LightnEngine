@@ -19,13 +19,14 @@ class StaticInstanceMesh :public RenderableObject {
 public:
 
 	StaticInstanceMesh(const LocalMesh& meshes);
+	virtual ~StaticInstanceMesh() {}
 
-	void setUp(ComPtr<ID3D11Device> device, const std::vector<Matrix4>& matrices, uint32 meshDrawOffset, uint32 matrixBufferOffset);
+	virtual void setUp(ComPtr<ID3D11Device> device, const std::vector<Matrix4>& matrices, uint32 meshDrawOffset, uint32 matrixBufferOffset);
 
 	//ÉÅÉbÉVÉÖÇï`âÊ
-	void draw(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData);
+	virtual void draw(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData);
 
-	void drawDepth(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData);
+	virtual void drawDepth(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData);
 
 	RefPtr<MaterialData> material(int index) const;
 
@@ -49,4 +50,17 @@ protected:
 
 	std::vector<AABB> _cullingBoxes;
 
+};
+
+class TerrainMesh :public StaticInstanceMesh {
+public:
+	TerrainMesh(const LocalMesh& meshes) :StaticInstanceMesh(meshes) {}
+
+	void setUp(ComPtr<ID3D11Device> device, const std::vector<Matrix4>& matrices, uint32 meshDrawOffset, uint32 matrixBufferOffset) override;
+	virtual void draw(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData) override;
+
+	virtual void drawDepth(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData) override;
+
+	ComPtr<ID3D11Texture2D> terrainTex;
+	ComPtr<ID3D11ShaderResourceView> terrainSRV;
 };

@@ -15,6 +15,8 @@ class SkyLight;
 class PointLight;
 class SpotLight;
 
+#include <IO/MeshLoader.h>
+
 using Texture = ComPtr<ID3D11ShaderResourceView>;
 using RenderableObjectPtr = std::unique_ptr<RenderableObject>;
 
@@ -35,12 +37,36 @@ public:
 	//描画オブジェクトを取得
 	RefPtr<RenderableObject> loadRenderableObject(const std::string& assetId, const std::vector<std::string>& matFiles);
 
-	RefPtr<StaticInstanceMesh> loadStaticInstanceMesh(
+	template<class T>
+	RefPtr<T> loadStaticInstanceMesh(
 		const std::string& assetId,
 		const std::vector<std::string>& matFiles,
 		const std::vector<Matrix4>& matrices,
-		uint32 meshId,
-		uint32 matrixBufferOffset);
+		uint32 meshDrawOffset,
+		uint32 matrixBufferOffset){
+
+		std::string fileAndMatNames = assetId;
+		for (auto&& m : matFiles) {
+			fileAndMatNames += "_" + m;
+		}
+
+		//すでにロードされていたらキャッシュインスタンスを返す
+		if (_renderableObjects.count(fileAndMatNames) > 0) {
+			return static_cast<T*>(_renderableObjects[fileAndMatNames].get());
+		}
+
+		std::unique_ptr<T> result;
+
+		//メッシュローダーでロード開始
+		MeshLoader meshLoader(_device, _deviceContext);
+		meshLoader.load(assetId, matFiles);
+
+		result = std::make_unique<T>(meshLoader.getMeshes());
+		result->setUp(_device, matrices, meshDrawOffset, matrixBufferOffset);
+		_renderableObjects[fileAndMatNames] = std::move(result);
+
+		return static_cast<T*>(_renderableObjects[fileAndMatNames].get());
+	}
 
 	//ディレクショナルライトを取得
 	RefPtr<DirectionalLight> getDirectionalLight() const;
@@ -55,7 +81,7 @@ public:
 	RefPtr<SpotLight> getSpotLight() const;
 
 	//シンプルサンプラを取得
-	const ComPtr<ID3D11SamplerState>& simpleSamplerState() const;
+	ComPtr<ID3D11SamplerState> simpleSamplerState() const;
 
 	ID3D11PixelShader* simpleMaskedDepthShader();
 	ID3D11RasterizerState* rasterState(D3D11_CULL_MODE mode);
@@ -71,6 +97,7 @@ private:
 	std::unique_ptr<SpotLight> _spotLight;
 
 	ComPtr<ID3D11Device> _device;
+	ComPtr<ID3D11DeviceContext> _deviceContext;
 	ComPtr<ID3D11SamplerState> _simpleSampler;
 	ComPtr<ID3D11PixelShader> _simpleMaskedDepthShader;
 	ComPtr<ID3D11RasterizerState> _dualRaster;

@@ -198,6 +198,9 @@
     <FxCompile Include="Shader\Source\App\Grass_vs.hlsl">
       <Filter>リソース ファイル\App</Filter>
     </FxCompile>
+    <FxCompile Include="Shader\Source\Vertex\Terrain_vs.hlsl">
+      <Filter>リソース ファイル\Vertex</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader\Source\ShaderDefines.h">

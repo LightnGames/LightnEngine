@@ -37,7 +37,7 @@ public:
 		heromat.push_back("M_Hero_Crossbow.mat");
 
 		sk->setUpSkeletalMesh("Hero/Hero.mesh", heromat);
-		sk->setActorPosition({ 15, 0.2f, 0 });
+		sk->setActorPosition({ 230, 0.1f, 170 });
 		sk->setActorScale({ 0.015f, 0.015f, 0.015f });
 		sk->_skeletalMeshComponent->setLocalRotation(Quaternion::euler(0, 90, 0));
 
@@ -65,7 +65,7 @@ public:
 		GameTask::update(deltaTime);
 
 		//“ü—Í‚ðŽæ“¾
-		const float turnSpeed = 0.05f;
+		const float turnSpeed = 0.1f;
 		static float turnVelocityYaw = 0;
 		static float turnVelocityPitch = 0;
 		static Vector3 inputVelocity = Vector3::zero;

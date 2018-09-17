@@ -31,7 +31,9 @@ PS_INPUT VS ( VS_INPUT input )
 
     //í∏ì_ç¿ïW
 
-    output.PosH = mul(float4(input.Pos, 1), mtxView);
+    float4x4 rotateView = mtxView;
+    rotateView._41_42_43 = 0;
+    output.PosH = mul(float4(input.Pos, 1), rotateView);
     output.PosH = mul(output.PosH, mtxProj);
     output.PosL = input.Pos;
 

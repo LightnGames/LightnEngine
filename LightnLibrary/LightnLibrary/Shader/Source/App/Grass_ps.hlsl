@@ -25,12 +25,18 @@ PS_OUTPUT PS(PS_INPUT input)
     baseColor.xyz = lerp(float3(0.3f, 0.3f, 0.2f), baseColor.xyz, baseColor.a);
     //baseColor.a = 1;
 
+    float flipNormal = clamp(dot(input.Normal, -input.Eye) * 100000, -1, 1);
+    input.Normal *= flipNormal;
+    input.Tangent *= flipNormal;
+    input.Binormal *= flipNormal;
+
 	//ノーマルマップをワールドノーマルに適用
     normal = (normal * 2.0f) - 1.0f;
     normal = (normal.x * input.Tangent) + (normal.y * input.Binormal) + (normal.z * input.Normal);
     normal = normalize(normal);
     normal = lerp(input.Normal, normal, baseColor.a);
 
+    //output.albedo = float4(flipNormal, 0, 0, 1);
     //roughness = 1;
     output.albedo = baseColor;
     output.normal = float4(EncodeNormal(normal), 1);

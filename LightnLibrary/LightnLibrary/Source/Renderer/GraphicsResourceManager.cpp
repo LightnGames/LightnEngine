@@ -1,6 +1,5 @@
 #include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/RenderableObject.h>
-#include <IO/MeshLoader.h>
 #include <Renderer/GameRenderer.h>
 #include <Renderer/Mesh/StaticMesh.h>
 #include <Renderer/Mesh/SkeletalMesh.h>
@@ -24,6 +23,7 @@ GraphicsResourceManager::~GraphicsResourceManager() {
 void GraphicsResourceManager::initialize(ComPtr<ID3D11Device> device) {
 	
 	_device = device;
+	_deviceContext = GameRenderer::instance().deviceContext();
 
 	D3D11_SAMPLER_DESC sampDesc;
 	ZeroMemory(&sampDesc, sizeof(sampDesc));
@@ -158,37 +158,6 @@ RefPtr<RenderableObject> GraphicsResourceManager::loadRenderableObject(const std
 	return resultPtr;
 }
 
-RefPtr<StaticInstanceMesh> GraphicsResourceManager::loadStaticInstanceMesh(
-	const std::string& assetId,
-	const std::vector<std::string>& matFiles,
-	const std::vector<Matrix4>& matrices,
-	uint32 meshDrawOffset,
-	uint32 matrixBufferOffset) {
-	
-	std::string fileAndMatNames = assetId;
-	for (auto&& m : matFiles) {
-		fileAndMatNames += "_" + m;
-	}
-
-	//すでにロードされていたらキャッシュインスタンスを返す
-	if (_renderableObjects.count(fileAndMatNames) > 0) {
-		return static_cast<StaticInstanceMesh*>(_renderableObjects[fileAndMatNames].get());
-	}
-
-	auto& gameRenderer = GameRenderer::instance();
-	std::unique_ptr<StaticInstanceMesh> result;
-
-	//メッシュローダーでロード開始
-	MeshLoader meshLoader(gameRenderer.device(), gameRenderer.deviceContext());
-	meshLoader.load(assetId, matFiles);
-
-	result = std::make_unique<StaticInstanceMesh>(meshLoader.getMeshes());
-	result->setUp(gameRenderer.device(), matrices, meshDrawOffset, matrixBufferOffset);
-	_renderableObjects[fileAndMatNames] = std::move(result);
-	
-	return static_cast<StaticInstanceMesh*>(_renderableObjects[fileAndMatNames].get());
-}
-
 RefPtr<DirectionalLight> GraphicsResourceManager::getDirectionalLight() const {
 	return _directionalLight.get();
 }
@@ -208,7 +177,7 @@ RefPtr<SpotLight> GraphicsResourceManager::getSpotLight() const
 	return _spotLight.get();
 }
 
-const ComPtr<ID3D11SamplerState>& GraphicsResourceManager::simpleSamplerState() const{
+ComPtr<ID3D11SamplerState> GraphicsResourceManager::simpleSamplerState() const{
 	return _simpleSampler;
 }
 

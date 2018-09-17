@@ -82,16 +82,16 @@ void Scene::loadSceneAsset(const std::string & fileName) {
 	}
 
 	//StaticInstanceMeshのセットアップ
-	uint32 maxDrawCount = 0;
+	uint32 meshDrawOffset = 0;
 	std::vector<uint32> indexList;
 
 	for (auto&& ms : instanceMatrices) {
 
-		const std::vector<Matrix4>& m = ms.second.matrices;
+		const auto& m = ms.second.matrices;
 
 		auto mesh = makeChild<StaticInstanceMeshActor>();
 		mesh->_staticInstanceMeshComponent->setUpMesh(ms.second.objectName,
-			ms.second.matFiles, m, static_cast<uint32>(indexList.size()), maxDrawCount);
+			ms.second.matFiles, m, static_cast<uint32>(indexList.size()), meshDrawOffset);
 
 		for (auto&& m : mesh->_staticInstanceMeshComponent->meshInfo()->materialSlots) {
 			indexList.push_back(m->faceCount * 3);
@@ -102,7 +102,7 @@ void Scene::loadSceneAsset(const std::string & fileName) {
 			a = 0;
 		}
 
-		maxDrawCount += static_cast<uint32>(m.size() + a);
+		meshDrawOffset += static_cast<uint32>(m.size() + a);
 	}
 
 	int32 lightCount;
@@ -142,10 +142,36 @@ void Scene::loadSceneAsset(const std::string & fileName) {
 		}
 	}
 
+	std::vector<Matrix4> terrainMatrices;
+	uint32 meshCount = 500/10;
+	for (uint32 x = 0; x < meshCount; ++x) {
+		for (uint32 z = 0; z < meshCount; ++z) {
+			terrainMatrices.emplace_back(Matrix4::scaleXYZ(0.1f, 0.1f, 0.1f).multiply(Matrix4::translateXYZ(x * 10, 0, z * 10)));
+		}
+	}
+
+
+	std::vector<std::string> terrainMats;
+	terrainMats.emplace_back("M_Terrain.mat");
+	auto mesh = makeChild<TerrainActor>();
+	mesh->_staticInstanceMeshComponent->setUpMesh("Environment/SM_Plane.mesh",
+		terrainMats, terrainMatrices, static_cast<uint32>(indexList.size()), meshDrawOffset);
+
+	for (auto&& m : mesh->_staticInstanceMeshComponent->meshInfo()->materialSlots) {
+		indexList.push_back(m->faceCount * 3);
+	}
+
+	uint32 a = 4 - (terrainMatrices.size() % 4);
+	if (a == 4) {
+		a = 0;
+	}
+
+	meshDrawOffset += static_cast<uint32>(terrainMatrices.size() + a);
+
 	fin.close();
 
 
-	SceneRendererManager::instance().setUpStaticInstanceMeshRendere(maxDrawCount, indexList);
+	SceneRendererManager::instance().setUpStaticInstanceMeshRendere(meshDrawOffset, indexList);
 }
 
 

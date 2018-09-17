@@ -102,7 +102,8 @@
       <AdditionalDependencies>d3d11.lib;d3dCompiler.lib;DirectXTex_Debug.lib;Math_Debug.lib;LightnLibrary_Debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>"$(MSBuildToolsPath)\msbuild" "$(SolutionDir)../LightnLibrary\LightnLibrary.sln" /p:configuration=$(Configuration)</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,7 +135,8 @@
       <AdditionalDependencies>d3d11.lib;d3dCompiler.lib;DirectXTex_Release.lib;Math_Release.lib;LightnLibrary_Release.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>"$(MSBuildToolsPath)\msbuild" "$(SolutionDir)../LightnLibrary\LightnLibrary.sln" /p:configuration=$(Configuration)</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

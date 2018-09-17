@@ -35,23 +35,23 @@ public:
 		file.read(buffer.get(), length);
 		file.close();
 
-		length_ = length;
-		bin_ = std::move(buffer);
+		_length = length;
+		_bin = std::move(buffer);
 	}
 
 	//バイナリデータを取得
 	void* data() {
-		return bin_.get();
+		return _bin.get();
 	}
 
 	//バイナリデータの長さを取得
 	int size() {
-		return length_;
+		return _length;
 	}
 
 private:
 
-	int length_;
-	std::unique_ptr<char> bin_;
+	int _length;
+	std::unique_ptr<char> _bin;
 
 };
