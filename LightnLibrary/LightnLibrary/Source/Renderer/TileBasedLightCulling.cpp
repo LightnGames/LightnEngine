@@ -1,6 +1,7 @@
 #include <Renderer/TileBasedLightCulling.h>
 #include <Renderer/RendererUtil.h>
-#include <Renderer/RendererSettings.h>
+#include <Renderer/Mesh/SkyBox.h>
+#include <Renderer/SceneRendererManager.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/Deferredbuffers.h>
 #include <Renderer/GraphicsResourceManager.h>
@@ -109,10 +110,7 @@ void TileBasedLightCulling::draw(const DrawSettings& settings,
 	deviceContext->CSSetShaderResources(0, 4, resource);
 	deviceContext->CSSetShaderResources(4, 1, _pointLightListSRV.GetAddressOf());
 	deviceContext->CSSetShaderResources(5, 1, _spotLightListSRV.GetAddressOf());
-
-	if (RendererSettings::skyBox.Get() != nullptr) {
-		deviceContext->CSSetShaderResources(6, 1, RendererSettings::skyBox.GetAddressOf());
-	}
+	deviceContext->CSSetShaderResources(6, 1, SceneRendererManager::instance().getSkyBox()->getSkyBoxCubemapResource().GetAddressOf());
 
 	deviceContext->CSSetConstantBuffers(0, 1, _perFrameConstantBuffer.GetAddressOf());
 	deviceContext->CSSetUnorderedAccessViews(0, 1, _frameBufferUAV.GetAddressOf(), 0);

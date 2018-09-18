@@ -4,6 +4,7 @@
 #include <fstream>
 #include <algorithm>
 #include <iostream>
+#include <cassert>
 
 SkeletalAnimation::SkeletalAnimation() :
 	_maxFrame{ 0 }, _playRate{ 1.0f }, _plaingFrame{ 0.0f }, _beforePlaingFrame{ 0.0f } {
@@ -24,9 +25,7 @@ void SkeletalAnimation::load(const std::string & fileName) {
 	//  ios::in は読み込み専用  ios::binary はバイナリ形式
 	std::ifstream fin(fileName, std::ios::in | std::ios::binary);
 
-	if (!fin) {
-		std::cout << "ファイル " << fileName << " が開けません";
-	}
+	assert(!fin.fail() && "アニメーションファイルが開けません");
 
 	//ボーンサイズ
 	uint32 boneSize = 0;
@@ -202,7 +201,7 @@ const std::vector<TransformQ>& SkeletalAnimation::getFrameCache() const {
 Matrix4 SkeletalAnimation::getRootMotionMatrixInverse(uint32 rootMotionIndex) const {
 	TransformQ rootMotionTransform = _frameCache[rootMotionIndex];
 	clampRootMotionTransform(rootMotionTransform);
-	Matrix4 mtxRootMotionBlend = Matrix4::createWorldMatrix(rootMotionTransform.position,
+	const Matrix4 mtxRootMotionBlend = Matrix4::createWorldMatrix(rootMotionTransform.position,
 		rootMotionTransform.rotation, Vector3::one).inverse();
 
 	return mtxRootMotionBlend;

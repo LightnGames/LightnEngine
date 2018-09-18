@@ -655,7 +655,6 @@
     <ClInclude Include="Include\Renderer\GraphicsBuffers.h" />
     <ClInclude Include="Include\Renderer\GraphicsResourceManager.h" />
     <ClInclude Include="Include\Renderer\ImguiWindow.h" />
-    <ClInclude Include="Include\Renderer\LightEntity.h" />
     <ClInclude Include="Include\Renderer\Light\DirectionalLight.h" />
     <ClInclude Include="Include\Renderer\Light\Light.h" />
     <ClInclude Include="Include\Renderer\Light\LightTypes.h" />
@@ -669,12 +668,11 @@
     <ClInclude Include="Include\Renderer\Mesh\SkyBox.h" />
     <ClInclude Include="Include\Renderer\Mesh\StaticInstanceMesh.h" />
     <ClInclude Include="Include\Renderer\Mesh\StaticMesh.h" />
+    <ClInclude Include="Include\Renderer\Mesh\TerrainMesh.h" />
     <ClInclude Include="Include\Renderer\OrthoScreen.h" />
     <ClInclude Include="Include\Renderer\PostEffect\PostProcess.h" />
     <ClInclude Include="Include\Renderer\PostEffect\SSAO.h" />
-    <ClInclude Include="Include\Renderer\RenderableEntity.h" />
-    <ClInclude Include="Include\Renderer\RenderableObject.h" />
-    <ClInclude Include="Include\Renderer\RendererSettings.h" />
+    <ClInclude Include="Include\Renderer\RenderableInterface.h" />
     <ClInclude Include="Include\Renderer\RendererUtil.h" />
     <ClInclude Include="Include\Renderer\SceneRendererManager.h" />
     <ClInclude Include="Include\Renderer\StaticInstancedMeshRenderer.h" />
@@ -749,10 +747,10 @@
     <ClCompile Include="Source\Renderer\Mesh\SkyBox.cpp" />
     <ClCompile Include="Source\Renderer\Mesh\StaticInstanceMesh.cpp" />
     <ClCompile Include="Source\Renderer\Mesh\StaticMesh.cpp" />
+    <ClCompile Include="Source\Renderer\Mesh\TerrainMesh.cpp" />
     <ClCompile Include="Source\Renderer\OrthoScreen.cpp" />
     <ClCompile Include="Source\Renderer\PostEffect\PostProcess.cpp" />
     <ClCompile Include="Source\Renderer\PostEffect\SSAO.cpp" />
-    <ClCompile Include="Source\Renderer\RendererSettings.cpp" />
     <ClCompile Include="Source\Renderer\RendererUtil.cpp" />
     <ClCompile Include="Source\Renderer\SceneRendererManager.cpp" />
     <ClCompile Include="Source\Renderer\StaticInstancedMeshRenderer.cpp" />

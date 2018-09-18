@@ -2,7 +2,7 @@
 
 #include <Component/Component.h>
 #include <Renderer/Mesh/StaticMesh.h>
-#include <Renderer/RenderableEntity.h>
+#include <Renderer/RenderableInterface.h>
 
 class StaticMeshComponent :public Component, public RenderableEntity {
 

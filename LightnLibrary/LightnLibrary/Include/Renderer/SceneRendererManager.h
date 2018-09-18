@@ -71,6 +71,8 @@ public:
 	//StaticInstancedMeshRenderer‚ğİ’èE‰Šú‰»
 	void setUpStaticInstanceMeshRendere(uint32 maxDrawCount, const std::vector<uint32>& indexList);
 
+	RefPtr<SkyBox> getSkyBox();
+
 private:
 
 	RenderableEntityList _renderableEntities;

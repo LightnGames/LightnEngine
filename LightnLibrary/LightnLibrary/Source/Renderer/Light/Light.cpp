@@ -4,7 +4,6 @@
 #include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/GameRenderer.h>
 #include <Renderer/DrawSettings.h>
-#include <Renderer/RendererSettings.h>
 #include <Component/LightComponent.h>
 
 Light::Light() {

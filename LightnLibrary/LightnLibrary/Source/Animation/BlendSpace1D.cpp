@@ -55,9 +55,9 @@ void BlendSpace1D::computeBones(int32 rootMotionIndex){
 			firstAnimationIndex = i;
 		}
 
-		const auto upIndex = animNum - i - 1;
+		const uint32 upIndex = animNum - i - 1;
 		if (_anims[upIndex].second >= _blendSpace) {
-			secondAnimationIndex = static_cast<uint32>(upIndex);
+			secondAnimationIndex = upIndex;
 		}
 	}
 
@@ -76,9 +76,8 @@ void BlendSpace1D::computeBones(int32 rootMotionIndex){
 	}
 
 	//ブレンドアニメーション更新
-	_firstAnim->computeBones(rootMotionIndex);
-	if ((firstAnimationIndex != secondAnimationIndex)) {
-		_secondAnim->computeBones(rootMotionIndex);
+	for (auto&& a : _anims) {
+		a.first.computeBones(rootMotionIndex);
 	}
 
 

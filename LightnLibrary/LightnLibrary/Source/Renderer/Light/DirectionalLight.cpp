@@ -6,7 +6,7 @@
 
 #include <Renderer/SceneRendererManager.h>
 #include <Renderer/DrawSettings.h>
-#include <Renderer/RenderableEntity.h>
+#include <Renderer/RenderableInterface.h>
 #include <Renderer/GameRenderer.h>
 #include <Renderer/StaticInstancedMeshRenderer.h>
 #include <ThirdParty/ImGui/imgui.h>

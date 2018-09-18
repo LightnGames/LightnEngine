@@ -1,8 +1,9 @@
 #include <Renderer/Light/SkyLight.h>
 #include <Renderer/RendererUtil.h>
 #include <Renderer/DrawSettings.h>
-#include <Renderer/RendererSettings.h>
 #include <ThirdParty/ImGui/imgui.h>
+#include <Renderer/SceneRendererManager.h>
+#include <Renderer/Mesh/SkyBox.h>
 
 void SkyLight::initialize(ComPtr<ID3D11Device>& device) {
 	RendererUtil::createConstantBuffer(_lightBuffer, sizeof(SkyLightType), device);
@@ -33,10 +34,7 @@ void SkyLight::draw(const DrawSettings & settings, RefPtr<LightComponent>& light
 	deviceContext->UpdateSubresource(_lightBuffer.Get(), 0, 0, &lightBuffer, 0, 0);
 	deviceContext->PSSetConstantBuffers(0, 1, _lightBuffer.GetAddressOf());
 
-
-	if (RendererSettings::skyBox.Get() != nullptr) {
-		deviceContext->PSSetShaderResources(4, 1, RendererSettings::skyBox.GetAddressOf());
-	}
+	deviceContext->PSSetShaderResources(4, 1, SceneRendererManager::instance().getSkyBox()->getSkyBoxCubemapResource().GetAddressOf());
 
 	Light::draw(settings, lightComponent);
 }

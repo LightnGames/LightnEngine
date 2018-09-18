@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Renderer/RenderableObject.h>
+#include <Renderer/RenderableInterface.h>
 #include <Util/Util.h>
 
 #include <d3d11.h>

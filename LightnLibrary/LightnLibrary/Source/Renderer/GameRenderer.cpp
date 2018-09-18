@@ -1,12 +1,11 @@
 #include <Renderer/GameRenderer.h>
 #include <Renderer/SceneRendererManager.h>
 #include <Renderer/DrawSettings.h>
-#include <Renderer/RenderableEntity.h>
+#include <Renderer/RenderableInterface.h>
 #include <Renderer/Deferredbuffers.h>
 #include <Renderer/OrthoScreen.h>
 #include <LMath.h>
 #include <Renderer/ImguiWindow.h>
-#include <Renderer/LightEntity.h>
 #include <Renderer/Mesh/DebugGeometry.h>
 #include <Renderer/Mesh/SkyBox.h>
 #include <Renderer/StaticInstancedMeshRenderer.h>
@@ -25,7 +24,7 @@
 std::unique_ptr<DrawSettings> drawSettings;
 template<> GameRenderer* Singleton<GameRenderer>::mSingleton = 0;
 
-GameRenderer::GameRenderer() :_width{ 1280 }, _height{ 720 },
+GameRenderer::GameRenderer() :_width{ 1600 }, _height{ 900 },
 _device{ nullptr },
 _deviceContext{ nullptr },
 _swapChain{ nullptr },
@@ -108,8 +107,7 @@ HRESULT GameRenderer::initDirect3D() {
 	D3D_FEATURE_LEVEL featureLevels = D3D_FEATURE_LEVEL_11_0;
 
 	//スワップチェイン初期化
-	//D3D11_CREATE_DEVICE_DEBUG
-	HRESULT hr = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, 0, &featureLevels
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(0, D3D_DRIVER_TYPE_HARDWARE, 0, 0/*D3D11_CREATE_DEVICE_DEBUG*/, &featureLevels
 		, 1, D3D11_SDK_VERSION, &sd, _swapChain.ReleaseAndGetAddressOf(), _device.ReleaseAndGetAddressOf(), nullptr, _deviceContext.ReleaseAndGetAddressOf());
 
 	if (FAILED(hr)) {

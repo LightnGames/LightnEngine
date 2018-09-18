@@ -81,12 +81,9 @@ void BlendSpace2D::computeBones(int32 rootMotionIndex) {
 	}
 
 	//ブレンドアニメーション更新
-	_firstBlendSpace->setBlendSpace(_blendSpaceX);
-	_firstBlendSpace->computeBones(rootMotionIndex);
-
-	if (firstAnimationIndex != secondAnimationIndex) {
-		_secondBlendSpace->setBlendSpace(_blendSpaceX);
-		_secondBlendSpace->computeBones(rootMotionIndex);
+	for (auto&& a : _blends) {
+		a.first.setBlendSpace(_blendSpaceX);
+		a.first.computeBones(rootMotionIndex);
 	}
 
 	const auto& firstFrameCaches = _firstBlendSpace->getFrameCache();

@@ -20,31 +20,32 @@ HRESULT StaticInstancedMeshRenderer::initialize(ComPtr<ID3D11Device> device, uin
 	HRESULT hr;
 
 	//インスタンスMatrixバッファ
-	D3D11_BUFFER_DESC cbM;
-	ZeroMemory(&cbM, sizeof(cbM));
-	cbM.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	cbM.ByteWidth = sizeof(Matrix4)*maxDrawCount;
-	cbM.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	cbM.StructureByteStride = sizeof(Matrix4);
+	D3D11_BUFFER_DESC bufferDesc;
+	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+	bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+	bufferDesc.ByteWidth = sizeof(Matrix4)*maxDrawCount;
+	bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	bufferDesc.StructureByteStride = sizeof(Matrix4);
 
-	hr = device->CreateBuffer(&cbM, nullptr, _data->instanceMatrixBuffer.ReleaseAndGetAddressOf());
+	hr = device->CreateBuffer(&bufferDesc, nullptr, _data->instanceMatrixBuffer.ReleaseAndGetAddressOf());
 
 	//インスタンスMatrixアンオーダードアクセスビュー
-	D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDescM;
-	ZeroMemory(&UAVDescM, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC));
-	UAVDescM.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	UAVDescM.Buffer.FirstElement = 0;
-	UAVDescM.Format = DXGI_FORMAT_UNKNOWN;
-	UAVDescM.Buffer.NumElements = maxDrawCount;
-	UAVDescM.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	ZeroMemory(&uavDesc, sizeof(uavDesc));
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.Buffer.NumElements = maxDrawCount;
+	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
 
-	hr = device->CreateUnorderedAccessView(_data->instanceMatrixBuffer.Get(), &UAVDescM, _data->instanceMatrixUAV.ReleaseAndGetAddressOf());
+	hr = device->CreateUnorderedAccessView(_data->instanceMatrixBuffer.Get(), &uavDesc, _data->instanceMatrixUAV.ReleaseAndGetAddressOf());
 	hr = device->CreateShaderResourceView(_data->instanceMatrixBuffer.Get(), 0, _data->instanceMatrixSRV.ReleaseAndGetAddressOf());
 	
 	_meshTypeCount = static_cast<uint32>(indexList.size());
 
+	uint32 drawListLength = indexList.size() * 5;
 	std::vector<uint32> drawListInfo;
-	drawListInfo.reserve(indexList.size() * 5);
+	drawListInfo.reserve(drawListLength);
 
 	for (auto&& m : indexList) {
 		drawListInfo.emplace_back(m);
@@ -55,28 +56,24 @@ HRESULT StaticInstancedMeshRenderer::initialize(ComPtr<ID3D11Device> device, uin
 	}
 
 	//インスタンスドロー用のバッファ Indirectフラグも立てる
-	D3D11_BUFFER_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-
-	desc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-	desc.ByteWidth = static_cast<UINT>(sizeof(uint32) * 5 * indexList.size());
-	desc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS | D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
-
+	ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+	bufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+	bufferDesc.ByteWidth = static_cast<UINT>(sizeof(uint32) * drawListLength);
+	bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS | D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;
 	D3D11_SUBRESOURCE_DATA initDataI;
 	initDataI.pSysMem = drawListInfo.data();
 
-	hr = device->CreateBuffer(&desc, &initDataI, _data->indtsnceDrawListBuffer.ReleaseAndGetAddressOf());
+	hr = device->CreateBuffer(&bufferDesc, &initDataI, _data->indtsnceDrawListBuffer.ReleaseAndGetAddressOf());
 
 	//インスタンスドロー用アンオーダードアクセスビュー
-	D3D11_UNORDERED_ACCESS_VIEW_DESC UAVDesc;
-	ZeroMemory(&UAVDesc, sizeof(D3D11_UNORDERED_ACCESS_VIEW_DESC));
-	UAVDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	UAVDesc.Buffer.FirstElement = 0;
-	UAVDesc.Format = DXGI_FORMAT_R32_TYPELESS;
-	UAVDesc.Buffer.NumElements = static_cast<UINT>(5 * indexList.size());
-	UAVDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+	ZeroMemory(&uavDesc, sizeof(uavDesc));
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+	uavDesc.Buffer.NumElements = static_cast<UINT>(drawListLength);
+	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
 
-	hr = device->CreateUnorderedAccessView(_data->indtsnceDrawListBuffer.Get(), &UAVDesc, _data->instanceDrawListUAV.ReleaseAndGetAddressOf());
+	hr = device->CreateUnorderedAccessView(_data->indtsnceDrawListBuffer.Get(), &uavDesc, _data->instanceDrawListUAV.ReleaseAndGetAddressOf());
 
 
 	RendererUtil::createComputeShader("GPUCulling.cso", _data->cullingShader, device);
@@ -146,17 +143,17 @@ void StaticInstancedMeshRenderer::clearCullingBufferShadow(ComPtr<ID3D11DeviceCo
 
 void StaticInstancedMeshRenderer::calculateFrustumPlanes(Plane planes[6], const Camera& camera) {
 
-	const Quaternion viewRotate = camera.rotation;
-	const Vector3 viewPosition = camera.position;
+	const Quaternion& viewRotate = camera.rotation;
+	const Vector3& viewPosition = camera.position;
+	const Matrix4& mtxProj = camera.mtxProj;
+	const float& farClip = camera.farClip;
+	const float& nearClip = camera.nearClip;
 	const Vector3 forward = Quaternion::rotVector(viewRotate, Vector3::forward);
-	const Matrix4 mtxProj = camera.mtxProj;
-	const float farClip = camera.farClip;
-	const float nearClip = camera.nearClip;
 
 	// 0: Left, 1: Right, 2: Bottm, 3: Top
-	float fov = radianFromDegree(camera.fov);
-	float sin = std::sin(fov);
-	float cos = std::cos(fov);
+	const float fov = radianFromDegree(camera.fov);
+	const float sin = std::sin(fov);
+	const float cos = std::cos(fov);
 	planes[0].normal = Quaternion::rotVector(viewRotate, Vector3( cos,0, sin));
 	planes[1].normal = Quaternion::rotVector(viewRotate, Vector3(-cos,0, sin));
 	planes[2].normal = Quaternion::rotVector(viewRotate, Vector3(0, sin, cos));

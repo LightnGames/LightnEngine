@@ -305,19 +305,7 @@
     <ClInclude Include="Include\Renderer\ImguiWindow.h">
       <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Renderer\LightEntity.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Renderer\OrthoScreen.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Renderer\RenderableEntity.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Renderer\RenderableObject.h">
-      <Filter>ヘッダー ファイル\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Renderer\RendererSettings.h">
       <Filter>ヘッダー ファイル\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="Include\Renderer\RendererUtil.h">
@@ -440,6 +428,12 @@
     <ClInclude Include="Include\IO\MeshLoader.h">
       <Filter>ヘッダー ファイル\IO</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Renderer\RenderableInterface.h">
+      <Filter>ヘッダー ファイル\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Renderer\Mesh\TerrainMesh.h">
+      <Filter>ヘッダー ファイル\Renderer\Mesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Source\DeferredLight.hlsl">
@@ -543,9 +537,6 @@
     <ClCompile Include="Source\Renderer\OrthoScreen.cpp">
       <Filter>ソース ファイル\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer\RendererSettings.cpp">
-      <Filter>ソース ファイル\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Renderer\RendererUtil.cpp">
       <Filter>ソース ファイル\Renderer</Filter>
     </ClCompile>
@@ -632,6 +623,9 @@
     </ClCompile>
     <ClCompile Include="Source\IO\MeshLoader.cpp">
       <Filter>ソース ファイル\IO</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Renderer\Mesh\TerrainMesh.cpp">
+      <Filter>ソース ファイル\Renderer\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

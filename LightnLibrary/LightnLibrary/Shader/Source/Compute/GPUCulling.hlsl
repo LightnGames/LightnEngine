@@ -70,7 +70,8 @@ void CS(uint3 dispatchId : SV_GroupID, uint3 groupId : SV_GroupThreadID)
         float3 N = planes[d].normal.xyz;
         float3 P = GetPositivePoint(meshInfo, N);
         //P = PositionFromMatrix(meshInfo.mtxWorld);
-        float3 PA = P - planes[d].position.xyz;
+        float3 PA = P - planes[d].position.xyz; //-15;
+        -15;
 
         float dotPA_N = dot(PA, N);
 

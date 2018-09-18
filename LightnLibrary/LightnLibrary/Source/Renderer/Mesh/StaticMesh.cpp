@@ -1,5 +1,6 @@
 #include <Renderer/Mesh/StaticMesh.h>
-#include <Renderer/RendererSettings.h>
+#include <Renderer/SceneRendererManager.h>
+#include <Renderer/Mesh/SkyBox.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererUtil.h>
 #include <Renderer/GraphicsResourceManager.h>
@@ -18,7 +19,7 @@ void StaticMesh::draw(const DrawSettings& drawSettings, const Matrix4& worldMatr
 
 	MeshConstantBuffer constantBuffer = RendererUtil::getConstantBuffer(worldMatrix, drawSettings.camera);
 
-	drawMesh(deviceContext, static_cast<void*>(&constantBuffer), sizeof(MeshVertex));
+	drawMesh(deviceContext, &constantBuffer, sizeof(MeshVertex));
 }
 
 void StaticMesh::drawDepth(const DrawSettings & drawSettings, const Matrix4 & worldMatrix)
@@ -63,9 +64,7 @@ void StaticMesh::drawMesh(ComPtr<ID3D11DeviceContext> deviceContext, const RefPt
 
 		//CubeMapテクスチャをセット
 		int globalTextureCount = 1;
-		if (RendererSettings::skyBox.Get() != nullptr) {
-			deviceContext->PSSetShaderResources(0, 1, RendererSettings::skyBox.GetAddressOf());
-		}
+		deviceContext->CSSetShaderResources(0, 1, SceneRendererManager::instance().getSkyBox()->getSkyBoxCubemapResource().GetAddressOf());
 
 		//テクスチャリソースをセット(シェーダー内の並び順と一致する必要あり)
 		for (UINT k = 0; k < material->textureCount; ++k) {

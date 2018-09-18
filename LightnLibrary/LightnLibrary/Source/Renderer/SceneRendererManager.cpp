@@ -3,9 +3,7 @@
 #include <Renderer/Mesh/SkeletalMesh.h>
 #include <Renderer/Mesh/DebugGeometry.h>
 #include <Renderer/Mesh/SkyBox.h>
-#include <Renderer/RenderableEntity.h>
-#include <Renderer/LightEntity.h>
-
+#include <Renderer/RenderableInterface.h>
 #include <ShaderDefines.h>
 #include <Renderer/Light/LightTypes.h>
 #include <Renderer/StaticInstancedMeshRenderer.h>
@@ -13,7 +11,6 @@
 #include <Component/PointLightComponent.h>
 #include <Component/SpotLightComponent.h>
 #include <IO/MeshLoader.h>
-#include <Renderer/RendererSettings.h>
 
 template<> SceneRendererManager* Singleton<SceneRendererManager>::mSingleton = 0;
 
@@ -39,7 +36,6 @@ void SceneRendererManager::setUp() {
 	meshLoader.load("SkyBox.mesh", skyMatFiles);
 
 	_skyBox = std::make_unique<SkyBox>(std::move(meshLoader.getMeshes()), gameRenderer.device());
-	RendererSettings::skyBox = _skyBox->material(0)->ppTextures[0];
 }
 
 const RenderableEntityList & SceneRendererManager::renderableEntities() const {
@@ -132,6 +128,11 @@ void SceneRendererManager::removeLightEntity(const RefPtr<LightEntity>& lightEnt
 }
 
 void SceneRendererManager::debugDrawLine(const Vector3 & start, const Vector3 & end, const Vector4 & color) {
+	
+	if (instance()._debugLines.size() - 1 >= MAX_INSTANCE_NUM) {
+		return;
+	}
+	
 	const Vector3 startToEnd = end - start;
 	const float length = startToEnd.length();
 
@@ -146,6 +147,11 @@ void SceneRendererManager::debugDrawLine(const Vector3 & start, const Vector3 & 
 }
 
 void SceneRendererManager::debugDrawBox(const Vector3 & center, const Vector3 & extent, const Quaternion & rotate, const Vector4 & color) {
+	
+	if (instance()._debugBoxs.size() - 1 >= MAX_INSTANCE_NUM) {
+		return;
+	}
+	
 	DebugGeometoryInfo info;
 	info.mtxWorld = Matrix4::transpose(Matrix4::createWorldMatrix(center, rotate, extent));
 	info.color = color;
@@ -153,6 +159,11 @@ void SceneRendererManager::debugDrawBox(const Vector3 & center, const Vector3 & 
 }
 
 void SceneRendererManager::debugDrawSphere(const Vector3 & center, float radius, const Vector4 & color) {
+	
+	if (instance()._debugSpheres.size() - 1 >= MAX_INSTANCE_NUM) {
+		return;
+	}
+	
 	DebugGeometoryInfo info;
 	info.mtxWorld = Matrix4::transpose(Matrix4::createWorldMatrix(center, Quaternion::identity, Vector3::one*radius * 2));
 	info.color = color;
@@ -171,4 +182,8 @@ void SceneRendererManager::clearDebugGeometry() {
 
 void SceneRendererManager::setUpStaticInstanceMeshRendere(uint32 maxDrawCount, const std::vector<uint32>& indexList) {
 	StaticInstancedMeshRenderer::instance().initialize(GameRenderer::instance().device(), maxDrawCount, indexList);
+}
+
+RefPtr<SkyBox> SceneRendererManager::getSkyBox() {
+	return _skyBox.get();
 }

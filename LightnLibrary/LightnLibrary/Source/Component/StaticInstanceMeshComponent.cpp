@@ -4,14 +4,13 @@
 #include <Renderer/DrawSettings.h>
 #include <Renderer/Mesh/StaticInstanceMesh.h>
 #include <Renderer/StaticInstancedMeshRenderer.h>
+#include <Renderer/Mesh/TerrainMesh.h>
 
-StaticInstanceMeshComponent::StaticInstanceMeshComponent()
-{
+StaticInstanceMeshComponent::StaticInstanceMeshComponent() {
 	SceneRendererManager::instance().addRenderableEntity(this);
 }
 
-StaticInstanceMeshComponent::~StaticInstanceMeshComponent()
-{
+StaticInstanceMeshComponent::~StaticInstanceMeshComponent() {
 	SceneRendererManager::instance().removeRenderableEntity(this);
 }
 
@@ -25,14 +24,12 @@ void StaticInstanceMeshComponent::setUpMesh(
 	_staticInstanceMesh = GraphicsResourceManager::instance().loadStaticInstanceMesh<StaticInstanceMesh>(filePath, matFiles, matrices, meshDrawOffset, matrixBufferOffset);
 }
 
-void StaticInstanceMeshComponent::draw(const DrawSettings & drawSettings)
-{
+void StaticInstanceMeshComponent::draw(const DrawSettings & drawSettings) {
 	RefPtr<StaticInstanceMeshData> data = StaticInstancedMeshRenderer::instance().getInstanceBuffers();
 	_staticInstanceMesh->draw(drawSettings, data);
 }
 
-void StaticInstanceMeshComponent::drawDepth(const DrawSettings & drawSettings)
-{
+void StaticInstanceMeshComponent::drawDepth(const DrawSettings & drawSettings) {
 	RefPtr<StaticInstanceMeshData> data = StaticInstancedMeshRenderer::instance().getInstanceBuffers();
 	_staticInstanceMesh->drawDepth(drawSettings, data);
 }

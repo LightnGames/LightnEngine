@@ -1,5 +1,4 @@
 #include <Renderer/Mesh/SkeletalMesh.h>
-#include <Renderer/RendererSettings.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererUtil.h>
 #include <Renderer/SceneRendererManager.h>

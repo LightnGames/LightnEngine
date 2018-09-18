@@ -104,7 +104,7 @@ public:
 		}
 
 		//“ü—Í‚ðŠŠ‚ç‚©‚É•âŠ®
-		inputVelocity = Vector3::lerp(inputVelocity, inputDirectVelocity, 0.4f);
+		inputVelocity = Vector3::lerp(inputVelocity, inputDirectVelocity, 1.0f);
 
 		//AnimationÄ¶ƒuƒŒƒ“ƒhŒW”‚ðŒvŽZ
 		const Quaternion skLocalRotateInverse = sk->_skeletalMeshComponent->getLocalRotation().inverse();
@@ -128,7 +128,7 @@ public:
 		const Vector3 moveVelocity = Quaternion::rotVector(forwardRotate, rootMotionVelocity.position)*sk->getActorScale().x;
 
 		//“ü—Í‚ª‚ ‚ê‚Î‚»‚Ì•ûŒü‚ðŒü‚­
-		if (inputVelocity.length() > 0) {
+		if (inputVelocity.length() > 0.01f) {
 			const Quaternion inpuRotate = Quaternion::lookRotation(inputVelocity.normalize());
 			const Quaternion smoothRotate = Quaternion::slerp(sk->_skeletalMeshComponent->getLocalRotation(), inpuRotate*cameraRotateYaw*Quaternion::euler( 0, 90, 0 ), turnSpeed);
 			sk->_skeletalMeshComponent->setLocalRotation(smoothRotate);

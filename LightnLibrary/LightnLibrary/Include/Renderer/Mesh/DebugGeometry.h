@@ -7,7 +7,7 @@
 
 #include <Renderer/Mesh/Mesh.h>
 
-#define MAX_INSTANCE_NUM 512
+#define MAX_INSTANCE_NUM 1024
 
 struct DebugGeometoryInfo {
 	Vector4 color;

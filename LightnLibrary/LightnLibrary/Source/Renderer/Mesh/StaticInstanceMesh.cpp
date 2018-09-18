@@ -1,7 +1,8 @@
 #include <Renderer/Mesh/StaticInstanceMesh.h>
 #include <Renderer/RendererUtil.h>
 #include <Renderer/DrawSettings.h>
-#include <Renderer/RendererSettings.h>
+#include <Renderer/Mesh/SkyBox.h>
+#include <Renderer/SceneRendererManager.h>
 #include <Renderer/GraphicsResourceManager.h>
 #include <Renderer/StaticInstancedMeshRenderer.h>
 
@@ -27,7 +28,7 @@ void StaticInstanceMesh::setUp(
 			AABB transformdAABB = _meshes.boundingBox.createTransformMatrix(m);
 			boundingBoxes.emplace_back(BoundingBoxInfo(transformdAABB.size(), Matrix4::transpose(m)));
 
-			Vector3 p(m.m[3][0], m.m[3][1], m.m[3][2]);
+			const Vector3 p(m.m[3][0], m.m[3][1], m.m[3][2]);
 			transformdAABB.translate(p);
 			_cullingBoxes.emplace_back(transformdAABB);
 		}
@@ -66,7 +67,7 @@ void StaticInstanceMesh::setUp(
 		initData.pSysMem = boundingBoxes.data();
 
 		HRESULT hr = device->CreateBuffer(&cb, &initData, _boundingBoxListBuffer.ReleaseAndGetAddressOf());
-		hr = device->CreateShaderResourceView(_boundingBoxListBuffer.Get(), nullptr, _boundingBoxListSRV.ReleaseAndGetAddressOf());
+		hr = device->CreateShaderResourceView(_boundingBoxListBuffer.Get(), 0, _boundingBoxListSRV.ReleaseAndGetAddressOf());
 
 		const uint32 m[4] = { _matrixBufferOffset, 0, 0, 0 };
 		RendererUtil::createConstantBuffer(_meshDrawOffsetConstantBuffer, sizeof(uint32) * 4, device, m);
@@ -112,9 +113,7 @@ void StaticInstanceMesh::draw(const DrawSettings& drawSettings, RefPtr<StaticIns
 
 		//CubeMapテクスチャをセット
 		int globalTextureCount = 1;
-		if (RendererSettings::skyBox.Get() != nullptr) {
-			deviceContext->PSSetShaderResources(0, 1, RendererSettings::skyBox.GetAddressOf());
-		}
+		deviceContext->PSSetShaderResources(0, 1, SceneRendererManager::instance().skyBox()->getSkyBoxCubemapResource().GetAddressOf());
 
 		//テクスチャリソースをセット(シェーダー内の並び順と一致する必要あり)
 		for (UINT k = 0; k < material->textureCount; ++k) {
@@ -133,7 +132,6 @@ void StaticInstanceMesh::draw(const DrawSettings& drawSettings, RefPtr<StaticIns
 }
 
 
-#include <Renderer/SceneRendererManager.h>
 void StaticInstanceMesh::drawDepth(const DrawSettings& drawSettings, RefPtr<StaticInstanceMeshData> instanceData) {
 	auto deviceContext = drawSettings.deviceContext;
 
@@ -148,16 +146,16 @@ void StaticInstanceMesh::drawDepth(const DrawSettings& drawSettings, RefPtr<Stat
 		deviceContext->CSSetConstantBuffers(0, 1, instanceData->frustumCullingBuffer.GetAddressOf());
 		deviceContext->CSSetUnorderedAccessViews(0, 1, instanceData->instanceMatrixUAV.GetAddressOf(), &offset);
 		deviceContext->CSSetUnorderedAccessViews(1, 1, instanceData->instanceDrawListUAV.GetAddressOf(), 0);
-		deviceContext->CSSetShader(instanceData->cullingShader.Get(), nullptr, 0);
+		deviceContext->CSSetShader(instanceData->cullingShader.Get(), 0, 0);
 		deviceContext->Dispatch(_paddingedCount / THREAD_NUM, 1, 1);
 
-		ID3D11UnorderedAccessView* ppUAViewNULL[2] = { nullptr, nullptr };
-		ID3D11ShaderResourceView* ppSRVNULL[1] = { nullptr };
-		ID3D11Buffer* ppCBNULL[1] = { nullptr };
-		deviceContext->CSSetShader(nullptr, nullptr, 0);
+		ID3D11UnorderedAccessView* ppUAViewNULL[2] = { 0, 0 };
+		ID3D11ShaderResourceView* ppSRVNULL[1] = { 0 };
+		ID3D11Buffer* ppCBNULL[1] = { 0 };
 		deviceContext->CSSetConstantBuffers(0, 1, ppCBNULL);
-		deviceContext->CSSetUnorderedAccessViews(0, 2, ppUAViewNULL, nullptr);
+		deviceContext->CSSetUnorderedAccessViews(0, 2, ppUAViewNULL, 0);
 		deviceContext->CSSetShaderResources(0, 1, ppSRVNULL);
+		deviceContext->CSSetShader(0, 0, 0);
 	}
 
 	//描画
@@ -186,15 +184,18 @@ void StaticInstanceMesh::drawDepth(const DrawSettings& drawSettings, RefPtr<Stat
 			}
 
 			deviceContext->RSSetState(GraphicsResourceManager::instance().rasterState(material->cullMode));
-			deviceContext->VSSetShader(material->pVertexShader.Get(), NULL, 0);
+			deviceContext->VSSetShader(material->pVertexShader.Get(), 0, 0);
 			deviceContext->IASetIndexBuffer(material->pIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 			deviceContext->IASetInputLayout(material->pVertexLayout.Get());
-			deviceContext->UpdateSubresource(material->pConstantBuffer.Get(), 0, NULL, &constantBuffer, 0, 0);
+			deviceContext->UpdateSubresource(material->pConstantBuffer.Get(), 0, 0, &constantBuffer, 0, 0);
 			deviceContext->VSSetConstantBuffers(0, 1, material->pConstantBuffer.GetAddressOf());
 			deviceContext->DrawIndexedInstancedIndirect(instanceData->indtsnceDrawListBuffer.Get(), (_meshDrawOffset + j) * 20);
 
 			deviceContext->PSSetShader(0, 0, 0);
 		}
+
+		ID3D11ShaderResourceView* ppSRVNULL[1] = { 0 };
+		deviceContext->VSSetShaderResources(0, 1, ppSRVNULL);
 	}
 }
 
@@ -204,68 +205,4 @@ RefPtr<const LocalMesh> StaticInstanceMesh::meshInfo() const {
 
 RefPtr<MaterialData> StaticInstanceMesh::material(int index) const {
 	return _meshes.materialSlots[index].get();
-}
-
-
-#include <IO/BinaryLoader.h>
-#include <ThirdParty/ImGui/imgui.h>
-void TerrainMesh::setUp(ComPtr<ID3D11Device> device, const std::vector<Matrix4>& matrices, uint32 meshDrawOffset, uint32 matrixBufferOffset) {
-	StaticInstanceMesh::setUp(device, matrices, meshDrawOffset, matrixBufferOffset);
-
-	DXGI_FORMAT format = DXGI_FORMAT_R16_UNORM;
-	D3D11_TEXTURE2D_DESC textureDesc;
-	ZeroMemory(&textureDesc, sizeof(textureDesc));
-	textureDesc.Width = 513;
-	textureDesc.Height = 513;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.Format = format;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
-	textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	textureDesc.CPUAccessFlags = 0;
-	textureDesc.MiscFlags = 0;
-
-	BinaryLoader terrainResource("Scene/Terrain.raw");
-
-	D3D11_SUBRESOURCE_DATA initData;
-	ZeroMemory(&initData, sizeof(initData));
-	initData.pSysMem = terrainResource.data();
-	initData.SysMemPitch = 513 * 2;
-
-	HRESULT hr = device->CreateTexture2D(&textureDesc, &initData, terrainTex.GetAddressOf());
-	assert(SUCCEEDED(hr) && "テクスチャ生成に失敗");
-
-	//シェーダーリソースビューの生成
-	D3D11_SHADER_RESOURCE_VIEW_DESC shaderDesc;
-	ZeroMemory(&shaderDesc, sizeof(shaderDesc));
-	shaderDesc.Format = format;
-	shaderDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	shaderDesc.Texture2D.MostDetailedMip = 0;
-	shaderDesc.Texture2D.MipLevels = 1;
-
-	hr = device->CreateShaderResourceView(terrainTex.Get(), &shaderDesc, terrainSRV.GetAddressOf());
-	assert(SUCCEEDED(hr) && "SRV生成に失敗");
-}
-
-void TerrainMesh::draw(const DrawSettings & drawSettings, RefPtr<StaticInstanceMeshData> instanceData) {
-	ImGui::Begin("terrain");
-	ImGui::Image(terrainSRV.Get(), ImVec2(200, 200));
-	ImGui::End();
-	
-	auto deviceContext = drawSettings.deviceContext;
-	deviceContext->VSSetShaderResources(1, 1, terrainSRV.GetAddressOf());
-	deviceContext->VSSetSamplers(0, 1, GraphicsResourceManager::instance().simpleSamplerState().GetAddressOf());
-
-	StaticInstanceMesh::draw(drawSettings, instanceData);
-	
-}
-
-void TerrainMesh::drawDepth(const DrawSettings & drawSettings, RefPtr<StaticInstanceMeshData> instanceData) {
-	
-	auto deviceContext = drawSettings.deviceContext;
-	deviceContext->VSSetShaderResources(1, 1, terrainSRV.GetAddressOf());
-	deviceContext->VSSetSamplers(0, 1, GraphicsResourceManager::instance().simpleSamplerState().GetAddressOf());
-
-	StaticInstanceMesh::drawDepth(drawSettings, instanceData);
 }

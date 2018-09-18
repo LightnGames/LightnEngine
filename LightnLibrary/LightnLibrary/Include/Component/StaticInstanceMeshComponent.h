@@ -2,7 +2,7 @@
 
 #include <Component/Component.h>
 #include <vector>
-#include <Renderer/RenderableEntity.h>
+#include <Renderer/RenderableInterface.h>
 
 class StaticInstanceMesh;
 struct LocalMesh;

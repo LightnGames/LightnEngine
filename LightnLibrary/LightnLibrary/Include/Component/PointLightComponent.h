@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Component/LightComponent.h>
-#include <Renderer/LightEntity.h>
+#include <Renderer/RenderableInterface.h>
 #include <Renderer/Light/LightTypes.h>
 
 class PointLightComponent :public LightComponent, public LightEntity {

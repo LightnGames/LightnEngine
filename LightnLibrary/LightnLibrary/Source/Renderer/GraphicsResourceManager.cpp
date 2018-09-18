@@ -1,5 +1,5 @@
 #include <Renderer/GraphicsResourceManager.h>
-#include <Renderer/RenderableObject.h>
+#include <Renderer/RenderableInterface.h>
 #include <Renderer/GameRenderer.h>
 #include <Renderer/Mesh/StaticMesh.h>
 #include <Renderer/Mesh/SkeletalMesh.h>

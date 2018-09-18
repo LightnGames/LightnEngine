@@ -2,7 +2,7 @@
 
 #include <Component/Component.h>
 #include <Renderer/Mesh/SkeletalMesh.h>
-#include <Renderer/RenderableEntity.h>
+#include <Renderer/RenderableInterface.h>
 
 class SkeletalMeshComponent :public Component, public RenderableEntity{
 

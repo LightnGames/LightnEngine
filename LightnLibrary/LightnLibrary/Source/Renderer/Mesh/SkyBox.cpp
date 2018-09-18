@@ -1,10 +1,10 @@
 #include <Renderer/Mesh/SkyBox.h>
 
-#include <Renderer/RendererSettings.h>
 #include <Renderer/DrawSettings.h>
 #include <Renderer/RendererUtil.h>
 
-SkyBox::SkyBox(const LocalMesh & meshes, ComPtr<ID3D11Device> device) :StaticMesh(meshes) {
+SkyBox::SkyBox(const LocalMesh & meshes, ComPtr<ID3D11Device> device) 
+	:StaticMesh(meshes){
 
 	HRESULT hr;
 	D3D11_DEPTH_STENCIL_DESC dsDesc;

@@ -22,6 +22,8 @@ public:
 
 	virtual void draw(const DrawSettings& drawSettings);
 
+	ComPtr<ID3D11ShaderResourceView> getSkyBoxCubemapResource() { return material(0)->ppTextures[0]; }
+
 private:
 
 	ComPtr<ID3D11DepthStencilState> _stencilWriteState;

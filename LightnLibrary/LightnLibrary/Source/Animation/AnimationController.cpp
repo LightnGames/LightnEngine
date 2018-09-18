@@ -53,14 +53,14 @@ void AnimationController::update(float deltaTime) {
 		anim->updateTimer(deltaTime, debugTime);
 		anim->computeBones(rootMotionIndex);
 		blendingTime -= 0.016666f;
-		blendingTime = std::fmaxf(blendingTime, 0);
+		blendingTime = std::fmaxf(blendingTime, 0.0f);
 
 		if (!applyRootMotion) {
 			continue;
 		}
 
 		//ブレンド係数を計算
-		blendFactor = (blendingTime < FLT_EPSILON) ? 0.0f : (blendingTime / blendTime);
+		blendFactor = (approximately(blendingTime, 0.0f)) ? 0.0f : (blendingTime / blendTime);
 
 		//RootMotionの変化量として扱う値を計算
 		{
@@ -112,7 +112,7 @@ void AnimationController::update(float deltaTime) {
 	for (auto itr = _duringAnimations.begin(); itr != _duringAnimations.end(); ++itr) {
 
 		//アニメーションリストの一番最初のアニメーションは削除しない(再生中なので)
-		if ((itr->blendingTime < FLT_EPSILON)&& (itr != _duringAnimations.begin())) {
+		if (approximately(itr->blendingTime, 0.0f) && (itr != _duringAnimations.begin())) {
 			itr = _duringAnimations.erase(--itr);
 			continue;
 		}

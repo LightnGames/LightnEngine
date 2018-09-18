@@ -54,6 +54,7 @@ groupshared uint sNumPerSamplePixels;
 
 SurfaceData ComputeSurfaceDataFromGBufferSample(uint2 positionViewport)
 {
+    
     float zBuffer = gBufferTextures[0].Load(positionViewport.xy, 0).x;
     //rawData.albedo = gBufferTextures[1].SampleLevel(samLinear, positionViewport.xy, 0).xyzw;
     //rawData.normal_specular = gBufferTextures[2].SampleLevel(samLinear, positionViewport.xy,0).xyzw;

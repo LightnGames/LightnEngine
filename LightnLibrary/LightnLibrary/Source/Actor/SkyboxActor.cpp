@@ -1,5 +1,4 @@
 #include <Actor/SkyboxActor.h>
-#include <Renderer/RendererSettings.h>
 
 SkyboxActor::SkyboxActor() {
 }
