@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="Mesh">
+    <DisplayString>{_debugMeshInfo->_filePath,s}</DisplayString>
+  </Type>
+  <Type Name="DynamicArray&lt;*&gt;">
+    <DisplayString>{{ size={_elementCount} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_elementCount</Item>
+      <ArrayItems>
+        <Size>_elementCount</Size>
+        <ValuePointer>_array</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="DynamicQueue&lt;*&gt;">
+    <DisplayString>{{ size={_controller._arrayCountMax} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_controller._arrayCountMax</Item>
+      <ArrayItems>
+        <Size>_controller._arrayCountMax</Size>
+        <ValuePointer>_data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <Type Name="MultiDynamicQueue&lt;*&gt;">
+    <DisplayString>{{ size={_arrayCountMax} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]" ExcludeView="simple">_arrayCountMax</Item>
+      <ArrayItems>
+        <Size>_arrayCountMax</Size>
+        <ValuePointer>_data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

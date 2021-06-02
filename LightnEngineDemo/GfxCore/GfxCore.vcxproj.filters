@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ImplInclude">
+      <UniqueIdentifier>{2cb65896-a60d-4e89-8556-554599f2c0ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader">
+      <UniqueIdentifier>{609bbf70-0c0a-4276-8146-5c71b328b3a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thired_party">
+      <UniqueIdentifier>{dfb1d63c-5d5b-4f85-869d-5e1e3cac784f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\debug">
+      <UniqueIdentifier>{0208d2cf-2a20-4797-920f-2a4c71bf429f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\mesh_shader_gpu_driven">
+      <UniqueIdentifier>{5d2a521b-1289-4228-a2a7-90491911a013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\meshlet">
+      <UniqueIdentifier>{0d0f3d50-7ddc-46a4-a959-88e59f01c6a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\standard_gpu_driven">
+      <UniqueIdentifier>{473946e7-61f5-4842-b48e-a994e773a5af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader\standard_mesh">
+      <UniqueIdentifier>{b9d4ef35-49d7-48ee-85a7-625289a9dd70}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\GfxCore\GraphicsSystem.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\GfxModuleSettings.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="include\GfxCoreImpl\DebugWindow.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\DebugWindow.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\DescriptorHeap.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\GpuResourceImpl.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\GraphicsApiInterface.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\GraphicsSystemImpl.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\VramBufferUpdater.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\ViewSystemImpl.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\GfxCore\impl\QueryHeapSystem.h">
+      <Filter>ImplInclude</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\GraphicsSystemImpl.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GpuResourceImpl.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DebugWindow.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\VramBufferUpdater.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\DescriptorHeap.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\ViewSystemImpl.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="source\QueryHeapSystem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\work\common\shader\build_hierarchical_depth.csf">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\constant_buffer.sfh">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\gpu_culling_function.sfh">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\gpu_driven.sfh">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\shaderInput.sfh">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\vertex_common.sfh">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug_lod.psf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug_meshlet.psf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug_occlusion_culling.psf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug3dLine.psf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug3dLine.vsf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\imgui.psf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\imgui.vsf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_culling_frustum.csf">
+      <Filter>shader\mesh_shader_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_culling_frustum_occlusion.csf">
+      <Filter>shader\mesh_shader_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_culling_pass.csf">
+      <Filter>shader\mesh_shader_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\meshlet\meshlet_culling_frustum.asf">
+      <Filter>shader\meshlet</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\meshlet\meshlet_culling_frustum_occlusion.asf">
+      <Filter>shader\meshlet</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\meshlet\meshlet_culling_pass.asf">
+      <Filter>shader\meshlet</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh.msf">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh.psf">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh.vsf">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\screen_triangle.psf">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\screen_triangle.vsf">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_gpu_driven\mesh_culling_pass.csf">
+      <Filter>shader\standard_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_gpu_driven\mesh_culling_frustum.csf">
+      <Filter>shader\standard_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_gpu_driven\mesh_culling_frustum_occlusion.csf">
+      <Filter>shader\standard_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\compute_lod.csf">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug_draw_meshlet_bounds.csf">
+      <Filter>shader\debug</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_shader_culling_uber.sfh">
+      <Filter>shader\mesh_shader_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\meshlet\meshlet_amplification_uber.sfh">
+      <Filter>shader\meshlet</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_gpu_driven\standard_mesh_culling_uber.sfh">
+      <Filter>shader\standard_gpu_driven</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\build_indirect_argument.csf">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh_uber.sfh">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh_primitive_instancing.msf">
+      <Filter>shader\standard_mesh</Filter>
+    </None>
+    <None Include="..\..\work\common\shader\debug\debug3dBox.vsf">
+      <Filter>shader\debug</Filter>
+    </None>
+  </ItemGroup>
+</Project>

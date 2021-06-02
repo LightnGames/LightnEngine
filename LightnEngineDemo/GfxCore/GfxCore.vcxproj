@@ -1,0 +1,214 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{588C73D4-636C-4EFF-8D16-B215F84627C9}</ProjectGuid>
+    <RootNamespace>GfxCore</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)__Intermediate\Bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)__Intermediate\$(Configuration)\Cache\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)__Intermediate\Bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)__Intermediate\$(Configuration)\Cache\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>LTN_GFX_CORE_EXPORT;LTN_DEBUG;_DEBUG</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(ProjectName)\include;$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)__Intermediate\Bin\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Win64Application.lib;D3D12Graphics.lib;Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>LTN_GFX_CORE_EXPORT;</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(ProjectName)\include;$(SolutionDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)__Intermediate\Bin\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Win64Application.lib;D3D12Graphics.lib;Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\GfxCore\GfxModuleSettings.h" />
+    <ClInclude Include="..\include\GfxCore\GraphicsSystem.h" />
+    <ClInclude Include="..\include\GfxCore\impl\DebugWindow.h" />
+    <ClInclude Include="..\include\GfxCore\impl\DescriptorHeap.h" />
+    <ClInclude Include="..\include\GfxCore\impl\GpuResourceImpl.h" />
+    <ClInclude Include="..\include\GfxCore\impl\GraphicsApiInterface.h" />
+    <ClInclude Include="..\include\GfxCore\impl\GraphicsSystemImpl.h" />
+    <ClInclude Include="..\include\GfxCore\impl\QueryHeapSystem.h" />
+    <ClInclude Include="..\include\GfxCore\impl\ViewSystemImpl.h" />
+    <ClInclude Include="..\include\GfxCore\impl\VramBufferUpdater.h" />
+    <ClInclude Include="include\GfxCoreImpl\DebugWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\DebugWindow.cpp" />
+    <ClCompile Include="source\DescriptorHeap.cpp" />
+    <ClCompile Include="source\GpuResourceImpl.cpp" />
+    <ClCompile Include="source\GraphicsSystemImpl.cpp" />
+    <ClCompile Include="source\QueryHeapSystem.cpp" />
+    <ClCompile Include="source\ViewSystemImpl.cpp" />
+    <ClCompile Include="source\VramBufferUpdater.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\work\common\shader\build_hierarchical_depth.csf" />
+    <None Include="..\..\work\common\shader\build_indirect_argument.csf" />
+    <None Include="..\..\work\common\shader\compute_lod.csf" />
+    <None Include="..\..\work\common\shader\constant_buffer.sfh" />
+    <None Include="..\..\work\common\shader\debug\debug3dBox.vsf" />
+    <None Include="..\..\work\common\shader\debug\debug3dLine.psf" />
+    <None Include="..\..\work\common\shader\debug\debug3dLine.vsf" />
+    <None Include="..\..\work\common\shader\debug\debug_draw_meshlet_bounds.csf" />
+    <None Include="..\..\work\common\shader\debug\debug_lod.psf" />
+    <None Include="..\..\work\common\shader\debug\debug_meshlet.psf" />
+    <None Include="..\..\work\common\shader\debug\debug_occlusion_culling.psf" />
+    <None Include="..\..\work\common\shader\debug\imgui.psf" />
+    <None Include="..\..\work\common\shader\debug\imgui.vsf" />
+    <None Include="..\..\work\common\shader\gpu_culling_function.sfh" />
+    <None Include="..\..\work\common\shader\gpu_driven.sfh" />
+    <None Include="..\..\work\common\shader\meshlet\meshlet_culling_frustum.asf" />
+    <None Include="..\..\work\common\shader\meshlet\meshlet_culling_frustum_occlusion.asf" />
+    <None Include="..\..\work\common\shader\meshlet\meshlet_culling_pass.asf" />
+    <None Include="..\..\work\common\shader\meshlet\meshlet_amplification_uber.sfh" />
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_culling_frustum.csf" />
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_culling_frustum_occlusion.csf" />
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_shader_culling_uber.sfh" />
+    <None Include="..\..\work\common\shader\mesh_shader_gpu_driven\mesh_culling_pass.csf" />
+    <None Include="..\..\work\common\shader\shaderInput.sfh" />
+    <None Include="..\..\work\common\shader\standard_gpu_driven\mesh_culling_frustum.csf" />
+    <None Include="..\..\work\common\shader\standard_gpu_driven\mesh_culling_frustum_occlusion.csf" />
+    <None Include="..\..\work\common\shader\standard_gpu_driven\standard_mesh_culling_uber.sfh" />
+    <None Include="..\..\work\common\shader\standard_gpu_driven\mesh_culling_pass.csf" />
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh.msf" />
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh.psf" />
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh.vsf" />
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh_primitive_instancing.msf" />
+    <None Include="..\..\work\common\shader\standard_mesh\default_mesh_uber.sfh" />
+    <None Include="..\..\work\common\shader\standard_mesh\screen_triangle.psf" />
+    <None Include="..\..\work\common\shader\standard_mesh\screen_triangle.vsf" />
+    <None Include="..\..\work\common\shader\vertex_common.sfh" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

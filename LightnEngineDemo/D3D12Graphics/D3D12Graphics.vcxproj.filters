@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="thired_party">
+      <UniqueIdentifier>{09f8b035-1bb7-420b-b2f9-9d154a96efed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thired_party\DirectXTex">
+      <UniqueIdentifier>{762f0faa-2c10-40c0-904f-ce20a3f657fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thired_party\Imgui">
+      <UniqueIdentifier>{ea1de25e-0580-417c-877d-ff40c691f824}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\GraphicsApiInterfaceImpl.h">
+      <Filter>ソース ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\DirectxTex\DDSTextureLoader12.h">
+      <Filter>thired_party\DirectXTex</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imconfig.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imgui.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imgui_impl_dx12.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imgui_impl_win32.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imgui_internal.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imstb_rectpack.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imstb_textedit.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="third_party\Imgui\imstb_truetype.h">
+      <Filter>thired_party\Imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\GraphicsApiInterfaceImpl.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\DirectxTex\DDSTextureLoader12.cpp">
+      <Filter>thired_party\DirectXTex</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\Imgui\imgui.cpp">
+      <Filter>thired_party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\Imgui\imgui_draw.cpp">
+      <Filter>thired_party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\Imgui\imgui_impl_dx12.cpp">
+      <Filter>thired_party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\Imgui\imgui_impl_win32.cpp">
+      <Filter>thired_party\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="third_party\Imgui\imgui_widgets.cpp">
+      <Filter>thired_party\Imgui</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
