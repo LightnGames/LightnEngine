@@ -1,2 +1,5 @@
-# LightnEngine Version1
-Direct3D12で次世代技術を研究・活用するために検証しているレンダリングフレームワークです。
+# LightnEngine Version2
+自作フレームワーク
+
+# トピック
+## Mesh Shader
