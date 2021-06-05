@@ -952,7 +952,7 @@ void MeshRendererSystemImpl::update() {
 			s32 _visibleHighPolygonMeshes = 0;
 			GeometoryType _geometryMode = GEOMETORY_MODE_MESH_SHADER;
 			DebugPrimitiveType _primitiveType = DEBUG_PRIMITIVE_TYPE_DEFAULT;
-			s32 _packedMeshletCount = 0;
+			s32 _packedMeshletCount = 300;
 		};
 
 		auto debug = DebugWindow::StartWindow<MeshInstanceDebug>("Mesh Renderer");

@@ -18,16 +18,16 @@ struct DebugWindowStructure :public T {
 		std::ifstream fin;
 		fin.open(fullPath, std::ios::in | std::ios::binary);
 
-		// ファイルサイズ取得
-		fin.seekg(0, std::ios_base::end);
-		s32 fileSize = static_cast<s32>(fin.tellg());
-		fin.seekg(0, std::ios_base::beg);
-
 		if(fin.fail()) {
 			fin.open(fullPath, std::ios_base::app);
 			T initData = T();
 			memcpy(reinterpret_cast<T*>(this), &initData, sizeof(T));
 		} else {
+			// ファイルサイズ取得
+			fin.seekg(0, std::ios_base::end);
+			s32 fileSize = static_cast<s32>(fin.tellg());
+			fin.seekg(0, std::ios_base::beg);
+
 			fin.exceptions(std::ios::badbit);
 			fin.read(reinterpret_cast<char*>(this), fileSize);
 		}

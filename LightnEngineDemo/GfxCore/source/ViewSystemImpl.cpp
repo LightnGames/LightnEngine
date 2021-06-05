@@ -22,10 +22,10 @@ void ViewSystemImpl::update() {
 	};
 
 	struct CameraInfo {
-		Vector3 position;
-		Vector3 cameraAngle;
-		f32 fov;
-		f32 depthPrePassDistance = 0.0f;
+		Vector3 position = Vector3(-7, 5, -30);
+		Vector3 cameraAngle = Vector3(0, 0, 0);
+		f32 fov = 1.0472f;
+		f32 depthPrePassDistance = 20.0f;
 		s32 _cameraMode = 0;
 	};
 
