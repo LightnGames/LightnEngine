@@ -4,6 +4,8 @@
 
 # トピック
 ## Mesh Shader
+Amplification Shader + Mesh Shaderを使用した次世代頂点処理フローを実現しました。
+従来のGPU Driven CullingとMesh Shaderをリアルタイムに切り替えることができます。
 
 # 動作環境
 OS  Windows10
